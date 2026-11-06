@@ -33,8 +33,23 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:12px}
 .hello h1{font-size:25px;margin:0 0 4px;letter-spacing:-.6px}.hello p{margin:0;color:var(--muted);font-size:13px}
 .top-actions{display:flex;align-items:center;gap:10px}
+.menu-wrap{position:relative}
+.menu-panel{position:absolute;right:0;top:calc(100% + 8px);z-index:8;min-width:175px;padding:7px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.menu-panel[hidden]{display:none}
+.menu-panel button{width:100%;border:0;background:#fff;text-align:left;padding:11px 12px;border-radius:8px;color:var(--ink);font-size:12px}
+.menu-panel button:hover{background:var(--green-soft);color:var(--green-dark)}
 .icon-btn{border:1px solid var(--line);background:#fff;border-radius:11px;width:40px;height:40px;color:#516074}
 .avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--green);color:#fff;font-size:12px;font-weight:800}
+.profile-trigger{padding:0;border:0;background:transparent;border-radius:50%;line-height:0}
+.profile-trigger:focus-visible{outline:3px solid #72d5a3;outline-offset:3px}
+.avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.profile-details{display:grid;gap:14px}
+.profile-avatar-row{display:flex;align-items:center;gap:14px}
+.profile-avatar-preview{width:72px;height:72px;flex:0 0 72px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--green);color:#fff;font-size:20px;font-weight:800}
+.profile-avatar-preview img{width:100%;height:100%;object-fit:cover}
+.profile-value{margin:0;padding:11px;border:1px solid var(--line);border-radius:10px;background:#f8fafb;font-size:13px;overflow-wrap:anywhere}
+.profile-actions{display:grid;gap:9px;margin-top:8px}
+.profile-actions .btn{width:100%}
 .page{display:none}.page.active{display:block}
 .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:17px}
 .card,.panel{background:#fff;border:1px solid #edf0f3;border-radius:var(--radius);box-shadow:var(--shadow)}
@@ -124,11 +139,14 @@ tbody tr:last-child td{border-bottom:0}
 .auth-card [hidden]{display:none!important}
 .auth-feedback{min-height:18px;margin:12px 0 0!important;color:var(--red)!important;font-size:12px!important}
 .user-email{font-size:11px;color:var(--muted)}
-.notify-button{white-space:nowrap}
+.notify-button{white-space:nowrap;min-width:42px}
+.notify-button.is-enabled{background:var(--green);border-color:var(--green);color:#fff}
+.notify-button.is-enabled:hover{background:var(--green-dark);border-color:var(--green-dark);color:#fff}
 @media(max-width:1050px){.app{grid-template-columns:205px 1fr}.cards{grid-template-columns:repeat(2,1fr)}main{padding:24px 20px}.grid-main{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){
  #appShell.ready{display:block}.app{display:block}.sidebar{display:none}main{padding:20px 14px 88px}
- .topbar{margin-bottom:18px}.hello h1{font-size:21px}.hello p{font-size:11px}
+ .topbar{margin-bottom:18px;align-items:flex-start}.hello h1{font-size:21px}.hello p{font-size:11px}
+ .top-actions{gap:7px;flex-wrap:wrap;justify-content:flex-end}.user-email{display:none}.avatar{width:34px;height:34px}
  .cards{gap:9px}.metric{padding:13px 11px;min-height:88px;gap:9px}.metric-icon{width:34px;height:34px;border-radius:11px;font-size:16px}.metric strong{font-size:16px}.metric label{font-size:10px}
  .grid-main,.bottom-grid{grid-template-columns:1fr}.panel{padding:15px}.chart-wrap{height:185px}
  .report-cards{grid-template-columns:1fr 1fr}.report-card:last-child{grid-column:1/-1}
@@ -139,6 +157,7 @@ tbody tr:last-child td{border-bottom:0}
  .calendar-grid{gap:3px}.calendar-grid div{padding:8px 1px;font-size:10px}
  .category-row{grid-template-columns:90px 1fr 78px}
  .notify-button{padding:8px 9px;font-size:10px}
+ .menu-panel{min-width:160px}
 }
 </style>
 </head>
@@ -179,7 +198,7 @@ tbody tr:last-child td{border-bottom:0}
   <main>
     <header class="topbar">
       <div class="hello"><h1 id="greeting">Olá! 👋</h1><p>Aqui está um resumo da sua organização.</p></div>
-      <div class="top-actions"><button class="icon-btn" title="Adicionar conta" onclick="openAccountModal()">＋</button><span class="user-email" id="currentUserDisplayName"></span><button class="btn outline notify-button" id="pushNotificationsButton" type="button">🔔 Ativar avisos</button><button class="btn outline" id="signOutButton" type="button">Sair</button><div class="avatar" id="userAvatar">MC</div></div>
+      <div class="top-actions"><button class="btn outline notify-button" id="pushNotificationsButton" type="button" aria-label="Ativar avisos" title="Ativar avisos" aria-pressed="false">🔔</button><button class="profile-trigger" id="profileTrigger" type="button" aria-label="Abrir meu perfil"><div class="avatar" id="userAvatar">MC</div></button></div>
     </header>
 
     <section class="page active" id="page-inicio">
@@ -276,6 +295,29 @@ tbody tr:last-child td{border-bottom:0}
   </form>
  </div>
 </div>
+<div class="modal-backdrop" id="profileModal">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+  <div class="modal-head"><h2 id="profileModalTitle">Meu perfil</h2><button class="close" type="button" onclick="closeModal('profileModal')" aria-label="Fechar">×</button></div>
+  <form id="profileForm">
+   <div class="profile-details">
+    <div class="profile-avatar-row">
+     <div class="profile-avatar-preview" id="profileAvatarPreview">MC</div>
+     <div class="field"><label for="profilePhoto">Foto do perfil</label><input id="profilePhoto" type="file" accept="image/png,image/jpeg,image/webp"></div>
+    </div>
+    <div class="field"><label for="profileName">Nome</label><input id="profileName" type="text" maxlength="80" required></div>
+    <div class="field"><label>E-mail</label><p class="profile-value" id="profileEmail"></p></div>
+    <div class="field"><label>Cadastrado desde</label><p class="profile-value" id="profileCreatedAt"></p></div>
+    <div class="field"><label>Último acesso</label><p class="profile-value" id="profileLastSignIn"></p></div>
+   </div>
+   <div class="profile-actions">
+    <button class="btn" id="saveProfileButton" type="submit">Salvar perfil</button>
+    <button class="btn outline" id="resetPasswordButton" type="button">Enviar link para redefinir senha</button>
+    <button class="btn secondary" id="addAccountProfileButton" type="button">＋ Nova conta</button>
+    <button class="btn danger" id="profileSignOutButton" type="button">Sair</button>
+   </div>
+  </form>
+ </section>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -295,31 +337,51 @@ const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 let accounts=[],tasks=[],currentUser=null,authMode='signin',passwordRecovery=false;
 let accountFilter='Todas',taskFilter='Todas',dashPeriod='month',reportPeriod='year';
 let calendarDate=new Date();
-function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+let profilePreviewObjectUrl=null;
+function toast(msg,duration=2200){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),duration)}
 function showAuthFeedback(message,isError=false){const el=$('authFeedback');el.textContent=message;el.style.color=isError?'var(--red)':'var(--green-dark)'}
-function reportError(action,error){console.error(action,error);toast(`${action}: ${error.message||'erro inesperado'}`)}
+function reportError(action,error){console.error(action,error);toast(`${action}: ${error.message||'erro inesperado'}`,6000)}
 function base64UrlToBytes(value){
  const padding='='.repeat((4-value.length%4)%4),base64=(value+padding).replace(/-/g,'+').replace(/_/g,'/');
  return Uint8Array.from(atob(base64),char=>char.charCodeAt(0));
 }
 async function updatePushButton(){
  const button=$('pushNotificationsButton');
- if(!currentUser||!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window)||!window.isSecureContext){
-  button.hidden=true;return;
- }
- button.hidden=false;
+ button.hidden=!currentUser;
+ button.classList.remove('is-enabled');
+ button.dataset.active='false';
+ button.setAttribute('aria-pressed','false');
+ button.textContent='🔔';
+ button.setAttribute('aria-label','Ativar avisos');
+ button.title='Ativar avisos';
+ if(!currentUser)return;
+ if(getPushSupportMessage())return;
  const registration=await navigator.serviceWorker.getRegistration(new URL('.',document.baseURI).pathname);
  const subscription=await registration?.pushManager.getSubscription();
- if(!subscription){button.textContent='🔔 Ativar avisos';button.dataset.active='false';return}
+ if(!subscription)return;
  const {data,error}=await db.from('push_subscriptions').select('endpoint').eq('user_id',currentUser.id).eq('endpoint',subscription.endpoint).maybeSingle();
  if(error)throw error;
  const active=Boolean(data);
- button.textContent=active?'🔔 Avisos ativos':'🔔 Concluir ativação';
+ button.textContent=active?'🔔 ✓':'🔔';
+ button.setAttribute('aria-label',active?'Avisos ativados':'Ativar avisos');
+ button.title=active?'Avisos ativados':'Ativar avisos';
  button.dataset.active=String(active);
+ button.setAttribute('aria-pressed',String(active));
+ button.classList.toggle('is-enabled',active);
+}
+function getPushSupportMessage(){
+ if(!window.isSecureContext)return 'As notificações precisam ser ativadas pelo site HTTPS.';
+ const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ const isInstalled=navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
+ if(isIOS&&!isInstalled)return 'No iPhone/iPad: toque em Compartilhar → Adicionar à Tela de Início e abra o app pelo ícone antes de ativar os avisos.';
+ if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))return 'Este navegador não oferece notificações push. Atualize o Safari ou instale o app na Tela de Início.';
+ return '';
 }
 $('pushNotificationsButton').addEventListener('click',async()=>{
  const button=$('pushNotificationsButton');
  if(!currentUser)return;
+ const supportMessage=getPushSupportMessage();
+ if(supportMessage){toast(supportMessage);return}
  button.disabled=true;
  try{
   const registration=await navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:new URL('.',document.baseURI).pathname});
@@ -332,7 +394,7 @@ $('pushNotificationsButton').addEventListener('click',async()=>{
   }else{
    if(VAPID_PUBLIC_KEY==='SUBSTITUA_PELA_CHAVE_PUBLICA_VAPID')throw new Error('A chave pública VAPID ainda não foi configurada no app.');
    const permission=Notification.permission==='granted'? 'granted':await Notification.requestPermission();
-   if(permission!=='granted')throw new Error('Permita notificações nas configurações do navegador.');
+   if(permission!=='granted')throw new Error(Notification.permission==='denied'?'As notificações estão bloqueadas. Ative-as nos Ajustes do Safari/iOS para este app.':'Permita notificações nas configurações do navegador.');
    subscription ||=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64UrlToBytes(VAPID_PUBLIC_KEY)});
    const {error}=await db.from('push_subscriptions').upsert({user_id:currentUser.id,endpoint:subscription.endpoint,subscription:subscription.toJSON()},{onConflict:'user_id,endpoint'});
    if(error)throw error;
@@ -340,6 +402,62 @@ $('pushNotificationsButton').addEventListener('click',async()=>{
   }
   await updatePushButton();
  }catch(error){reportError('Não foi possível configurar as notificações',error)}
+ finally{button.disabled=false}
+});
+$('profileTrigger').addEventListener('click',openProfileModal);
+$('addAccountProfileButton').addEventListener('click',()=>{
+ closeModal('profileModal');openAccountModal();
+});
+$('profileSignOutButton').addEventListener('click',async()=>{
+ const {error}=await db.auth.signOut();
+ if(error)reportError('Não foi possível sair',error);
+});
+$('resetPasswordButton').addEventListener('click',async()=>{
+ if(!currentUser?.email)return;
+ const button=$('resetPasswordButton');button.disabled=true;
+ try{
+  const {error}=await db.auth.resetPasswordForEmail(currentUser.email,{redirectTo:authRedirectUrl});
+  if(error)throw error;
+  toast('Enviamos um link de redefinição para seu e-mail.');
+ }catch(error){reportError('Não foi possível enviar o link de redefinição',error)}
+ finally{button.disabled=false}
+});
+$('profilePhoto').addEventListener('change',()=>{
+ const file=$('profilePhoto').files?.[0];if(!file)return;
+ if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>3*1024*1024){
+  $('profilePhoto').value='';toast('Escolha uma imagem PNG, JPEG ou WebP de até 3 MB.');return;
+ }
+ if(profilePreviewObjectUrl)URL.revokeObjectURL(profilePreviewObjectUrl);
+ profilePreviewObjectUrl=URL.createObjectURL(file);
+ const preview=$('profileAvatarPreview');
+ preview.replaceChildren(Object.assign(new Image(),{src:profilePreviewObjectUrl,alt:'Pré-visualização da foto'}));
+});
+$('profileForm').addEventListener('submit',async event=>{
+ event.preventDefault();if(!currentUser)return;
+ const button=$('saveProfileButton');button.disabled=true;
+ try{
+  const displayName=$('profileName').value.trim();
+  const {data:profileData,error:profileError}=await db.auth.updateUser({data:{...currentUser.user_metadata,display_name:displayName}});
+  if(profileError)throw profileError;
+  currentUser=profileData.user;setUserDisplay(currentUser);
+  $('profileName').value=displayName;
+  const file=$('profilePhoto').files?.[0];
+  if(file){
+   const extension=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+   const avatarPath=`${currentUser.id}/avatar.${extension}`;
+   const {error:uploadError}=await db.storage.from('avatars').upload(avatarPath,file,{upsert:true,contentType:file.type,cacheControl:'3600'});
+   if(uploadError){
+    if(uploadError.message?.toLowerCase().includes('bucket not found'))throw new Error('Seu nome foi salvo, mas a foto não foi enviada porque o bucket "avatars" não existe. Execute supabase/profile-storage.sql no SQL Editor do projeto Supabase correto.');
+    throw new Error(`Seu nome foi salvo, mas a foto não foi enviada: ${uploadError.message}`);
+   }
+   const {data,error}=await db.auth.updateUser({data:{...currentUser.user_metadata,avatar_path:avatarPath}});
+   if(error)throw new Error(`Seu nome e a foto foram enviados, mas não foi possível atualizar o perfil: ${error.message}`);
+   currentUser=data.user;
+  }
+  setUserDisplay(currentUser);await loadProfilePhoto();toast('Perfil atualizado.');
+  $('profilePhoto').value='';
+  if(profilePreviewObjectUrl){URL.revokeObjectURL(profilePreviewObjectUrl);profilePreviewObjectUrl=null}
+ }catch(error){reportError('Não foi possível salvar o perfil',error)}
  finally{button.disabled=false}
 });
 function setAuthMode(mode){
@@ -405,10 +523,6 @@ $('authForm').addEventListener('submit',async e=>{
  }catch(error){showAuthFeedback(error.message||'Não foi possível autenticar.',true)}
  finally{$('authSubmit').disabled=false}
 });
-$('signOutButton').addEventListener('click',async()=>{
- const {error}=await db.auth.signOut();
- if(error)reportError('Não foi possível sair',error);
-});
 function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||''}}
 function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||'',notes:row.notes||'',done:Boolean(row.done)}}
 function setUserDisplay(user){
@@ -416,8 +530,42 @@ function setUserDisplay(user){
  const hour=Number(new Intl.DateTimeFormat('pt-BR',{hour:'2-digit'}).format(new Date()));
  const greeting=hour<12?'Bom dia':hour<18?'Boa tarde':'Boa noite';
  $('greeting').textContent=`${greeting}${displayName?`, ${displayName}`:''}! 👋`;
- $('currentUserDisplayName').textContent=displayName||user.email||'';
  $('userAvatar').textContent=displayName?displayName.split(/\s+/).slice(0,2).map(part=>part[0]).join('').toLocaleUpperCase('pt-BR'):'MC';
+}
+function formatUserDate(value){
+ if(!value)return 'Não disponível';
+ const date=new Date(value);
+ return Number.isNaN(date.getTime())?'Não disponível':date.toLocaleString('pt-BR',{dateStyle:'long',timeStyle:'short'});
+}
+function initialsForUser(user){
+ const name=user.user_metadata?.display_name?.trim()||'';
+ return name?name.split(/\s+/).slice(0,2).map(part=>part[0]).join('').toLocaleUpperCase('pt-BR'):'MC';
+}
+async function loadProfilePhoto(){
+ if(!currentUser)return;
+ const path=currentUser.user_metadata?.avatar_path;
+ if(!path){
+  $('userAvatar').textContent=initialsForUser(currentUser);
+  $('profileAvatarPreview').textContent=initialsForUser(currentUser);
+  return;
+ }
+ const {data,error}=await db.storage.from('avatars').createSignedUrl(path,3600);
+ if(error)throw error;
+ for(const [id,alt] of [['userAvatar','Foto do perfil'],['profileAvatarPreview','Pré-visualização da foto']]){
+  const image=new Image();image.src=data.signedUrl;image.alt=alt;$(id).replaceChildren(image);
+ }
+}
+async function openProfileModal(){
+ if(!currentUser)return;
+ $('profileName').value=currentUser.user_metadata?.display_name||'';
+ $('profileEmail').textContent=currentUser.email||'Não disponível';
+ $('profileCreatedAt').textContent=formatUserDate(currentUser.created_at);
+ $('profileLastSignIn').textContent=formatUserDate(currentUser.last_sign_in_at);
+ $('profilePhoto').value='';
+ if(profilePreviewObjectUrl){URL.revokeObjectURL(profilePreviewObjectUrl);profilePreviewObjectUrl=null}
+ $('profileAvatarPreview').textContent=initialsForUser(currentUser);
+ $('profileModal').classList.add('show');
+ try{await loadProfilePhoto()}catch(error){reportError('Não foi possível carregar a foto do perfil',error)}
 }
 function updateReportYears(){
  const selected=Number($('reportYear').value)||new Date().getFullYear();
@@ -472,12 +620,13 @@ async function handleAuthSession(event,session){
  const user=session?.user||null;
  if(!user){
   currentUser=null;accounts=[];tasks=[];
-  $('appShell').classList.remove('ready');$('authGate').classList.add('show');$('currentUserDisplayName').textContent='';$('userAvatar').textContent='MC';$('pushNotificationsButton').hidden=true;
+  $('appShell').classList.remove('ready');$('authGate').classList.add('show');$('userAvatar').textContent='MC';$('profileAvatarPreview').textContent='MC';$('pushNotificationsButton').hidden=true;closeModal('profileModal');
   return;
  }
  if(currentUser?.id===user.id)return;
  currentUser=user;$('authGate').classList.remove('show');$('appShell').classList.add('ready');setUserDisplay(user);
  try{await updatePushButton()}catch(error){reportError('Não foi possível verificar as notificações',error)}
+ try{await loadProfilePhoto()}catch(error){reportError('Não foi possível carregar a foto do perfil',error)}
  showAuthFeedback('');
  try{await loadData()}catch(error){reportError('Não foi possível carregar os dados do Supabase',error)}
 }
