@@ -213,13 +213,17 @@ tbody tr:last-child td{border-bottom:0}
  #page-contas th,#page-contas td{padding:9px 2px;letter-spacing:0}
  #page-contas th{font-size:10px}
  #page-contas td{font-size:12px}
- #page-contas th:first-child,#page-contas td:first-child{width:20%}
- #page-contas th:nth-child(3),#page-contas td:nth-child(3){width:18%}
- #page-contas th:nth-child(4),#page-contas td:nth-child(4){width:14%}
- #page-contas th:nth-child(5),#page-contas td:nth-child(5){width:26%}
- #page-contas th:nth-child(6),#page-contas td:nth-child(6){width:22%}
+ #page-contas th:first-child,#page-contas td:first-child{width:19%}
+ #page-contas th:nth-child(3),#page-contas td:nth-child(3){width:14%}
+ #page-contas th:nth-child(4),#page-contas td:nth-child(4){width:12%}
+ #page-contas th:nth-child(5),#page-contas td:nth-child(5){width:23%}
+ #page-contas th:nth-child(6),#page-contas td:nth-child(6){width:14%}
+ #page-contas th:nth-child(7),#page-contas td:nth-child(7){width:18%}
  #page-contas td:first-child{overflow-wrap:anywhere}
- #page-contas td .status{width:26px;height:26px;padding:0;justify-content:center;border-radius:50%;font-size:12px;line-height:1}
+ #page-contas td .status{width:26px;height:26px;padding:0;justify-content:center;border-radius:50%;font-size:16px;line-height:1}
+ #page-contas .account-diff-increase{color:var(--red);font-weight:700}
+ #page-contas .account-diff-decrease{color:var(--green-dark);font-weight:700}
+ #page-contas .account-diff-neutral{color:var(--muted)}
 }
 </style>
 </head>
@@ -291,7 +295,7 @@ tbody tr:last-child td{border-bottom:0}
     <section class="page" id="page-contas">
       <div class="section-toolbar"><h2>Minhas Contas</h2><div class="toolbar-actions"><button class="btn" onclick="openAccountModal()">＋ Nova Conta</button></div></div>
       <div class="filters" id="accountFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Fixa">Fixas</button><button class="filter" data-filter="Variável">Variáveis</button><button class="filter" data-filter="Sazonal">Sazonais</button><button class="filter" data-filter="Assinatura">Assinaturas</button><select class="filter" id="accountMonthFilter" aria-label="Filtrar contas por mês"><option value="all">Todos os meses</option></select></div>
-      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta</th><th>Categoria</th><th class="account-centered-cell">Mês</th><th class="account-centered-cell">Venc</th><th class="account-centered-cell">Valor</th><th class="account-centered-cell">Status</th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta</th><th>Categoria</th><th class="account-centered-cell">Mês</th><th class="account-centered-cell">Venc</th><th class="account-centered-cell">Valor</th><th class="account-centered-cell">Status</th><th class="account-centered-cell" title="Diferença percentual em relação ao mês anterior">Δ DIF</th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
     </section>
 
     <section class="page" id="page-tarefas">
@@ -1017,8 +1021,24 @@ $('dashPeriods').addEventListener('click',e=>{const b=e.target.closest('button[d
 $('reportPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;reportPeriod=b.dataset.period;$('reportPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderReports()});
 function renderAccounts(){
  const list=accounts.filter(a=>(accountFilter==='Todas'||a.category===accountFilter)&&(accountMonthFilter==='all'||a.month===accountMonthFilter)).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
- $('accountsTable').innerHTML=list.map(a=>`<tr class="account-row" data-account-id="${a.id}" tabindex="0" aria-label="Abrir ações de ${escapeHTML(a.name)}"><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td class="account-centered-cell">${formatAccountMonth(a.month)}</td><td class="account-centered-cell">${a.due}</td><td class="account-centered-cell"><strong>${Number(a.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td><td class="account-centered-cell"><span class="status ${a.status==='Pago'?'paid':'pending'}" role="img" aria-label="${a.status==='Pago'?'Pago':'Pendente'}" title="${a.status==='Pago'?'Pago':'Pendente'}">${a.status==='Pago'?'✓':'◷'}</span></td></tr>`).join('');
+ $('accountsTable').innerHTML=list.map(a=>`<tr class="account-row" data-account-id="${a.id}" tabindex="0" aria-label="Abrir ações de ${escapeHTML(a.name)}"><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td class="account-centered-cell">${formatAccountMonth(a.month)}</td><td class="account-centered-cell">${a.due}</td><td class="account-centered-cell"><strong>${Number(a.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td><td class="account-centered-cell"><span class="status ${a.status==='Pago'?'paid':'pending'}" role="img" aria-label="${a.status==='Pago'?'Pago':'Pendente'}" title="${a.status==='Pago'?'Pago':'Pendente'}">${a.status==='Pago'?'✓':'◷'}</span></td><td class="account-centered-cell">${formatAccountMonthDifference(a)}</td></tr>`).join('');
  $('accountsEmpty').hidden=list.length>0;
+}
+function formatAccountMonthDifference(account){
+ const [year,month]=account.month.split('-').map(Number);
+ if(!Number.isInteger(year)||!Number.isInteger(month)||month<1||month>12)return '<span class="account-diff-neutral" title="Mês inválido para comparação">—</span>';
+ const previousMonth=month===1?`${year-1}-12`:`${year}-${String(month-1).padStart(2,'0')}`;
+ const matches=accounts.filter(candidate=>candidate.month===previousMonth&&(account.recurrenceId
+  ?candidate.recurrenceId===account.recurrenceId
+  :!candidate.recurrenceId&&candidate.name.trim().toLocaleLowerCase('pt-BR')===account.name.trim().toLocaleLowerCase('pt-BR')&&candidate.category===account.category&&candidate.due===account.due));
+ if(matches.length!==1)return '<span class="account-diff-neutral" title="Sem conta correspondente no mês anterior">—</span>';
+ const previousValue=Number(matches[0].value||0),currentValue=Number(account.value||0);
+ if(!Number.isFinite(previousValue)||!Number.isFinite(currentValue)||previousValue===0)return '<span class="account-diff-neutral" title="Sem valor anterior para calcular a diferença">—</span>';
+ const difference=((currentValue-previousValue)/previousValue)*100;
+ const formatted=Math.abs(difference).toLocaleString('pt-BR',{maximumFractionDigits:1});
+ if(difference===0)return '<span class="account-diff-neutral" title="Sem variação em relação ao mês anterior">0%</span>';
+ const direction=difference>0?'Aumento':'Redução',sign=difference>0?'+':'−',className=difference>0?'account-diff-increase':'account-diff-decrease';
+ return `<span class="${className}" title="${direction} de ${formatted}% em relação ao mês anterior">${sign}${formatted}%</span>`;
 }
 $('accountsTable').addEventListener('click',event=>{
  const row=event.target.closest('tr[data-account-id]');if(row)openAccountActionsModal(row.dataset.accountId);
