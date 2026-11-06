@@ -193,6 +193,11 @@ tbody tr:last-child td{border-bottom:0}
  .profile-actions .btn{padding:9px 5px;font-size:10px}
  .profile-date-row{gap:8px}
 }
+@media(max-width:700px){
+ #accountFilters{flex-wrap:nowrap;gap:5px}
+ #accountFilters button[data-filter="Assinatura"]{display:none}
+ #accountMonthFilter{flex:1 1 0;min-width:0;padding:7px 8px}
+}
 </style>
 </head>
 <body>
@@ -263,7 +268,7 @@ tbody tr:last-child td{border-bottom:0}
     <section class="page" id="page-contas">
       <div class="section-toolbar"><h2>Minhas Contas</h2><div class="toolbar-actions"><button class="btn" onclick="openAccountModal()">＋ Nova Conta</button></div></div>
       <div class="filters" id="accountFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Fixa">Fixas</button><button class="filter" data-filter="Variável">Variáveis</button><button class="filter" data-filter="Sazonal">Sazonais</button><button class="filter" data-filter="Assinatura">Assinaturas</button><select class="filter" id="accountMonthFilter" aria-label="Filtrar contas por mês"><option value="all">Todos os meses</option></select></div>
-      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta / serviço</th><th>Categoria</th><th>Mês</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta / serviço</th><th>Categoria</th><th>Mês</th><th>Venc</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
     </section>
 
     <section class="page" id="page-tarefas">
@@ -892,23 +897,44 @@ async function toggleTask(id){
 function openDeleteAccountModal(id){
  const account=accounts.find(item=>item.id===id);if(!account)return;
  pendingDeleteAccountId=id;
- const recurrenceSize=account.recurrenceId?accounts.filter(item=>item.recurrenceId===account.recurrenceId).length:0;
+ const recurrenceGroup=getAccountRecurrenceGroup(account);
+ const recurrenceSize=recurrenceGroup.length;
  const hasMultipleRecurringAccounts=recurrenceSize>1;
  $('deleteAccountModalDescription').textContent=hasMultipleRecurringAccounts
-  ?`“${account.name}” faz parte de uma recorrência com ${recurrenceSize} contas. Escolha o que deseja excluir.`
+  ?`“${account.name}” faz parte de uma sequência com ${recurrenceSize} contas mensais. Escolha o que deseja excluir.`
   :'Deseja excluir esta conta?';
  $('deleteSingleAccount').hidden=false;
  $('deleteRecurringAccounts').hidden=!hasMultipleRecurringAccounts;
  $('deleteSingleAccount').textContent=hasMultipleRecurringAccounts?'Só Esta Conta':'Excluir Conta';
  $('deleteAccountModal').classList.add('show');
 }
+function getAccountRecurrenceGroup(account){
+ if(account.recurrenceId)return accounts.filter(item=>item.recurrenceId===account.recurrenceId);
+ const matching=accounts
+  .filter(item=>!item.recurrenceId&&item.name.trim().toLocaleLowerCase('pt-BR')===account.name.trim().toLocaleLowerCase('pt-BR')&&item.category===account.category&&item.due===account.due)
+  .sort((a,b)=>a.month.localeCompare(b.month));
+ if(matching.filter(item=>item.month===account.month).length!==1)return [account];
+ const selectedIndex=matching.findIndex(item=>item.id===account.id);
+ if(selectedIndex<0)return [account];
+ const monthIndex=month=>{const [year,monthNumber]=month.split('-').map(Number);return year*12+monthNumber};
+ let first=selectedIndex,last=selectedIndex;
+ while(first>0&&monthIndex(matching[first].month)-monthIndex(matching[first-1].month)===1)first--;
+ while(last<matching.length-1&&monthIndex(matching[last+1].month)-monthIndex(matching[last].month)===1)last++;
+ const group=matching.slice(first,last+1);
+ return group.length>1&&group.every((item,index)=>index===0||monthIndex(item.month)-monthIndex(group[index-1].month)===1)?group:[account];
+}
 async function deleteAccount(id,deleteRecurrence=false){
  const account=accounts.find(item=>item.id===id);if(!account)return;
  try{
   let query=db.from('accounts').delete().eq('user_id',currentUser.id);
   if(deleteRecurrence){
-   if(!account.recurrenceId)throw new Error('Não foi possível identificar a recorrência desta conta.');
-   query=query.eq('recurrence_id',account.recurrenceId);
+   if(account.recurrenceId){
+    query=query.eq('recurrence_id',account.recurrenceId);
+   }else{
+    const recurrenceGroup=getAccountRecurrenceGroup(account);
+    if(recurrenceGroup.length<2)throw new Error('Não encontrei outras parcelas mensais correspondentes para excluir.');
+    query=query.in('id',recurrenceGroup.map(item=>item.id));
+   }
   }else query=query.eq('id',id);
   const {error}=await query;if(error)throw error;
   closeModal('deleteAccountModal');pendingDeleteAccountId=null;
@@ -934,14 +960,19 @@ $('dashPeriods').addEventListener('click',e=>{const b=e.target.closest('button[d
 $('reportPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;reportPeriod=b.dataset.period;$('reportPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderReports()});
 function renderAccounts(){
  const list=accounts.filter(a=>(accountFilter==='Todas'||a.category===accountFilter)&&(accountMonthFilter==='all'||a.month===accountMonthFilter)).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
- $('accountsTable').innerHTML=list.map(a=>`<tr><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td>${a.month.split('-').reverse().join('/')}</td><td>Dia ${a.due}</td><td><strong>${money(a.value)}</strong></td><td><span class="status ${a.status==='Pago'?'paid':'pending'}">${a.status==='Pago'?'✓ Pago':'◷ Pendente'}</span></td><td><button class="action-btn" title="Marcar pagamento" onclick="togglePaid('${a.id}')">✓</button> <button class="action-btn" title="Editar" onclick="openAccountModal('${a.id}')">✎</button> <button class="action-btn" title="Excluir" onclick="openDeleteAccountModal('${a.id}')">×</button></td></tr>`).join('');
+ $('accountsTable').innerHTML=list.map(a=>`<tr><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td>${formatAccountMonth(a.month)}</td><td>${a.due}</td><td><strong>${money(a.value)}</strong></td><td><span class="status ${a.status==='Pago'?'paid':'pending'}">${a.status==='Pago'?'✓ Pago':'◷ Pendente'}</span></td><td><button class="action-btn" title="Marcar pagamento" onclick="togglePaid('${a.id}')">✓</button> <button class="action-btn" title="Editar" onclick="openAccountModal('${a.id}')">✎</button> <button class="action-btn" title="Excluir" onclick="openDeleteAccountModal('${a.id}')">×</button></td></tr>`).join('');
  $('accountsEmpty').hidden=list.length>0;
+}
+function formatAccountMonth(month){
+ const [year,monthNumber]=month.split('-');
+ return `${monthNumber}/${year.slice(-2)}`;
 }
 function renderAccountMonthOptions(){
  const select=$('accountMonthFilter'),months=new Set([monthISO(),...accounts.map(account=>account.month)]);
  const options=[...months].sort((a,b)=>b.localeCompare(a)).map(month=>{
   const [year,monthNumber]=month.split('-').map(Number);
-  const label=new Date(year,monthNumber-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const monthLabel=new Date(year,monthNumber-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace(/\./g,'');
+  const label=`${monthLabel.charAt(0).toLocaleUpperCase('pt-BR')+monthLabel.slice(1)} ${String(year).slice(-2)}`;
   return `<option value="${month}">${label}</option>`;
  });
  select.innerHTML='<option value="all">Todos os meses</option>'+options.join('');
