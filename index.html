@@ -458,8 +458,8 @@ $('testNotificationButton').addEventListener('click',async()=>{
   const permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();
   if(permission!=='granted')throw new Error(Notification.permission==='denied'?'As notificações estão bloqueadas. Ative-as nos Ajustes do navegador para este app.':'Permita notificações nas configurações do navegador.');
   const registration=await navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:new URL('.',document.baseURI).pathname});
-  await registration.showNotification('FFinance',{
-   body:'Este é um teste. Seus lembretes de contas e tarefas aparecerão aqui.',
+  await registration.showNotification('',{
+   body:'',
    icon:new URL('icon.svg?v=3',document.baseURI).href,
    badge:new URL('icon.svg?v=3',document.baseURI).href,
    tag:'test-reminder',
