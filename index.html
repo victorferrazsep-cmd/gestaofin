@@ -118,6 +118,8 @@ tbody tr:last-child td{border-bottom:0}
 .auth-card form{display:grid;gap:12px}.auth-card label{font-size:11px;color:#647184;font-weight:700}
 .auth-card input{width:100%;border:1px solid #e5e9ee;border-radius:10px;padding:11px;color:var(--ink);font-size:13px}
 .auth-card .btn{width:100%}.auth-toggle{margin-top:14px;width:100%;border:0;background:transparent;color:var(--green-dark);font-size:12px;font-weight:700}
+.auth-link{display:block;margin:12px auto 0;border:0;background:transparent;color:var(--green-dark);font-size:12px;font-weight:700}
+.auth-card [hidden]{display:none!important}
 .auth-feedback{min-height:18px;margin:12px 0 0!important;color:var(--red)!important;font-size:12px!important}
 .user-email{font-size:11px;color:var(--muted)}
 @media(max-width:1050px){.app{grid-template-columns:205px 1fr}.cards{grid-template-columns:repeat(2,1fr)}main{padding:24px 20px}.grid-main{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr 1fr}}
@@ -146,7 +148,13 @@ tbody tr:last-child td{border-bottom:0}
       <div class="field"><label for="authPassword">Senha</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></div>
       <button class="btn" id="authSubmit" type="submit">Entrar</button>
     </form>
+    <button class="auth-link" id="forgotPasswordButton" type="button">Esqueci minha senha</button>
     <button class="auth-toggle" id="authToggle" type="button">Ainda não tem conta? Cadastre-se</button>
+    <form id="recoveryForm" hidden>
+      <div class="field"><label for="newPassword">Nova senha</label><input id="newPassword" type="password" autocomplete="new-password" minlength="6" required></div>
+      <div class="field"><label for="confirmPassword">Confirme a nova senha</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" required></div>
+      <button class="btn" id="recoverySubmit" type="submit">Salvar nova senha</button>
+    </form>
     <p class="auth-feedback" id="authFeedback" role="status" aria-live="polite"></p>
   </div>
 </section>
@@ -271,13 +279,14 @@ const $=id=>document.getElementById(id);
 const SUPABASE_URL='https://bdmpudhhzngqkvoeagur.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_kii2XIRildxXIGMJ5qP3GA_9fAdmTmq';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const authRedirectUrl=window.location.href.split(/[?#]/)[0];
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 const monthISO=()=>todayISO().slice(0,7);
 const parseDate=s=>s?new Date(s+'T12:00:00'):null;
 const fmtDate=s=>{if(!s)return '—';return parseDate(s).toLocaleDateString('pt-BR')};
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let accounts=[],tasks=[],currentUser=null,authMode='signin';
+let accounts=[],tasks=[],currentUser=null,authMode='signin',passwordRecovery=false;
 let accountFilter='Todas',taskFilter='Todas',dashPeriod='month',reportPeriod='year';
 let calendarDate=new Date();
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
@@ -286,20 +295,56 @@ function reportError(action,error){console.error(action,error);toast(`${action}:
 function setAuthMode(mode){
  authMode=mode;
  const signup=mode==='signup';
+ $('authForm').hidden=false;$('recoveryForm').hidden=true;$('authToggle').hidden=false;$('forgotPasswordButton').hidden=signup;
  $('authTitle').textContent=signup?'Criar conta':'Entrar no Meu Controle';
  $('authSubmit').textContent=signup?'Cadastrar':'Entrar';
  $('authToggle').textContent=signup?'Já tem conta? Entrar':'Ainda não tem conta? Cadastre-se';
  $('authPassword').autocomplete=signup?'new-password':'current-password';
  showAuthFeedback('');
 }
+function showPasswordRecovery(){
+ passwordRecovery=true;
+ $('authGate').classList.add('show');$('appShell').classList.remove('ready');
+ $('authTitle').textContent='Definir nova senha';
+ $('authForm').hidden=true;$('authToggle').hidden=true;$('forgotPasswordButton').hidden=true;$('recoveryForm').hidden=false;
+ showAuthFeedback('Digite e confirme sua nova senha.');
+}
 $('authToggle').addEventListener('click',()=>setAuthMode(authMode==='signin'?'signup':'signin'));
+$('forgotPasswordButton').addEventListener('click',async()=>{
+ const email=$('authEmail').value.trim();
+ if(!email){showAuthFeedback('Digite seu e-mail para receber o link de recuperação.',true);$('authEmail').focus();return}
+ $('forgotPasswordButton').disabled=true;showAuthFeedback('Enviando link de recuperação...');
+ try{
+  const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:authRedirectUrl});
+  if(error)throw error;
+  showAuthFeedback('Se o e-mail estiver cadastrado, enviaremos um link para redefinir a senha.');
+ }catch(error){showAuthFeedback(error.message||'Não foi possível enviar o e-mail de recuperação.',true)}
+ finally{$('forgotPasswordButton').disabled=false}
+});
+$('recoveryForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const password=$('newPassword').value;
+ if(password!==$('confirmPassword').value){showAuthFeedback('As senhas não conferem.',true);return}
+ $('recoverySubmit').disabled=true;showAuthFeedback('Atualizando sua senha...');
+ try{
+  const {error}=await db.auth.updateUser({password});
+  if(error)throw error;
+  passwordRecovery=false;
+  window.history.replaceState({},document.title,window.location.pathname+window.location.search);
+  $('recoveryForm').reset();$('authForm').reset();setAuthMode('signin');
+  showAuthFeedback('Senha alterada. Entre com sua nova senha.');
+  const {error:signOutError}=await db.auth.signOut();
+  if(signOutError)throw signOutError;
+ }catch(error){showAuthFeedback(error.message||'Não foi possível atualizar a senha.',true)}
+ finally{$('recoverySubmit').disabled=false}
+});
 $('authForm').addEventListener('submit',async e=>{
  e.preventDefault();
  const email=$('authEmail').value.trim(),password=$('authPassword').value;
  $('authSubmit').disabled=true;showAuthFeedback(authMode==='signup'?'Criando sua conta...':'Entrando...');
  try{
   const result=authMode==='signup'
-   ?await db.auth.signUp({email,password})
+   ?await db.auth.signUp({email,password,options:{emailRedirectTo:authRedirectUrl}})
    :await db.auth.signInWithPassword({email,password});
   if(result.error)throw result.error;
   if(authMode==='signup'&&!result.data.session)showAuthFeedback('Cadastro realizado. Confira seu e-mail para confirmar a conta.');
@@ -360,7 +405,9 @@ async function loadData(checkMigration=true){
  updateReportYears();renderAll();
  if(checkMigration)await importLegacyData();
 }
-async function handleAuthSession(session){
+async function handleAuthSession(event,session){
+ if(event==='PASSWORD_RECOVERY'){showPasswordRecovery();return}
+ if(passwordRecovery)return;
  const user=session?.user||null;
  if(!user){
   currentUser=null;accounts=[];tasks=[];
@@ -372,7 +419,8 @@ async function handleAuthSession(session){
  showAuthFeedback('');
  try{await loadData()}catch(error){reportError('Não foi possível carregar os dados do Supabase',error)}
 }
-db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>{void handleAuthSession(session)},0)});
+db.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{void handleAuthSession(event,session)},0)});
+if(new URLSearchParams(window.location.hash.slice(1)).get('type')==='recovery')showPasswordRecovery();
 function showPage(name){
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
  document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
