@@ -154,6 +154,15 @@ tbody tr:last-child td{border-bottom:0}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 .delete-account-actions{flex-wrap:wrap}
 .btn.danger:hover{background:#ffe1e6}
+.account-row{cursor:pointer}
+.account-row:focus-visible{outline:2px solid #72d5a3;outline-offset:-2px}
+.account-centered-cell{text-align:center}
+.account-summary{margin:0;padding:13px 15px;border-radius:12px;background:#f5f8fa;color:var(--ink);font-size:14px;font-weight:700;text-align:center}
+.account-action-list{display:flex;justify-content:center;gap:16px;margin-top:20px}
+.account-action-button{width:52px;height:52px;border:0;border-radius:15px;background:var(--green-soft);color:var(--green-dark);font-size:25px}
+.account-action-button:hover{background:#d7f3e5}
+.account-action-button.danger{background:var(--red-soft);color:#d94a61}
+.account-action-button.danger:hover{background:#ffe1e6}
 .mobile-nav{display:none}
 .toast{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom));right:22px;background:#17243a;color:#fff;padding:12px 16px;border-radius:12px;font-size:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:.2s;z-index:20}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -271,7 +280,7 @@ tbody tr:last-child td{border-bottom:0}
     <section class="page" id="page-contas">
       <div class="section-toolbar"><h2>Minhas Contas</h2><div class="toolbar-actions"><button class="btn" onclick="openAccountModal()">＋ Nova Conta</button></div></div>
       <div class="filters" id="accountFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Fixa">Fixas</button><button class="filter" data-filter="Variável">Variáveis</button><button class="filter" data-filter="Sazonal">Sazonais</button><button class="filter" data-filter="Assinatura">Assinaturas</button><select class="filter" id="accountMonthFilter" aria-label="Filtrar contas por mês"><option value="all">Todos os meses</option></select></div>
-      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta</th><th>Categoria</th><th>Mês</th><th>Venc</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta</th><th>Categoria</th><th class="account-centered-cell">Mês</th><th class="account-centered-cell">Venc</th><th class="account-centered-cell">Valor</th><th class="account-centered-cell">Status</th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
     </section>
 
     <section class="page" id="page-tarefas">
@@ -352,6 +361,17 @@ tbody tr:last-child td{border-bottom:0}
   </div>
  </section>
 </div>
+<div class="modal-backdrop" id="accountActionsModal">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="accountActionsTitle">
+  <div class="modal-head"><h2 id="accountActionsTitle">Conta</h2><button class="close" id="closeAccountActionsModal" type="button" aria-label="Fechar">×</button></div>
+  <p class="account-summary" id="accountActionsSummary"></p>
+  <div class="account-action-list">
+   <button class="account-action-button" id="accountActionPaid" type="button" aria-label="Marcar pagamento" title="Marcar pagamento">✓</button>
+   <button class="account-action-button" id="accountActionEdit" type="button" aria-label="Editar conta" title="Editar">✎</button>
+   <button class="account-action-button danger" id="accountActionDelete" type="button" aria-label="Excluir conta" title="Excluir">×</button>
+  </div>
+ </section>
+</div>
 <div class="modal-backdrop" id="profileModal">
  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
   <div class="modal-head"><h2 id="profileModalTitle">Meu Perfil</h2><button class="close" type="button" onclick="closeModal('profileModal')" aria-label="Fechar">×</button></div>
@@ -403,7 +423,7 @@ const monthISO=()=>todayISO().slice(0,7);
 const parseDate=s=>s?new Date(s+'T12:00:00'):null;
 const fmtDate=s=>{if(!s)return '—';return parseDate(s).toLocaleDateString('pt-BR')};
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let accounts=[],tasks=[],currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null;
+let accounts=[],tasks=[],currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null;
 let accountFilter='Todas',accountMonthFilter=monthISO(),taskFilter='Todas',dashPeriod='month',reportPeriod='year';
 let calendarDate=new Date();
 let profilePreviewObjectUrl=null;
@@ -911,6 +931,29 @@ function openDeleteAccountModal(id){
  $('deleteSingleAccount').textContent=hasMultipleRecurringAccounts?'Só Esta Conta':'Excluir Conta';
  $('deleteAccountModal').classList.add('show');
 }
+function openAccountActionsModal(id){
+ const account=accounts.find(item=>item.id===id);if(!account)return;
+ selectedAccountActionId=id;
+ $('accountActionsTitle').textContent=account.name;
+ $('accountActionsSummary').textContent=`${account.name} · ${formatAccountMonth(account.month)} · ${Number(account.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+ $('accountActionPaid').setAttribute('aria-label',account.status==='Pago'?'Marcar como pendente':'Marcar como pago');
+ $('accountActionPaid').title=account.status==='Pago'?'Marcar como pendente':'Marcar como pago';
+ $('accountActionsModal').classList.add('show');
+}
+function closeAccountActionsModal(){closeModal('accountActionsModal');selectedAccountActionId=null}
+$('closeAccountActionsModal').addEventListener('click',closeAccountActionsModal);
+$('accountActionPaid').addEventListener('click',async()=>{
+ const id=selectedAccountActionId;if(!id)return;
+ closeAccountActionsModal();await togglePaid(id);
+});
+$('accountActionEdit').addEventListener('click',()=>{
+ const id=selectedAccountActionId;if(!id)return;
+ closeAccountActionsModal();openAccountModal(id);
+});
+$('accountActionDelete').addEventListener('click',()=>{
+ const id=selectedAccountActionId;if(!id)return;
+ closeAccountActionsModal();openDeleteAccountModal(id);
+});
 function getAccountRecurrenceGroup(account){
  if(account.recurrenceId)return accounts.filter(item=>item.recurrenceId===account.recurrenceId);
  const matching=accounts
@@ -963,9 +1006,17 @@ $('dashPeriods').addEventListener('click',e=>{const b=e.target.closest('button[d
 $('reportPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;reportPeriod=b.dataset.period;$('reportPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderReports()});
 function renderAccounts(){
  const list=accounts.filter(a=>(accountFilter==='Todas'||a.category===accountFilter)&&(accountMonthFilter==='all'||a.month===accountMonthFilter)).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
- $('accountsTable').innerHTML=list.map(a=>`<tr><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td>${formatAccountMonth(a.month)}</td><td>${a.due}</td><td><strong>${Number(a.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td><td><span class="status ${a.status==='Pago'?'paid':'pending'}" role="img" aria-label="${a.status==='Pago'?'Pago':'Pendente'}" title="${a.status==='Pago'?'Pago':'Pendente'}">${a.status==='Pago'?'✓':'◷'}</span></td><td><button class="action-btn" title="Marcar pagamento" onclick="togglePaid('${a.id}')">✓</button> <button class="action-btn" title="Editar" onclick="openAccountModal('${a.id}')">✎</button> <button class="action-btn" title="Excluir" onclick="openDeleteAccountModal('${a.id}')">×</button></td></tr>`).join('');
+ $('accountsTable').innerHTML=list.map(a=>`<tr class="account-row" data-account-id="${a.id}" tabindex="0" aria-label="Abrir ações de ${escapeHTML(a.name)}"><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td class="account-centered-cell">${formatAccountMonth(a.month)}</td><td class="account-centered-cell">${a.due}</td><td class="account-centered-cell"><strong>${Number(a.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td><td class="account-centered-cell"><span class="status ${a.status==='Pago'?'paid':'pending'}" role="img" aria-label="${a.status==='Pago'?'Pago':'Pendente'}" title="${a.status==='Pago'?'Pago':'Pendente'}">${a.status==='Pago'?'✓':'◷'}</span></td></tr>`).join('');
  $('accountsEmpty').hidden=list.length>0;
 }
+$('accountsTable').addEventListener('click',event=>{
+ const row=event.target.closest('tr[data-account-id]');if(row)openAccountActionsModal(row.dataset.accountId);
+});
+$('accountsTable').addEventListener('keydown',event=>{
+ if(event.key!=='Enter'&&event.key!==' ')return;
+ const row=event.target.closest('tr[data-account-id]');if(!row)return;
+ event.preventDefault();openAccountActionsModal(row.dataset.accountId);
+});
 function formatAccountMonth(month){
  const [year,monthNumber]=month.split('-');
  return `${monthNumber}/${year.slice(-2)}`;
