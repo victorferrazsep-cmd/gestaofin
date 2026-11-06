@@ -1,5 +1,5 @@
 const APP_URL = new URL('./', self.location).href;
-const ICON_URL = new URL('./icon.svg', self.location).href;
+const ICON_URL = new URL('./icon.svg?v=3', self.location).href;
 
 self.addEventListener('install', event => {
   event.waitUntil(self.skipWaiting());

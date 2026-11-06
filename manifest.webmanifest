@@ -15,7 +15,13 @@
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "./icon.svg",
+      "src": "./img/app-icon.png?v=3",
+      "sizes": "800x800",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.svg?v=3",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

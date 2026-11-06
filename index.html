@@ -8,8 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Meu Controle">
 <title>Meu Controle | Finanças e Planejamento</title>
-<link rel="manifest" href="./manifest.webmanifest">
+<link rel="manifest" href="./manifest.webmanifest?v=3">
 <link rel="icon" href="./img/logo.png?v=2" type="image/png">
+<link rel="apple-touch-icon" href="./img/app-icon.png?v=3">
 <style>
 :root{
   --green:#08a45b;--green-dark:#07864d;--green-soft:#e8f8f0;
@@ -456,8 +457,8 @@ $('testNotificationButton').addEventListener('click',async()=>{
   const registration=await navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:new URL('.',document.baseURI).pathname});
   await registration.showNotification('Lembrete financeiro',{
    body:'Este é um teste. Seus lembretes de contas e tarefas aparecerão aqui.',
-   icon:new URL('icon.svg',document.baseURI).href,
-   badge:new URL('icon.svg',document.baseURI).href,
+   icon:new URL('icon.svg?v=3',document.baseURI).href,
+   badge:new URL('icon.svg?v=3',document.baseURI).href,
    tag:'test-reminder',
    data:{url:new URL('.',document.baseURI).href}
   });
