@@ -39,7 +39,6 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .hello-heading{display:flex;align-items:center;gap:8px}
 .mobile-header-logo{display:none}
 .hello h1{font-size:25px;margin:0 0 4px;letter-spacing:-.6px}.hello p{margin:0;color:var(--muted);font-size:13px}
-.test-notification-button{margin-top:9px;padding:7px 10px;font-size:11px}
 .top-actions{display:flex;align-items:center;gap:10px}
 .menu-wrap{position:relative}
 .menu-panel{position:absolute;right:0;top:calc(100% + 8px);z-index:8;min-width:175px;padding:7px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
@@ -115,6 +114,7 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .section-toolbar h2{font-size:18px;margin:0}.toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
 .filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
 .filter{border:1px solid var(--line);background:#fff;color:#687589;border-radius:20px;padding:7px 12px;font-size:11px}
+#accountMonthFilter{background:#f2fbf6;border-color:#d6efdf;color:var(--green-dark)}
 .field-hint{grid-column:1/-1;margin:0;color:var(--muted);font-size:11px;line-height:1.45}
 .field .checkbox-label{display:flex;align-items:center;gap:8px;cursor:pointer}
 .field .checkbox-label input{width:16px;height:16px;margin:0;padding:0;accent-color:var(--green)}
@@ -185,7 +185,7 @@ tbody tr:last-child td{border-bottom:0}
 @media(max-width:1050px){.app{grid-template-columns:205px 1fr}.cards{grid-template-columns:repeat(2,1fr)}main{padding:24px 20px}.grid-main{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){
  #appShell.ready{display:block}.app{display:block}.sidebar{display:none}main{padding:calc(20px + env(safe-area-inset-top)) 14px calc(88px + env(safe-area-inset-bottom))}
- .topbar{margin-bottom:18px;align-items:flex-start}.hello-heading{gap:7px}.mobile-header-logo{display:block;width:30px;height:30px;flex:0 0 30px;border-radius:9px;object-fit:cover}.hello h1{font-size:21px}.hello p{font-size:11px}
+ .topbar{margin-bottom:18px;align-items:flex-start}.hello-heading{gap:7px}.mobile-header-logo{display:block;width:30px;height:30px;flex:0 0 30px;border-radius:9px;object-fit:cover}.hello h1{font-size:21px}.hello p{font-size:11px;margin-left:37px}
  .top-actions{gap:7px;flex-wrap:wrap;justify-content:flex-end}.user-email{display:none}.avatar{width:34px;height:34px;min-width:34px;min-height:34px;flex-basis:34px}.profile-trigger{width:34px;height:34px;min-width:34px;flex-basis:34px}.avatar img{width:34px;height:34px}
  .cards{gap:9px}.metric{padding:13px 11px;min-height:88px;gap:9px}.metric-icon{width:34px;height:34px;border-radius:11px;font-size:16px}.metric strong{font-size:16px}.metric label{font-size:10px}
  .grid-main,.bottom-grid{grid-template-columns:1fr}.panel{padding:15px}.chart-wrap{height:185px}
@@ -263,7 +263,7 @@ tbody tr:last-child td{border-bottom:0}
 
   <main>
     <header class="topbar">
-      <div class="hello"><div class="hello-heading"><img class="mobile-header-logo" src="./img/logo.png" alt=""><h1 id="greeting">Olá! 👋</h1></div><p>Aqui está um resumo da sua organização.</p><button class="btn secondary test-notification-button" id="testNotificationButton" type="button" hidden>🔔 Testar Notificação</button></div>
+      <div class="hello"><div class="hello-heading"><img class="mobile-header-logo" src="./img/logo.png" alt=""><h1 id="greeting">Olá! 👋</h1></div><p>Aqui está um resumo da sua organização.</p></div>
       <div class="top-actions"><button class="btn outline notify-button" id="pushNotificationsButton" type="button" aria-label="Ativar avisos" title="Ativar avisos" aria-pressed="false">🔔</button><button class="profile-trigger" id="profileTrigger" type="button" aria-label="Abrir meu perfil"><div class="avatar" id="userAvatar">MC</div></button></div>
     </header>
 
@@ -453,7 +453,6 @@ function base64UrlToBytes(value){
 }
 async function updatePushButton(){
  const button=$('pushNotificationsButton');
- $('testNotificationButton').hidden=!currentUser;
  button.hidden=!currentUser;
  button.classList.remove('is-enabled');
  button.dataset.active='false';
@@ -509,27 +508,6 @@ $('pushNotificationsButton').addEventListener('click',async()=>{
   }
   await updatePushButton();
  }catch(error){reportError('Não foi possível configurar as notificações',error)}
- finally{button.disabled=false}
-});
-$('testNotificationButton').addEventListener('click',async()=>{
- const button=$('testNotificationButton');
- if(!currentUser)return;
- const supportMessage=getPushSupportMessage();
- if(supportMessage){toast(supportMessage);return}
- button.disabled=true;
- try{
-  const permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();
-  if(permission!=='granted')throw new Error(Notification.permission==='denied'?'As notificações estão bloqueadas. Ative-as nos Ajustes do navegador para este app.':'Permita notificações nas configurações do navegador.');
-  const registration=await navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:new URL('.',document.baseURI).pathname});
-  await registration.showNotification('',{
-   body:'',
-   icon:new URL('icon.svg?v=3',document.baseURI).href,
-   badge:new URL('icon.svg?v=3',document.baseURI).href,
-   tag:'test-reminder',
-   data:{url:new URL('.',document.baseURI).href}
-  });
-  toast('Notificação de teste enviada.');
- }catch(error){reportError('Não foi possível enviar a notificação de teste',error)}
  finally{button.disabled=false}
 });
 $('profileTrigger').addEventListener('click',openProfileModal);
