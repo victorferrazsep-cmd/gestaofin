@@ -15,10 +15,10 @@
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "./img/logo.png",
-      "sizes": "1400x1400",
-      "type": "image/png",
-      "purpose": "any"
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
