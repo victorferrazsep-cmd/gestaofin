@@ -115,6 +115,9 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .section-toolbar h2{font-size:18px;margin:0}.toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
 .filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
 .filter{border:1px solid var(--line);background:#fff;color:#687589;border-radius:20px;padding:7px 12px;font-size:11px}
+.field-hint{grid-column:1/-1;margin:0;color:var(--muted);font-size:11px;line-height:1.45}
+.field .checkbox-label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.field .checkbox-label input{width:16px;height:16px;margin:0;padding:0;accent-color:var(--green)}
 .filter.active{background:var(--green-soft);border-color:#c9efdc;color:var(--green-dark);font-weight:700}
 .table-wrap{overflow:auto}
 table{width:100%;border-collapse:collapse;min-width:620px}
@@ -145,10 +148,12 @@ tbody tr:last-child td{border-bottom:0}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}.modal-head h2{font-size:17px;margin:0}
 .close{border:0;background:#f3f5f7;width:30px;height:30px;border-radius:9px;color:#647184;font-size:18px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#647184;font-weight:700}
+.field{display:grid;gap:6px}.field[hidden]{display:none!important}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#647184;font-weight:700}
 .field input,.field select,.field textarea{width:100%;border:1px solid #e5e9ee;border-radius:10px;padding:11px;background:#fff;color:var(--ink);outline:none;font-size:12px}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:#72d5a3;box-shadow:0 0 0 3px #08a45b12}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.delete-account-actions{flex-wrap:wrap}
+.btn.danger:hover{background:#ffe1e6}
 .mobile-nav{display:none}
 .toast{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom));right:22px;background:#17243a;color:#fff;padding:12px 16px;border-radius:12px;font-size:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:.2s;z-index:20}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -257,8 +262,8 @@ tbody tr:last-child td{border-bottom:0}
 
     <section class="page" id="page-contas">
       <div class="section-toolbar"><h2>Minhas Contas</h2><div class="toolbar-actions"><button class="btn" onclick="openAccountModal()">＋ Nova Conta</button></div></div>
-      <div class="filters" id="accountFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Fixa">Fixas</button><button class="filter" data-filter="Variável">Variáveis</button><button class="filter" data-filter="Sazonal">Sazonais</button><button class="filter" data-filter="Assinatura">Assinaturas</button></div>
-      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta / serviço</th><th>Categoria</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta cadastrada nesta categoria.</div></div>
+      <div class="filters" id="accountFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Fixa">Fixas</button><button class="filter" data-filter="Variável">Variáveis</button><button class="filter" data-filter="Sazonal">Sazonais</button><button class="filter" data-filter="Assinatura">Assinaturas</button><select class="filter" id="accountMonthFilter" aria-label="Filtrar contas por mês"><option value="all">Todos os meses</option></select></div>
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta / serviço</th><th>Categoria</th><th>Mês</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
     </section>
 
     <section class="page" id="page-tarefas">
@@ -298,10 +303,14 @@ tbody tr:last-child td{border-bottom:0}
     <div class="field full"><label for="accountName">Nome da conta / serviço</label><input id="accountName" required placeholder="Ex.: Conta de luz, Netflix, condomínio"></div>
     <div class="field"><label for="accountCategory">Tipo</label><select id="accountCategory"><option>Fixa</option><option>Variável</option><option>Sazonal</option><option>Assinatura</option></select></div>
     <div class="field"><label for="accountDue">Dia do vencimento</label><input id="accountDue" type="number" min="1" max="31" required placeholder="Ex.: 10"></div>
-    <div class="field"><label for="accountValue">Valor previsto (R$)</label><input id="accountValue" type="number" min="0" step="0.01" required placeholder="0,00"></div>
-    <div class="field"><label for="accountMonth">Mês de referência</label><input id="accountMonth" type="month" required></div>
-    <div class="field"><label for="accountStatus">Status</label><select id="accountStatus"><option value="Pendente">Pendente</option><option value="Pago">Pago</option></select></div>
-    <div class="field"><label for="accountPaidDate">Data do pagamento</label><input id="accountPaidDate" type="date"></div>
+    <div class="field"><label for="accountValue">Valor previsto (R$)</label><input id="accountValue" type="number" min="0" step="0.01" placeholder="0,00"></div>
+    <div class="field full" id="accountRecurringField"><label class="checkbox-label" for="accountRecurring"><input id="accountRecurring" type="checkbox"> Recorrente</label></div>
+    <div class="field" id="accountStartMonthField" hidden><label for="accountStartMonth">Mês inicial</label><input id="accountStartMonth" type="month"></div>
+    <div class="field" id="accountEndMonthField" hidden><label for="accountEndMonth">Mês final (inclusivo)</label><input id="accountEndMonth" type="month"></div>
+    <p class="field-hint full" id="accountRangeHint" hidden>Será criada uma conta por mês, com este valor inicial. Depois, você pode ajustar o valor e o pagamento de cada mês separadamente.</p>
+    <div class="field full" id="accountMonthField" hidden><label for="accountMonth">Mês de referência</label><input id="accountMonth" type="month"></div>
+    <div class="field" id="accountStatusField" hidden><label for="accountStatus">Status</label><select id="accountStatus"><option value="Pendente">Pendente</option><option value="Pago">Pago</option></select></div>
+    <div class="field" id="accountPaidDateField" hidden><label for="accountPaidDate">Data do pagamento</label><input id="accountPaidDate" type="date"></div>
     <div class="field full"><label for="accountNotes">Observações (opcional)</label><input id="accountNotes" placeholder="Ex.: débito automático, renovação anual..."></div>
    </div>
    <div class="modal-actions"><button type="button" class="btn outline" onclick="closeModal('accountModal')">Cancelar</button><button class="btn" type="submit">Salvar Conta</button></div>
@@ -323,6 +332,17 @@ tbody tr:last-child td{border-bottom:0}
    <div class="modal-actions"><button type="button" class="btn outline" onclick="closeModal('taskModal')">Cancelar</button><button class="btn" type="submit">Salvar Tarefa</button></div>
   </form>
  </div>
+</div>
+<div class="modal-backdrop" id="deleteAccountModal">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteAccountModalTitle" aria-describedby="deleteAccountModalDescription">
+  <div class="modal-head"><h2 id="deleteAccountModalTitle">Excluir Conta</h2><button class="close" id="closeDeleteAccountModal" type="button" aria-label="Fechar">×</button></div>
+  <p id="deleteAccountModalDescription">Esta conta faz parte de uma recorrência. O que você deseja excluir?</p>
+  <div class="modal-actions delete-account-actions">
+   <button class="btn outline" id="cancelDeleteAccount" type="button">Cancelar</button>
+   <button class="btn danger" id="deleteSingleAccount" type="button">Só Esta Conta</button>
+   <button class="btn danger" id="deleteRecurringAccounts" type="button">Toda a Recorrência</button>
+  </div>
+ </section>
 </div>
 <div class="modal-backdrop" id="profileModal">
  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
@@ -375,8 +395,8 @@ const monthISO=()=>todayISO().slice(0,7);
 const parseDate=s=>s?new Date(s+'T12:00:00'):null;
 const fmtDate=s=>{if(!s)return '—';return parseDate(s).toLocaleDateString('pt-BR')};
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let accounts=[],tasks=[],currentUser=null,authMode='signin',passwordRecovery=false;
-let accountFilter='Todas',taskFilter='Todas',dashPeriod='month',reportPeriod='year';
+let accounts=[],tasks=[],currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null;
+let accountFilter='Todas',accountMonthFilter=monthISO(),taskFilter='Todas',dashPeriod='month',reportPeriod='year';
 let calendarDate=new Date();
 let profilePreviewObjectUrl=null;
 let profileCropImageObjectUrl=null,profileCropResultUrl=null,profileCropBlob=null;
@@ -667,7 +687,7 @@ $('authForm').addEventListener('submit',async e=>{
  }catch(error){showAuthFeedback(error.message||'Não foi possível autenticar.',true)}
  finally{$('authSubmit').disabled=false}
 });
-function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||''}}
+function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||'',recurrenceId:row.recurrence_id||null}}
 function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||'',notes:row.notes||'',done:Boolean(row.done)}}
 function setUserDisplay(user){
  const displayName=user.user_metadata?.display_name?.trim()||'';
@@ -759,6 +779,7 @@ async function loadData(checkMigration=true){
  if(accountsResult.error)throw accountsResult.error;
  if(tasksResult.error)throw tasksResult.error;
  accounts=accountsResult.data.map(toAccount);tasks=tasksResult.data.map(toTask);
+ renderAccountMonthOptions();
  updateReportYears();renderAll();
  if(checkMigration)await importLegacyData();
 }
@@ -788,10 +809,24 @@ function showPage(name){
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function openAccountModal(id=null){
- $('accountForm').reset();$('accountId').value='';$('accountMonth').value=monthISO();$('accountModalTitle').textContent=id?'Editar Conta':'Nova Conta';
+ $('accountForm').reset();$('accountId').value='';$('accountStartMonth').value=monthISO();$('accountEndMonth').value=monthISO();$('accountMonth').value=monthISO();$('accountModalTitle').textContent=id?'Editar Conta':'Nova Conta';
+ $('accountRecurringField').hidden=Boolean(id);$('accountRecurring').checked=false;
+ updateAccountRecurrenceFields(Boolean(id));
+ $('accountStatusField').hidden=!id;$('accountPaidDateField').hidden=!id;
  if(id){const a=accounts.find(x=>x.id===id);if(!a)return;$('accountId').value=a.id;$('accountName').value=a.name;$('accountCategory').value=a.category;$('accountDue').value=a.due;$('accountValue').value=a.value;$('accountMonth').value=a.month;$('accountStatus').value=a.status;$('accountPaidDate').value=a.paidDate||'';$('accountNotes').value=a.notes||''}
  $('accountModal').classList.add('show');
 }
+function updateAccountRecurrenceFields(isEditing=Boolean($('accountId').value)){
+ const recurring=!isEditing&&$('accountRecurring').checked;
+ $('accountMonthField').hidden=recurring;
+ $('accountStartMonthField').hidden=!recurring;
+ $('accountEndMonthField').hidden=!recurring;
+ $('accountRangeHint').hidden=!recurring;
+ $('accountMonth').required=!recurring;
+ $('accountStartMonth').required=recurring;
+ $('accountEndMonth').required=recurring;
+}
+$('accountRecurring').addEventListener('change',()=>updateAccountRecurrenceFields());
 function openTaskModal(id=null){
  $('taskForm').reset();$('taskId').value='';$('taskDate').value=todayISO();$('taskMonth').value=monthISO();$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';
  if(id){const t=tasks.find(x=>x.id===id);if(!t)return;$('taskId').value=t.id;$('taskName').value=t.name;$('taskDate').value=t.date||'';$('taskMonth').value=t.month||'';$('taskNotes').value=t.notes||''}
@@ -799,14 +834,38 @@ function openTaskModal(id=null){
 }
 function closeModal(id){$(id).classList.remove('show')}
 document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
+function accountMonthsInRange(start,end){
+ if(!start||!end||start>end)throw new Error('O mês final precisa ser igual ou posterior ao mês inicial.');
+ const [startYear,startMonth]=start.split('-').map(Number),[endYear,endMonth]=end.split('-').map(Number);
+ const first=startYear*12+startMonth-1,last=endYear*12+endMonth-1;
+ return Array.from({length:last-first+1},(_,index)=>{
+  const monthIndex=first+index,year=Math.floor(monthIndex/12),month=monthIndex%12+1;
+  return `${year}-${String(month).padStart(2,'0')}`;
+ });
+}
 $('accountForm').addEventListener('submit',async e=>{
  e.preventDefault();const id=$('accountId').value;
- const obj={id:id||crypto.randomUUID(),name:$('accountName').value.trim(),category:$('accountCategory').value,due:Number($('accountDue').value),value:Number($('accountValue').value),month:$('accountMonth').value,status:$('accountStatus').value,paidDate:$('accountPaidDate').value,notes:$('accountNotes').value.trim()};
- const payload={name:obj.name,category:obj.category,due:obj.due,value:obj.value,month:obj.month,status:obj.status,paid_date:obj.paidDate||null,notes:obj.notes||null};
+ const enteredValue=$('accountValue').value;
+ const obj={name:$('accountName').value.trim(),category:$('accountCategory').value,due:Number($('accountDue').value),value:enteredValue===''?0:Number(enteredValue),status:$('accountStatus').value,paidDate:$('accountPaidDate').value,notes:$('accountNotes').value.trim()};
  try{
-  const result=id?await db.from('accounts').update(payload).eq('id',id):await db.from('accounts').insert(payload);
+  let result,successMessage;
+  if(id){
+   const payload={name:obj.name,category:obj.category,due:obj.due,value:obj.value,month:$('accountMonth').value,status:obj.status,paid_date:obj.paidDate||null,notes:obj.notes||null};
+   result=await db.from('accounts').update(payload).eq('id',id);
+   successMessage='Conta salva com sucesso!';
+  }else{
+   const months=$('accountRecurring').checked?accountMonthsInRange($('accountStartMonth').value,$('accountEndMonth').value):[$('accountMonth').value];
+   const recurrenceId=$('accountRecurring').checked?crypto.randomUUID():null;
+   const payload=months.map(month=>({name:obj.name,category:obj.category,due:obj.due,value:obj.value,month,status:'Pendente',paid_date:null,notes:obj.notes||null,recurrence_id:recurrenceId}));
+   result=await db.from('accounts').insert(payload);
+   successMessage=months.length===1?'Conta salva com sucesso!':`${months.length} contas criadas, uma por mês.`;
+  }
   if(result.error)throw result.error;
-  closeModal('accountModal');await loadData(false);toast('Conta salva com sucesso!');
+  if(!id){
+   accountFilter='Todas';accountMonthFilter='all';
+   $('accountFilters').querySelectorAll('button[data-filter]').forEach(button=>button.classList.toggle('active',button.dataset.filter==='Todas'));
+  }
+  closeModal('accountModal');await loadData(false);toast(successMessage);
  }catch(error){reportError('Não foi possível salvar a conta',error)}
 });
 $('taskForm').addEventListener('submit',async e=>{
@@ -830,16 +889,64 @@ async function toggleTask(id){
  try{const {error}=await db.from('tasks').update({done:!task.done}).eq('id',id);if(error)throw error;await loadData(false)}
  catch(error){reportError('Não foi possível atualizar a tarefa',error)}
 }
-async function deleteAccount(id){if(confirm('Excluir esta conta?'))try{const {error}=await db.from('accounts').delete().eq('id',id);if(error)throw error;await loadData(false);toast('Conta excluída.')}catch(error){reportError('Não foi possível excluir a conta',error)}}
+function openDeleteAccountModal(id){
+ const account=accounts.find(item=>item.id===id);if(!account)return;
+ pendingDeleteAccountId=id;
+ const recurrenceSize=account.recurrenceId?accounts.filter(item=>item.recurrenceId===account.recurrenceId).length:0;
+ const hasMultipleRecurringAccounts=recurrenceSize>1;
+ $('deleteAccountModalDescription').textContent=hasMultipleRecurringAccounts
+  ?`“${account.name}” faz parte de uma recorrência com ${recurrenceSize} contas. Escolha o que deseja excluir.`
+  :'Deseja excluir esta conta?';
+ $('deleteSingleAccount').hidden=false;
+ $('deleteRecurringAccounts').hidden=!hasMultipleRecurringAccounts;
+ $('deleteSingleAccount').textContent=hasMultipleRecurringAccounts?'Só Esta Conta':'Excluir Conta';
+ $('deleteAccountModal').classList.add('show');
+}
+async function deleteAccount(id,deleteRecurrence=false){
+ const account=accounts.find(item=>item.id===id);if(!account)return;
+ try{
+  let query=db.from('accounts').delete().eq('user_id',currentUser.id);
+  if(deleteRecurrence){
+   if(!account.recurrenceId)throw new Error('Não foi possível identificar a recorrência desta conta.');
+   query=query.eq('recurrence_id',account.recurrenceId);
+  }else query=query.eq('id',id);
+  const {error}=await query;if(error)throw error;
+  closeModal('deleteAccountModal');pendingDeleteAccountId=null;
+  await loadData(false);toast(deleteRecurrence?'Toda a recorrência foi excluída.':'Conta excluída.');
+ }catch(error){reportError('Não foi possível excluir a conta',error)}
+}
+async function deletePendingAccount(deleteRecurrence){
+ if(!pendingDeleteAccountId)return;
+ const id=pendingDeleteAccountId;
+ $('deleteSingleAccount').disabled=true;$('deleteRecurringAccounts').disabled=true;
+ try{await deleteAccount(id,deleteRecurrence)}
+ finally{$('deleteSingleAccount').disabled=false;$('deleteRecurringAccounts').disabled=false}
+}
+$('deleteSingleAccount').addEventListener('click',()=>void deletePendingAccount(false));
+$('deleteRecurringAccounts').addEventListener('click',()=>void deletePendingAccount(true));
+$('cancelDeleteAccount').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
+$('closeDeleteAccountModal').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
 async function deleteTask(id){if(confirm('Excluir esta tarefa?'))try{const {error}=await db.from('tasks').delete().eq('id',id);if(error)throw error;await loadData(false);toast('Tarefa excluída.')}catch(error){reportError('Não foi possível excluir a tarefa',error)}}
 $('accountFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;accountFilter=b.dataset.filter;$('accountFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderAccounts()});
+$('accountMonthFilter').addEventListener('change',e=>{accountMonthFilter=e.currentTarget.value;renderAccounts()});
 $('taskFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;taskFilter=b.dataset.filter;$('taskFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderTasks()});
 $('dashPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;dashPeriod=b.dataset.period;$('dashPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));drawChart()});
 $('reportPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;reportPeriod=b.dataset.period;$('reportPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderReports()});
 function renderAccounts(){
- const list=accounts.filter(a=>accountFilter==='Todas'||a.category===accountFilter).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
- $('accountsTable').innerHTML=list.map(a=>`<tr><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td>Dia ${a.due} · ${a.month.split('-').reverse().join('/')}</td><td><strong>${money(a.value)}</strong></td><td><span class="status ${a.status==='Pago'?'paid':'pending'}">${a.status==='Pago'?'✓ Pago':'◷ Pendente'}</span></td><td><button class="action-btn" title="Marcar pagamento" onclick="togglePaid('${a.id}')">✓</button> <button class="action-btn" title="Editar" onclick="openAccountModal('${a.id}')">✎</button> <button class="action-btn" title="Excluir" onclick="deleteAccount('${a.id}')">×</button></td></tr>`).join('');
+ const list=accounts.filter(a=>(accountFilter==='Todas'||a.category===accountFilter)&&(accountMonthFilter==='all'||a.month===accountMonthFilter)).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
+ $('accountsTable').innerHTML=list.map(a=>`<tr><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td>${a.month.split('-').reverse().join('/')}</td><td>Dia ${a.due}</td><td><strong>${money(a.value)}</strong></td><td><span class="status ${a.status==='Pago'?'paid':'pending'}">${a.status==='Pago'?'✓ Pago':'◷ Pendente'}</span></td><td><button class="action-btn" title="Marcar pagamento" onclick="togglePaid('${a.id}')">✓</button> <button class="action-btn" title="Editar" onclick="openAccountModal('${a.id}')">✎</button> <button class="action-btn" title="Excluir" onclick="openDeleteAccountModal('${a.id}')">×</button></td></tr>`).join('');
  $('accountsEmpty').hidden=list.length>0;
+}
+function renderAccountMonthOptions(){
+ const select=$('accountMonthFilter'),months=new Set([monthISO(),...accounts.map(account=>account.month)]);
+ const options=[...months].sort((a,b)=>b.localeCompare(a)).map(month=>{
+  const [year,monthNumber]=month.split('-').map(Number);
+  const label=new Date(year,monthNumber-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  return `<option value="${month}">${label}</option>`;
+ });
+ select.innerHTML='<option value="all">Todos os meses</option>'+options.join('');
+ if(accountMonthFilter!=='all'&&!months.has(accountMonthFilter))accountMonthFilter=monthISO();
+ select.value=accountMonthFilter;
 }
 function renderTasks(){
  const list=tasks.filter(t=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!t.done:t.done)).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
