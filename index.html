@@ -2,8 +2,11 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Meu Controle">
 <title>Meu Controle | Finanças e Planejamento</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -15,11 +18,10 @@
   --shadow:0 5px 18px rgba(27,43,65,.07);--radius:17px;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
-h1,h2,h3,.auth-card>p,.hello>p,.callout p,.brand small{text-transform:capitalize}
+body{min-height:100vh;min-height:100dvh;margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
-.app{min-height:100vh;display:grid;grid-template-columns:235px minmax(0,1fr)}
+.app{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:235px minmax(0,1fr)}
 .sidebar{background:#fff;border-right:1px solid var(--line);padding:25px 17px;display:flex;flex-direction:column;gap:26px;position:sticky;top:0;height:100vh}
 .brand{display:flex;align-items:center;gap:11px;padding:3px 8px}
 .brand-mark{width:37px;height:37px;border-radius:12px;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font-size:21px;font-weight:800}
@@ -33,6 +35,7 @@ button{cursor:pointer}
 main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:12px}
 .hello h1{font-size:25px;margin:0 0 4px;letter-spacing:-.6px}.hello p{margin:0;color:var(--muted);font-size:13px}
+.test-notification-button{margin-top:9px;padding:7px 10px;font-size:11px}
 .top-actions{display:flex;align-items:center;gap:10px}
 .menu-wrap{position:relative}
 .menu-panel{position:absolute;right:0;top:calc(100% + 8px);z-index:8;min-width:175px;padding:7px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
@@ -143,11 +146,11 @@ tbody tr:last-child td{border-bottom:0}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:#72d5a3;box-shadow:0 0 0 3px #08a45b12}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 .mobile-nav{display:none}
-.toast{position:fixed;bottom:22px;right:22px;background:#17243a;color:#fff;padding:12px 16px;border-radius:12px;font-size:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:.2s;z-index:20}
+.toast{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom));right:22px;background:#17243a;color:#fff;padding:12px 16px;border-radius:12px;font-size:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:.2s;z-index:20}
 .toast.show{opacity:1;transform:translateY(0)}
 #appShell{display:none}
 #appShell.ready{display:grid}
-.auth-gate{display:none;position:fixed;inset:0;z-index:30;background:var(--bg);align-items:center;justify-content:center;padding:20px}
+.auth-gate{display:none;position:fixed;inset:0;z-index:30;background:var(--bg);align-items:center;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom))}
 .auth-gate.show{display:flex}
 .auth-card{width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:var(--shadow)}
 .auth-card h1{font-size:21px;margin:0 0 7px}.auth-card p{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 18px}
@@ -163,7 +166,7 @@ tbody tr:last-child td{border-bottom:0}
 .notify-button.is-enabled:hover{background:var(--green-dark);border-color:var(--green-dark);color:#fff}
 @media(max-width:1050px){.app{grid-template-columns:205px 1fr}.cards{grid-template-columns:repeat(2,1fr)}main{padding:24px 20px}.grid-main{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){
- #appShell.ready{display:block}.app{display:block}.sidebar{display:none}main{padding:20px 14px 88px}
+ #appShell.ready{display:block}.app{display:block}.sidebar{display:none}main{padding:calc(20px + env(safe-area-inset-top)) 14px calc(88px + env(safe-area-inset-bottom))}
  .topbar{margin-bottom:18px;align-items:flex-start}.hello h1{font-size:21px}.hello p{font-size:11px}
  .top-actions{gap:7px;flex-wrap:wrap;justify-content:flex-end}.user-email{display:none}.avatar{width:34px;height:34px;min-width:34px;min-height:34px;flex-basis:34px}.profile-trigger{width:34px;height:34px;min-width:34px;flex-basis:34px}.avatar img{width:34px;height:34px}
  .cards{gap:9px}.metric{padding:13px 11px;min-height:88px;gap:9px}.metric-icon{width:34px;height:34px;border-radius:11px;font-size:16px}.metric strong{font-size:16px}.metric label{font-size:10px}
@@ -219,7 +222,7 @@ tbody tr:last-child td{border-bottom:0}
 
   <main>
     <header class="topbar">
-      <div class="hello"><h1 id="greeting">Olá! 👋</h1><p>Aqui está um resumo da sua organização.</p></div>
+      <div class="hello"><h1 id="greeting">Olá! 👋</h1><p>Aqui está um resumo da sua organização.</p><button class="btn secondary test-notification-button" id="testNotificationButton" type="button" hidden>🔔 Testar Notificação</button></div>
       <div class="top-actions"><button class="btn outline notify-button" id="pushNotificationsButton" type="button" aria-label="Ativar avisos" title="Ativar avisos" aria-pressed="false">🔔</button><button class="profile-trigger" id="profileTrigger" type="button" aria-label="Abrir meu perfil"><div class="avatar" id="userAvatar">MC</div></button></div>
     </header>
 
@@ -232,30 +235,30 @@ tbody tr:last-child td{border-bottom:0}
       </div>
       <div class="grid-main">
         <div class="panel">
-          <div class="panel-head"><h2>Visão dos compromissos</h2><div class="periods" id="dashPeriods"><button class="active" data-period="month">Mês</button><button data-period="quarter">Tri</button><button data-period="semester">Sem.</button><button data-period="year">Ano</button></div></div>
+          <div class="panel-head"><h2>Visão dos Compromissos</h2><div class="periods" id="dashPeriods"><button class="active" data-period="month">Mês</button><button data-period="quarter">Tri</button><button data-period="semester">Sem.</button><button data-period="year">Ano</button></div></div>
           <div class="chart-wrap"><canvas id="financeChart"></canvas></div>
           <div class="legend"><span><i class="dot" style="background:#08a45b"></i>Pagas</span><span><i class="dot" style="background:#f15b72"></i>Em aberto</span></div>
         </div>
         <div class="panel">
-          <div class="panel-head"><h2>Tarefas e planejamento</h2><a onclick="showPage('tarefas')">Ver todas →</a></div>
+          <div class="panel-head"><h2>Tarefas e Planejamento</h2><a onclick="showPage('tarefas')">Ver todas →</a></div>
           <div class="task-list" id="dashboardTasks"></div>
-          <div style="margin-top:12px"><button class="btn secondary" onclick="openTaskModal()">＋ Nova tarefa</button></div>
+          <div style="margin-top:12px"><button class="btn secondary" onclick="openTaskModal()">＋ Nova Tarefa</button></div>
         </div>
       </div>
       <div class="bottom-grid">
-        <div class="panel"><div class="panel-head"><h2>Contas por categoria</h2><a onclick="showPage('contas')">Detalhes →</a></div><div id="categorySummary"></div></div>
-        <div class="panel callout"><div><h3>Planeje-se com tranquilidade</h3><p>Cadastre seus compromissos e acompanhe tudo em um só lugar.</p><button class="btn" onclick="openTaskModal()">Adicionar tarefa</button></div><div style="font-size:48px;color:#0aa45d">▦✓</div></div>
+        <div class="panel"><div class="panel-head"><h2>Contas por Categoria</h2><a onclick="showPage('contas')">Detalhes →</a></div><div id="categorySummary"></div></div>
+        <div class="panel callout"><div><h3>Planeje-se com tranquilidade</h3><p>Cadastre seus compromissos e acompanhe tudo em um só lugar.</p><button class="btn" onclick="openTaskModal()">Adicionar Tarefa</button></div><div style="font-size:48px;color:#0aa45d">▦✓</div></div>
       </div>
     </section>
 
     <section class="page" id="page-contas">
-      <div class="section-toolbar"><h2>Minhas contas</h2><div class="toolbar-actions"><button class="btn" onclick="openAccountModal()">＋ Nova conta</button></div></div>
+      <div class="section-toolbar"><h2>Minhas Contas</h2><div class="toolbar-actions"><button class="btn" onclick="openAccountModal()">＋ Nova Conta</button></div></div>
       <div class="filters" id="accountFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Fixa">Fixas</button><button class="filter" data-filter="Variável">Variáveis</button><button class="filter" data-filter="Sazonal">Sazonais</button><button class="filter" data-filter="Assinatura">Assinaturas</button></div>
       <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta / serviço</th><th>Categoria</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta cadastrada nesta categoria.</div></div>
     </section>
 
     <section class="page" id="page-tarefas">
-      <div class="section-toolbar"><h2>Minhas tarefas</h2><div class="toolbar-actions"><button class="btn" onclick="openTaskModal()">＋ Nova tarefa</button></div></div>
+      <div class="section-toolbar"><h2>Minhas Tarefas</h2><div class="toolbar-actions"><button class="btn" onclick="openTaskModal()">＋ Nova Tarefa</button></div></div>
       <div class="filters" id="taskFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Pendentes">Pendentes</button><button class="filter" data-filter="Concluídas">Concluídas</button></div>
       <div class="panel" id="tasksList"></div>
     </section>
@@ -270,10 +273,10 @@ tbody tr:last-child td{border-bottom:0}
     </section>
 
     <section class="page" id="page-relatorios">
-      <div class="section-toolbar"><h2>Relatórios financeiros</h2><div class="toolbar-actions"><select id="reportYear" class="filter" aria-label="Ano"></select></div></div>
+      <div class="section-toolbar"><h2>Relatórios Financeiros</h2><div class="toolbar-actions"><select id="reportYear" class="filter" aria-label="Ano"></select></div></div>
       <div class="filters" id="reportPeriods"><button class="filter active" data-period="month">Mês</button><button class="filter" data-period="quarter">Trimestre</button><button class="filter" data-period="semester">Semestre</button><button class="filter" data-period="year">Ano</button></div>
       <div class="report-cards"><div class="card report-card"><small>Total previsto</small><strong id="report-total">R$ 0,00</strong><small>Contas cadastradas no período</small></div><div class="card report-card"><small>Total pago</small><strong class="positive" id="report-paid">R$ 0,00</strong><small>Contas marcadas como pagas</small></div><div class="card report-card"><small>Em aberto</small><strong class="negative" id="report-open">R$ 0,00</strong><small>Compromissos ainda não pagos</small></div></div>
-      <div class="panel"><div class="panel-head"><h2>Comparativo por mês</h2><span class="text-link" id="reportPeriodLabel">Ano</span></div><div class="table-wrap"><table><thead><tr><th>Período</th><th>Previsto</th><th>Pago</th><th>Em aberto</th><th>Variação MoM</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
+      <div class="panel"><div class="panel-head"><h2>Comparativo por Mês</h2><span class="text-link" id="reportPeriodLabel">Ano</span></div><div class="table-wrap"><table><thead><tr><th>Período</th><th>Previsto</th><th>Pago</th><th>Em aberto</th><th>Variação MoM</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
     </section>
   </main>
 </div>
@@ -284,7 +287,7 @@ tbody tr:last-child td{border-bottom:0}
 
 <div class="modal-backdrop" id="accountModal">
  <div class="modal">
-  <div class="modal-head"><h2 id="accountModalTitle">Nova conta</h2><button class="close" onclick="closeModal('accountModal')">×</button></div>
+  <div class="modal-head"><h2 id="accountModalTitle">Nova Conta</h2><button class="close" onclick="closeModal('accountModal')">×</button></div>
   <form id="accountForm">
    <input type="hidden" id="accountId">
    <div class="form-grid">
@@ -297,14 +300,14 @@ tbody tr:last-child td{border-bottom:0}
     <div class="field"><label for="accountPaidDate">Data do pagamento</label><input id="accountPaidDate" type="date"></div>
     <div class="field full"><label for="accountNotes">Observações (opcional)</label><input id="accountNotes" placeholder="Ex.: débito automático, renovação anual..."></div>
    </div>
-   <div class="modal-actions"><button type="button" class="btn outline" onclick="closeModal('accountModal')">Cancelar</button><button class="btn" type="submit">Salvar conta</button></div>
+   <div class="modal-actions"><button type="button" class="btn outline" onclick="closeModal('accountModal')">Cancelar</button><button class="btn" type="submit">Salvar Conta</button></div>
   </form>
  </div>
 </div>
 
 <div class="modal-backdrop" id="taskModal">
  <div class="modal">
-  <div class="modal-head"><h2 id="taskModalTitle">Nova tarefa</h2><button class="close" onclick="closeModal('taskModal')">×</button></div>
+  <div class="modal-head"><h2 id="taskModalTitle">Nova Tarefa</h2><button class="close" onclick="closeModal('taskModal')">×</button></div>
   <form id="taskForm">
    <input type="hidden" id="taskId">
    <div class="form-grid">
@@ -313,19 +316,19 @@ tbody tr:last-child td{border-bottom:0}
     <div class="field"><label for="taskMonth">Mês de planejamento</label><input id="taskMonth" type="month"></div>
     <div class="field full"><label for="taskNotes">Observações (opcional)</label><textarea id="taskNotes" rows="2" placeholder="Detalhes ou lembretes..."></textarea></div>
    </div>
-   <div class="modal-actions"><button type="button" class="btn outline" onclick="closeModal('taskModal')">Cancelar</button><button class="btn" type="submit">Salvar tarefa</button></div>
+   <div class="modal-actions"><button type="button" class="btn outline" onclick="closeModal('taskModal')">Cancelar</button><button class="btn" type="submit">Salvar Tarefa</button></div>
   </form>
  </div>
 </div>
 <div class="modal-backdrop" id="profileModal">
  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
-  <div class="modal-head"><h2 id="profileModalTitle">Meu perfil</h2><button class="close" type="button" onclick="closeModal('profileModal')" aria-label="Fechar">×</button></div>
+  <div class="modal-head"><h2 id="profileModalTitle">Meu Perfil</h2><button class="close" type="button" onclick="closeModal('profileModal')" aria-label="Fechar">×</button></div>
   <form id="profileForm">
    <div class="profile-details">
     <div class="profile-avatar-row">
      <button class="profile-avatar-picker" id="profilePhotoPicker" type="button" aria-label="Alterar foto do perfil">
       <div class="profile-avatar-preview" id="profileAvatarPreview">MC</div>
-      <span class="profile-photo-overlay">Alterar foto</span>
+      <span class="profile-photo-overlay">Alterar Foto</span>
      </button>
      <input class="profile-photo-input" id="profilePhoto" type="file" accept="image/png,image/jpeg,image/webp">
      <div class="field profile-name-field"><label for="profileName">Nome</label><input id="profileName" type="text" maxlength="80" required></div>
@@ -383,6 +386,7 @@ function base64UrlToBytes(value){
 }
 async function updatePushButton(){
  const button=$('pushNotificationsButton');
+ $('testNotificationButton').hidden=!currentUser;
  button.hidden=!currentUser;
  button.classList.remove('is-enabled');
  button.dataset.active='false';
@@ -438,6 +442,27 @@ $('pushNotificationsButton').addEventListener('click',async()=>{
   }
   await updatePushButton();
  }catch(error){reportError('Não foi possível configurar as notificações',error)}
+ finally{button.disabled=false}
+});
+$('testNotificationButton').addEventListener('click',async()=>{
+ const button=$('testNotificationButton');
+ if(!currentUser)return;
+ const supportMessage=getPushSupportMessage();
+ if(supportMessage){toast(supportMessage);return}
+ button.disabled=true;
+ try{
+  const permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();
+  if(permission!=='granted')throw new Error(Notification.permission==='denied'?'As notificações estão bloqueadas. Ative-as nos Ajustes do navegador para este app.':'Permita notificações nas configurações do navegador.');
+  const registration=await navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:new URL('.',document.baseURI).pathname});
+  await registration.showNotification('Lembrete financeiro',{
+   body:'Este é um teste. Seus lembretes de contas e tarefas aparecerão aqui.',
+   icon:new URL('icon.svg',document.baseURI).href,
+   badge:new URL('icon.svg',document.baseURI).href,
+   tag:'test-reminder',
+   data:{url:new URL('.',document.baseURI).href}
+  });
+  toast('Notificação de teste enviada.');
+ }catch(error){reportError('Não foi possível enviar a notificação de teste',error)}
  finally{button.disabled=false}
 });
 $('profileTrigger').addEventListener('click',openProfileModal);
@@ -580,7 +605,7 @@ function setAuthMode(mode){
  const signup=mode==='signup';
  $('authForm').hidden=false;$('recoveryForm').hidden=true;$('authToggle').hidden=false;$('forgotPasswordButton').hidden=signup;
  $('authNameField').hidden=!signup;$('authName').required=signup;
- $('authTitle').textContent=signup?'Criar conta':'Entrar no Meu Controle';
+ $('authTitle').textContent=signup?'Criar Conta':'Entrar no Meu Controle';
  $('authSubmit').textContent=signup?'Cadastrar':'Entrar';
  $('authToggle').textContent=signup?'Já tem conta? Entrar':'Ainda não tem conta? Cadastre-se';
  $('authPassword').autocomplete=signup?'new-password':'current-password';
@@ -589,7 +614,7 @@ function setAuthMode(mode){
 function showPasswordRecovery(){
  passwordRecovery=true;
  $('authGate').classList.add('show');$('appShell').classList.remove('ready');
- $('authTitle').textContent='Definir nova senha';
+ $('authTitle').textContent='Definir Nova Senha';
  $('authForm').hidden=true;$('authNameField').hidden=true;$('authToggle').hidden=true;$('forgotPasswordButton').hidden=true;$('recoveryForm').hidden=false;
  showAuthFeedback('Digite e confirme sua nova senha.');
 }
@@ -761,12 +786,12 @@ function showPage(name){
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function openAccountModal(id=null){
- $('accountForm').reset();$('accountId').value='';$('accountMonth').value=monthISO();$('accountModalTitle').textContent=id?'Editar conta':'Nova conta';
+ $('accountForm').reset();$('accountId').value='';$('accountMonth').value=monthISO();$('accountModalTitle').textContent=id?'Editar Conta':'Nova Conta';
  if(id){const a=accounts.find(x=>x.id===id);if(!a)return;$('accountId').value=a.id;$('accountName').value=a.name;$('accountCategory').value=a.category;$('accountDue').value=a.due;$('accountValue').value=a.value;$('accountMonth').value=a.month;$('accountStatus').value=a.status;$('accountPaidDate').value=a.paidDate||'';$('accountNotes').value=a.notes||''}
  $('accountModal').classList.add('show');
 }
 function openTaskModal(id=null){
- $('taskForm').reset();$('taskId').value='';$('taskDate').value=todayISO();$('taskMonth').value=monthISO();$('taskModalTitle').textContent=id?'Editar tarefa':'Nova tarefa';
+ $('taskForm').reset();$('taskId').value='';$('taskDate').value=todayISO();$('taskMonth').value=monthISO();$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';
  if(id){const t=tasks.find(x=>x.id===id);if(!t)return;$('taskId').value=t.id;$('taskName').value=t.name;$('taskDate').value=t.date||'';$('taskMonth').value=t.month||'';$('taskNotes').value=t.notes||''}
  $('taskModal').classList.add('show');
 }
