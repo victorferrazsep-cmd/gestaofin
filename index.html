@@ -207,8 +207,16 @@ tbody tr:last-child td{border-bottom:0}
  #accountFilters button[data-filter="Assinatura"]{display:none}
  #accountFilters .filter{width:100%;min-width:0;padding:7px 3px;font-size:9px;text-align:center;white-space:nowrap}
  #accountMonthFilter{text-align:center;text-align-last:center}
- #page-contas table{min-width:500px}
+ #page-contas .table-wrap{overflow-x:hidden}
+ #page-contas table{width:100%;min-width:0;table-layout:fixed}
  #page-contas th:nth-child(2),#page-contas td:nth-child(2){display:none}
+ #page-contas th,#page-contas td{padding:9px 2px;font-size:9px;letter-spacing:0}
+ #page-contas th:nth-child(3),#page-contas td:nth-child(3){width:44px}
+ #page-contas th:nth-child(4),#page-contas td:nth-child(4){width:36px}
+ #page-contas th:nth-child(5),#page-contas td:nth-child(5){width:62px}
+ #page-contas th:nth-child(6),#page-contas td:nth-child(6){width:36px}
+ #page-contas td:first-child{overflow-wrap:anywhere}
+ #page-contas td .status{padding:4px;font-size:9px}
 }
 </style>
 </head>
