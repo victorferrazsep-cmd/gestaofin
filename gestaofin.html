@@ -109,9 +109,20 @@ tbody tr:last-child td{border-bottom:0}
 .mobile-nav{display:none}
 .toast{position:fixed;bottom:22px;right:22px;background:#17243a;color:#fff;padding:12px 16px;border-radius:12px;font-size:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:.2s;z-index:20}
 .toast.show{opacity:1;transform:translateY(0)}
+#appShell{display:none}
+#appShell.ready{display:grid}
+.auth-gate{display:none;position:fixed;inset:0;z-index:30;background:var(--bg);align-items:center;justify-content:center;padding:20px}
+.auth-gate.show{display:flex}
+.auth-card{width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:var(--shadow)}
+.auth-card h1{font-size:21px;margin:0 0 7px}.auth-card p{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 18px}
+.auth-card form{display:grid;gap:12px}.auth-card label{font-size:11px;color:#647184;font-weight:700}
+.auth-card input{width:100%;border:1px solid #e5e9ee;border-radius:10px;padding:11px;color:var(--ink);font-size:13px}
+.auth-card .btn{width:100%}.auth-toggle{margin-top:14px;width:100%;border:0;background:transparent;color:var(--green-dark);font-size:12px;font-weight:700}
+.auth-feedback{min-height:18px;margin:12px 0 0!important;color:var(--red)!important;font-size:12px!important}
+.user-email{font-size:11px;color:var(--muted)}
 @media(max-width:1050px){.app{grid-template-columns:205px 1fr}.cards{grid-template-columns:repeat(2,1fr)}main{padding:24px 20px}.grid-main{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){
- .app{display:block}.sidebar{display:none}main{padding:20px 14px 88px}
+ #appShell.ready{display:block}.app{display:block}.sidebar{display:none}main{padding:20px 14px 88px}
  .topbar{margin-bottom:18px}.hello h1{font-size:21px}.hello p{font-size:11px}
  .cards{gap:9px}.metric{padding:13px 11px;min-height:88px;gap:9px}.metric-icon{width:34px;height:34px;border-radius:11px;font-size:16px}.metric strong{font-size:16px}.metric label{font-size:10px}
  .grid-main,.bottom-grid{grid-template-columns:1fr}.panel{padding:15px}.chart-wrap{height:185px}
@@ -126,7 +137,20 @@ tbody tr:last-child td{border-bottom:0}
 </style>
 </head>
 <body>
-<div class="app">
+<section class="auth-gate show" id="authGate">
+  <div class="auth-card">
+    <h1 id="authTitle">Entrar no Meu Controle</h1>
+    <p>Acesse suas contas e tarefas salvas com segurança.</p>
+    <form id="authForm">
+      <div class="field"><label for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" required></div>
+      <div class="field"><label for="authPassword">Senha</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></div>
+      <button class="btn" id="authSubmit" type="submit">Entrar</button>
+    </form>
+    <button class="auth-toggle" id="authToggle" type="button">Ainda não tem conta? Cadastre-se</button>
+    <p class="auth-feedback" id="authFeedback" role="status" aria-live="polite"></p>
+  </div>
+</section>
+<div class="app" id="appShell">
   <aside class="sidebar">
     <div class="brand"><div class="brand-mark">↗</div><div><strong>Meu Controle</strong><small>Organize. Planeje. Conquiste.</small></div></div>
     <nav class="nav" id="sideNav">
@@ -142,7 +166,7 @@ tbody tr:last-child td{border-bottom:0}
   <main>
     <header class="topbar">
       <div class="hello"><h1 id="greeting">Olá! 👋</h1><p>Aqui está um resumo da sua organização.</p></div>
-      <div class="top-actions"><button class="icon-btn" title="Adicionar conta" onclick="openAccountModal()">＋</button><div class="avatar">MC</div></div>
+      <div class="top-actions"><button class="icon-btn" title="Adicionar conta" onclick="openAccountModal()">＋</button><span class="user-email" id="currentUserEmail"></span><button class="btn outline" id="signOutButton" type="button">Sair</button><div class="avatar">MC</div></div>
     </header>
 
     <section class="page active" id="page-inicio">
@@ -241,20 +265,114 @@ tbody tr:last-child td{border-bottom:0}
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const $=id=>document.getElementById(id);
+const SUPABASE_URL='https://bdmpudhhzngqkvoeagur.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_kii2XIRildxXIGMJ5qP3GA_9fAdmTmq';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 const monthISO=()=>todayISO().slice(0,7);
 const parseDate=s=>s?new Date(s+'T12:00:00'):null;
 const fmtDate=s=>{if(!s)return '—';return parseDate(s).toLocaleDateString('pt-BR')};
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let accounts=JSON.parse(localStorage.getItem('mc_accounts')||'[]');
-let tasks=JSON.parse(localStorage.getItem('mc_tasks')||'[]');
+let accounts=[],tasks=[],currentUser=null,authMode='signin';
 let accountFilter='Todas',taskFilter='Todas',dashPeriod='month',reportPeriod='year';
 let calendarDate=new Date();
-function save(){localStorage.setItem('mc_accounts',JSON.stringify(accounts));localStorage.setItem('mc_tasks',JSON.stringify(tasks));renderAll()}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function showAuthFeedback(message,isError=false){const el=$('authFeedback');el.textContent=message;el.style.color=isError?'var(--red)':'var(--green-dark)'}
+function reportError(action,error){console.error(action,error);toast(`${action}: ${error.message||'erro inesperado'}`)}
+function setAuthMode(mode){
+ authMode=mode;
+ const signup=mode==='signup';
+ $('authTitle').textContent=signup?'Criar conta':'Entrar no Meu Controle';
+ $('authSubmit').textContent=signup?'Cadastrar':'Entrar';
+ $('authToggle').textContent=signup?'Já tem conta? Entrar':'Ainda não tem conta? Cadastre-se';
+ $('authPassword').autocomplete=signup?'new-password':'current-password';
+ showAuthFeedback('');
+}
+$('authToggle').addEventListener('click',()=>setAuthMode(authMode==='signin'?'signup':'signin'));
+$('authForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const email=$('authEmail').value.trim(),password=$('authPassword').value;
+ $('authSubmit').disabled=true;showAuthFeedback(authMode==='signup'?'Criando sua conta...':'Entrando...');
+ try{
+  const result=authMode==='signup'
+   ?await db.auth.signUp({email,password})
+   :await db.auth.signInWithPassword({email,password});
+  if(result.error)throw result.error;
+  if(authMode==='signup'&&!result.data.session)showAuthFeedback('Cadastro realizado. Confira seu e-mail para confirmar a conta.');
+  else showAuthFeedback('Acesso autorizado. Carregando seus dados...');
+ }catch(error){showAuthFeedback(error.message||'Não foi possível autenticar.',true)}
+ finally{$('authSubmit').disabled=false}
+});
+$('signOutButton').addEventListener('click',async()=>{
+ const {error}=await db.auth.signOut();
+ if(error)reportError('Não foi possível sair',error);
+});
+function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||''}}
+function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||'',notes:row.notes||'',done:Boolean(row.done)}}
+function updateReportYears(){
+ const selected=Number($('reportYear').value)||new Date().getFullYear();
+ const years=[...new Set([new Date().getFullYear()-1,new Date().getFullYear(),new Date().getFullYear()+1,...accounts.map(a=>Number(a.month.slice(0,4)))])].sort((a,b)=>a-b);
+ $('reportYear').innerHTML=years.map(y=>`<option value="${y}" ${y===selected?'selected':''}>${y}</option>`).join('');
+}
+function readLegacyData(){
+ try{
+  const accounts=JSON.parse(localStorage.getItem('mc_accounts')||'[]'),tasks=JSON.parse(localStorage.getItem('mc_tasks')||'[]');
+  if(!Array.isArray(accounts)||!Array.isArray(tasks))throw new Error('Os dados locais não estão no formato esperado.');
+  return {accounts,tasks};
+ }
+ catch(error){reportError('Não foi possível ler os dados locais para importação',error);return {accounts:[],tasks:[]}}
+}
+async function importLegacyData(){
+ if(!currentUser)return;
+ const legacy=readLegacyData();
+ const accountsDone=localStorage.getItem(`mc_migrated_accounts_${currentUser.id}`)==='true';
+ const tasksDone=localStorage.getItem(`mc_migrated_tasks_${currentUser.id}`)==='true';
+ const pendingAccounts=accountsDone?[]:legacy.accounts,pendingTasks=tasksDone?[]:legacy.tasks;
+ if(!pendingAccounts.length&&!pendingTasks.length)return;
+ if(!confirm(`Encontramos ${pendingAccounts.length} conta(s) e ${pendingTasks.length} tarefa(s) locais ainda não importadas. Deseja importá-las para sua conta Supabase?`))return;
+ try{
+  if(pendingAccounts.length){
+   const {error}=await db.from('accounts').insert(pendingAccounts.map(a=>({name:a.name,category:a.category,due:a.due,value:a.value,month:a.month,status:a.status,paid_date:a.paidDate||null,notes:a.notes||null})));
+   if(error)throw error;
+  }
+  localStorage.setItem(`mc_migrated_accounts_${currentUser.id}`,'true');
+  if(pendingTasks.length){
+   const {error}=await db.from('tasks').insert(pendingTasks.map(t=>({name:t.name,task_date:t.date||null,month:t.month||null,notes:t.notes||null,done:Boolean(t.done)})));
+   if(error)throw error;
+  }
+  localStorage.setItem(`mc_migrated_tasks_${currentUser.id}`,'true');
+  await loadData(false);toast('Dados locais importados para o Supabase.');
+ }catch(error){reportError('Não foi possível importar os dados locais',error)}
+}
+async function loadData(checkMigration=true){
+ if(!currentUser)return;
+ const [accountsResult,tasksResult]=await Promise.all([
+  db.from('accounts').select('*').order('month').order('due'),
+  db.from('tasks').select('*').order('task_date')
+ ]);
+ if(accountsResult.error)throw accountsResult.error;
+ if(tasksResult.error)throw tasksResult.error;
+ accounts=accountsResult.data.map(toAccount);tasks=tasksResult.data.map(toTask);
+ updateReportYears();renderAll();
+ if(checkMigration)await importLegacyData();
+}
+async function handleAuthSession(session){
+ const user=session?.user||null;
+ if(!user){
+  currentUser=null;accounts=[];tasks=[];
+  $('appShell').classList.remove('ready');$('authGate').classList.add('show');$('currentUserEmail').textContent='';
+  return;
+ }
+ if(currentUser?.id===user.id)return;
+ currentUser=user;$('authGate').classList.remove('show');$('appShell').classList.add('ready');$('currentUserEmail').textContent=user.email||'';
+ showAuthFeedback('');
+ try{await loadData()}catch(error){reportError('Não foi possível carregar os dados do Supabase',error)}
+}
+db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>{void handleAuthSession(session)},0)});
 function showPage(name){
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
  document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
@@ -274,22 +392,39 @@ function openTaskModal(id=null){
 }
 function closeModal(id){$(id).classList.remove('show')}
 document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
-$('accountForm').addEventListener('submit',e=>{
+$('accountForm').addEventListener('submit',async e=>{
  e.preventDefault();const id=$('accountId').value;
  const obj={id:id||crypto.randomUUID(),name:$('accountName').value.trim(),category:$('accountCategory').value,due:Number($('accountDue').value),value:Number($('accountValue').value),month:$('accountMonth').value,status:$('accountStatus').value,paidDate:$('accountPaidDate').value,notes:$('accountNotes').value.trim()};
- if(id)accounts=accounts.map(a=>a.id===id?obj:a);else accounts.push(obj);
- closeModal('accountModal');save();toast('Conta salva com sucesso!');
+ const payload={name:obj.name,category:obj.category,due:obj.due,value:obj.value,month:obj.month,status:obj.status,paid_date:obj.paidDate||null,notes:obj.notes||null};
+ try{
+  const result=id?await db.from('accounts').update(payload).eq('id',id):await db.from('accounts').insert(payload);
+  if(result.error)throw result.error;
+  closeModal('accountModal');await loadData(false);toast('Conta salva com sucesso!');
+ }catch(error){reportError('Não foi possível salvar a conta',error)}
 });
-$('taskForm').addEventListener('submit',e=>{
+$('taskForm').addEventListener('submit',async e=>{
  e.preventDefault();const id=$('taskId').value;const old=tasks.find(t=>t.id===id);
  const obj={id:id||crypto.randomUUID(),name:$('taskName').value.trim(),date:$('taskDate').value,month:$('taskMonth').value,notes:$('taskNotes').value.trim(),done:old?.done||false};
- if(id)tasks=tasks.map(t=>t.id===id?obj:t);else tasks.push(obj);
- closeModal('taskModal');save();toast('Tarefa salva com sucesso!');
+ const payload={name:obj.name,task_date:obj.date||null,month:obj.month||null,notes:obj.notes||null,done:obj.done};
+ try{
+  const result=id?await db.from('tasks').update(payload).eq('id',id):await db.from('tasks').insert(payload);
+  if(result.error)throw result.error;
+  closeModal('taskModal');await loadData(false);toast('Tarefa salva com sucesso!');
+ }catch(error){reportError('Não foi possível salvar a tarefa',error)}
 });
-function togglePaid(id){accounts=accounts.map(a=>a.id===id?{...a,status:a.status==='Pago'?'Pendente':'Pago',paidDate:a.status==='Pago'?'':todayISO()}:a);save()}
-function toggleTask(id){tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t);save()}
-function deleteAccount(id){if(confirm('Excluir esta conta?')){accounts=accounts.filter(a=>a.id!==id);save();toast('Conta excluída.')}}
-function deleteTask(id){if(confirm('Excluir esta tarefa?')){tasks=tasks.filter(t=>t.id!==id);save();toast('Tarefa excluída.')}}
+async function togglePaid(id){
+ const account=accounts.find(a=>a.id===id);if(!account)return;
+ const paid=account.status!=='Pago';
+ try{const {error}=await db.from('accounts').update({status:paid?'Pago':'Pendente',paid_date:paid?todayISO():null}).eq('id',id);if(error)throw error;await loadData(false)}
+ catch(error){reportError('Não foi possível atualizar o pagamento',error)}
+}
+async function toggleTask(id){
+ const task=tasks.find(t=>t.id===id);if(!task)return;
+ try{const {error}=await db.from('tasks').update({done:!task.done}).eq('id',id);if(error)throw error;await loadData(false)}
+ catch(error){reportError('Não foi possível atualizar a tarefa',error)}
+}
+async function deleteAccount(id){if(confirm('Excluir esta conta?'))try{const {error}=await db.from('accounts').delete().eq('id',id);if(error)throw error;await loadData(false);toast('Conta excluída.')}catch(error){reportError('Não foi possível excluir a conta',error)}}
+async function deleteTask(id){if(confirm('Excluir esta tarefa?'))try{const {error}=await db.from('tasks').delete().eq('id',id);if(error)throw error;await loadData(false);toast('Tarefa excluída.')}catch(error){reportError('Não foi possível excluir a tarefa',error)}}
 $('accountFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;accountFilter=b.dataset.filter;$('accountFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderAccounts()});
 $('taskFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;taskFilter=b.dataset.filter;$('taskFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderTasks()});
 $('dashPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;dashPeriod=b.dataset.period;$('dashPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));drawChart()});
@@ -343,12 +478,11 @@ function renderReports(){
  $('reportTable').innerHTML=rows.map(r=>{const i=Number(r.key.slice(5))-1,prev=i>0?allMonths[i-1]:0,pct=prev?((r.total-prev)/prev*100):null;return `<tr><td><strong>${r.label}</strong></td><td>${money(r.total)}</td><td class="positive">${money(r.paid)}</td><td class="negative">${money(r.open)}</td><td>${pct===null?'—':`<span class="${pct>0?'negative':'positive'}">${pct>0?'+':''}${pct.toFixed(1).replace('.',',')}%</span>`}</td></tr>`}).join('');
 }
 function renderAll(){renderAccounts();renderTasks();renderDashboard();renderCalendar();renderReports();drawChart()}
-(function init(){
+function initializeApp(){
  const name=new Intl.DateTimeFormat('pt-BR',{hour:'2-digit'}).format(new Date());$('greeting').textContent=(Number(name.slice(0,2))<12?'Bom dia!':Number(name.slice(0,2))<18?'Boa tarde!':'Boa noite!')+' 👋';
- const years=[...new Set([new Date().getFullYear()-1,new Date().getFullYear(),new Date().getFullYear()+1,...accounts.map(a=>Number(a.month.slice(0,4)))])].sort();
- $('reportYear').innerHTML=years.map(y=>`<option value="${y}" ${y===new Date().getFullYear()?'selected':''}>${y}</option>`).join('');
- $('reportYear').addEventListener('change',renderReports);renderAll();
-})();
+ updateReportYears();$('reportYear').addEventListener('change',renderReports);
+}
+initializeApp();
 window.addEventListener('resize',()=>drawChart());
 </script>
 </body>
