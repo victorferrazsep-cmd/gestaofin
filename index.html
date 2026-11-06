@@ -9,7 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="Meu Controle">
 <title>Meu Controle | Finanças e Planejamento</title>
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="icon" href="./img/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="./img/logo.png">
 <style>
 :root{
   --green:#08a45b;--green-dark:#07864d;--green-soft:#e8f8f0;
@@ -24,7 +25,7 @@ button{cursor:pointer}
 .app{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:235px minmax(0,1fr)}
 .sidebar{background:#fff;border-right:1px solid var(--line);padding:25px 17px;display:flex;flex-direction:column;gap:26px;position:sticky;top:0;height:100vh}
 .brand{display:flex;align-items:center;gap:11px;padding:3px 8px}
-.brand-mark{width:37px;height:37px;border-radius:12px;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font-size:21px;font-weight:800}
+.brand-mark{display:block;width:37px;height:37px;border-radius:12px;object-fit:cover}
 .brand strong{display:block;font-size:16px}.brand small{color:var(--muted);font-size:10px}
 .nav{display:grid;gap:7px}
 .nav button{border:0;background:transparent;color:#4c596b;text-align:left;padding:12px 13px;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:600;font-size:13px}
@@ -209,7 +210,7 @@ tbody tr:last-child td{border-bottom:0}
 </section>
 <div class="app" id="appShell">
   <aside class="sidebar">
-    <div class="brand"><div class="brand-mark">↗</div><div><strong>Meu Controle</strong><small>Organize. Planeje. Conquiste.</small></div></div>
+    <div class="brand"><img class="brand-mark" src="./img/logo.png" alt="Logo Meu Controle"><div><strong>Meu Controle</strong><small>Organize. Planeje. Conquiste.</small></div></div>
     <nav class="nav" id="sideNav">
       <button class="active" data-page="inicio"><span class="ico">⌂</span>Início</button>
       <button data-page="contas"><span class="ico">▤</span>Contas</button>
@@ -456,8 +457,8 @@ $('testNotificationButton').addEventListener('click',async()=>{
   const registration=await navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:new URL('.',document.baseURI).pathname});
   await registration.showNotification('Lembrete financeiro',{
    body:'Este é um teste. Seus lembretes de contas e tarefas aparecerão aqui.',
-   icon:new URL('icon.svg',document.baseURI).href,
-   badge:new URL('icon.svg',document.baseURI).href,
+   icon:new URL('img/logo.png',document.baseURI).href,
+   badge:new URL('img/logo.png',document.baseURI).href,
    tag:'test-reminder',
    data:{url:new URL('.',document.baseURI).href}
   });
