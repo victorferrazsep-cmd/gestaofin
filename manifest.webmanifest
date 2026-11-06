@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Meu Controle",
-  "short_name": "Meu Controle",
+  "name": "FFinance",
+  "short_name": "FFinance",
   "description": "Organize contas, tarefas e compromissos financeiros.",
   "lang": "pt-BR",
   "start_url": "./",

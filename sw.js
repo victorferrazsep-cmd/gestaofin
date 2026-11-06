@@ -15,10 +15,10 @@ self.addEventListener('push', event => {
     payload = event.data ? event.data.json() : {};
   } catch (error) {
     console.error('Push payload is not valid JSON.', error);
-    payload = { title: 'Lembrete financeiro', body: 'Você tem uma conta pendente.' };
+    payload = { title: 'FFinance', body: 'Você tem uma conta pendente.' };
   }
 
-  event.waitUntil(self.registration.showNotification(payload.title || 'Meu Controle', {
+  event.waitUntil(self.registration.showNotification(payload.title || 'FFinance', {
     body: payload.body || 'Você tem uma conta pendente.',
     icon: ICON_URL,
     badge: ICON_URL,

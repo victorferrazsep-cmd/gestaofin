@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Meu Controle">
-<title>Meu Controle | Finanças e Planejamento</title>
-<link rel="manifest" href="./manifest.webmanifest?v=3">
+<meta name="apple-mobile-web-app-title" content="FFinance">
+<title>FFinance | Finanças e Planejamento</title>
+<link rel="manifest" href="./manifest.webmanifest?v=4">
 <link rel="icon" href="./img/logo.png?v=2" type="image/png">
 <link rel="apple-touch-icon" href="./img/app-icon.png?v=3">
 <style>
@@ -24,9 +24,10 @@ button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 .app{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:235px minmax(0,1fr)}
 .sidebar{background:#fff;border-right:1px solid var(--line);padding:25px 17px;display:flex;flex-direction:column;gap:26px;position:sticky;top:0;height:100vh}
-.brand{display:flex;align-items:center;gap:11px;padding:3px 8px}
+.brand{display:flex;align-items:center;gap:2px;padding:3px 0}
 .brand-mark{display:block;width:37px;height:37px;border-radius:12px;object-fit:cover}
-.brand strong{display:block;font-size:16px}.brand small{color:var(--muted);font-size:10px}
+.brand>div{display:flex;flex-direction:column;gap:0;line-height:1}
+.brand strong{display:block;font-size:16px;line-height:1.1}.brand small{display:block;color:var(--muted);font-size:10px;line-height:1.1}
 .nav{display:grid;gap:7px}
 .nav button{border:0;background:transparent;color:#4c596b;text-align:left;padding:12px 13px;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:600;font-size:13px}
 .nav button .ico{width:20px;text-align:center;font-size:17px}
@@ -35,6 +36,8 @@ button{cursor:pointer}
 .sidebar-note b{display:block;font-size:23px;margin-bottom:5px}
 main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:12px}
+.hello-heading{display:flex;align-items:center;gap:8px}
+.mobile-header-logo{display:none}
 .hello h1{font-size:25px;margin:0 0 4px;letter-spacing:-.6px}.hello p{margin:0;color:var(--muted);font-size:13px}
 .test-notification-button{margin-top:9px;padding:7px 10px;font-size:11px}
 .top-actions{display:flex;align-items:center;gap:10px}
@@ -168,7 +171,7 @@ tbody tr:last-child td{border-bottom:0}
 @media(max-width:1050px){.app{grid-template-columns:205px 1fr}.cards{grid-template-columns:repeat(2,1fr)}main{padding:24px 20px}.grid-main{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){
  #appShell.ready{display:block}.app{display:block}.sidebar{display:none}main{padding:calc(20px + env(safe-area-inset-top)) 14px calc(88px + env(safe-area-inset-bottom))}
- .topbar{margin-bottom:18px;align-items:flex-start}.hello h1{font-size:21px}.hello p{font-size:11px}
+ .topbar{margin-bottom:18px;align-items:flex-start}.hello-heading{gap:7px}.mobile-header-logo{display:block;width:30px;height:30px;flex:0 0 30px;border-radius:9px;object-fit:cover}.hello h1{font-size:21px}.hello p{font-size:11px}
  .top-actions{gap:7px;flex-wrap:wrap;justify-content:flex-end}.user-email{display:none}.avatar{width:34px;height:34px;min-width:34px;min-height:34px;flex-basis:34px}.profile-trigger{width:34px;height:34px;min-width:34px;flex-basis:34px}.avatar img{width:34px;height:34px}
  .cards{gap:9px}.metric{padding:13px 11px;min-height:88px;gap:9px}.metric-icon{width:34px;height:34px;border-radius:11px;font-size:16px}.metric strong{font-size:16px}.metric label{font-size:10px}
  .grid-main,.bottom-grid{grid-template-columns:1fr}.panel{padding:15px}.chart-wrap{height:185px}
@@ -190,7 +193,7 @@ tbody tr:last-child td{border-bottom:0}
 <body>
 <section class="auth-gate show" id="authGate">
   <div class="auth-card">
-    <h1 id="authTitle">Entrar no Meu Controle</h1>
+    <h1 id="authTitle">Entrar no FFinance</h1>
     <p>Acesse suas contas e tarefas salvas com segurança.</p>
     <form id="authForm">
       <div class="field" id="authNameField" hidden><label for="authName">Nome para exibição</label><input id="authName" type="text" autocomplete="name" maxlength="80"></div>
@@ -210,7 +213,7 @@ tbody tr:last-child td{border-bottom:0}
 </section>
 <div class="app" id="appShell">
   <aside class="sidebar">
-    <div class="brand"><img class="brand-mark" src="./img/logo.png" alt="Logo Meu Controle"><div><strong>Meu Controle</strong><small>Organize. Planeje. Conquiste.</small></div></div>
+    <div class="brand"><img class="brand-mark" src="./img/logo.png" alt="Logo FFinance"><div><strong>FFinance</strong><small>Organize. Planeje. Conquiste.</small></div></div>
     <nav class="nav" id="sideNav">
       <button class="active" data-page="inicio"><span class="ico">⌂</span>Início</button>
       <button data-page="contas"><span class="ico">▤</span>Contas</button>
@@ -223,7 +226,7 @@ tbody tr:last-child td{border-bottom:0}
 
   <main>
     <header class="topbar">
-      <div class="hello"><h1 id="greeting">Olá! 👋</h1><p>Aqui está um resumo da sua organização.</p><button class="btn secondary test-notification-button" id="testNotificationButton" type="button" hidden>🔔 Testar Notificação</button></div>
+      <div class="hello"><div class="hello-heading"><img class="mobile-header-logo" src="./img/logo.png" alt=""><h1 id="greeting">Olá! 👋</h1></div><p>Aqui está um resumo da sua organização.</p><button class="btn secondary test-notification-button" id="testNotificationButton" type="button" hidden>🔔 Testar Notificação</button></div>
       <div class="top-actions"><button class="btn outline notify-button" id="pushNotificationsButton" type="button" aria-label="Ativar avisos" title="Ativar avisos" aria-pressed="false">🔔</button><button class="profile-trigger" id="profileTrigger" type="button" aria-label="Abrir meu perfil"><div class="avatar" id="userAvatar">MC</div></button></div>
     </header>
 
@@ -455,7 +458,7 @@ $('testNotificationButton').addEventListener('click',async()=>{
   const permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();
   if(permission!=='granted')throw new Error(Notification.permission==='denied'?'As notificações estão bloqueadas. Ative-as nos Ajustes do navegador para este app.':'Permita notificações nas configurações do navegador.');
   const registration=await navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:new URL('.',document.baseURI).pathname});
-  await registration.showNotification('Lembrete financeiro',{
+  await registration.showNotification('FFinance',{
    body:'Este é um teste. Seus lembretes de contas e tarefas aparecerão aqui.',
    icon:new URL('icon.svg?v=3',document.baseURI).href,
    badge:new URL('icon.svg?v=3',document.baseURI).href,
@@ -606,7 +609,7 @@ function setAuthMode(mode){
  const signup=mode==='signup';
  $('authForm').hidden=false;$('recoveryForm').hidden=true;$('authToggle').hidden=false;$('forgotPasswordButton').hidden=signup;
  $('authNameField').hidden=!signup;$('authName').required=signup;
- $('authTitle').textContent=signup?'Criar Conta':'Entrar no Meu Controle';
+ $('authTitle').textContent=signup?'Criar Conta':'Entrar no FFinance';
  $('authSubmit').textContent=signup?'Cadastrar':'Entrar';
  $('authToggle').textContent=signup?'Já tem conta? Entrar':'Ainda não tem conta? Cadastre-se';
  $('authPassword').autocomplete=signup?'new-password':'current-password';
@@ -668,9 +671,7 @@ function toAccount(row){return {id:row.id,name:row.name,category:row.category,du
 function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||'',notes:row.notes||'',done:Boolean(row.done)}}
 function setUserDisplay(user){
  const displayName=user.user_metadata?.display_name?.trim()||'';
- const hour=Number(new Intl.DateTimeFormat('pt-BR',{hour:'2-digit'}).format(new Date()));
- const greeting=hour<12?'Bom dia':hour<18?'Boa tarde':'Boa noite';
- $('greeting').textContent=`${greeting}${displayName?`, ${displayName}`:''}! 👋`;
+ $('greeting').textContent=`Olá${displayName?`, ${displayName}`:''}! 👋`;
  $('userAvatar').textContent=displayName?displayName.split(/\s+/).slice(0,2).map(part=>part[0]).join('').toLocaleUpperCase('pt-BR'):'MC';
 }
 function formatUserDate(value){
@@ -885,7 +886,7 @@ function renderReports(){
 }
 function renderAll(){renderAccounts();renderTasks();renderDashboard();renderCalendar();renderReports();drawChart()}
 function initializeApp(){
- const name=new Intl.DateTimeFormat('pt-BR',{hour:'2-digit'}).format(new Date());$('greeting').textContent=(Number(name.slice(0,2))<12?'Bom dia!':Number(name.slice(0,2))<18?'Boa tarde!':'Boa noite!')+' 👋';
+ $('greeting').textContent='Olá! 👋';
  updateReportYears();$('reportYear').addEventListener('change',renderReports);
 }
 initializeApp();
