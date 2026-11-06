@@ -194,9 +194,12 @@ tbody tr:last-child td{border-bottom:0}
  .profile-date-row{gap:8px}
 }
 @media(max-width:700px){
- #accountFilters{flex-wrap:nowrap;gap:5px}
+ #accountFilters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;width:100%}
  #accountFilters button[data-filter="Assinatura"]{display:none}
- #accountMonthFilter{flex:1 1 0;min-width:0;padding:7px 8px}
+ #accountFilters .filter{width:100%;min-width:0;padding:7px 3px;font-size:9px;text-align:center;white-space:nowrap}
+ #accountMonthFilter{text-align:center;text-align-last:center}
+ #page-contas table{min-width:500px}
+ #page-contas th:nth-child(2),#page-contas td:nth-child(2){display:none}
 }
 </style>
 </head>
@@ -268,7 +271,7 @@ tbody tr:last-child td{border-bottom:0}
     <section class="page" id="page-contas">
       <div class="section-toolbar"><h2>Minhas Contas</h2><div class="toolbar-actions"><button class="btn" onclick="openAccountModal()">＋ Nova Conta</button></div></div>
       <div class="filters" id="accountFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Fixa">Fixas</button><button class="filter" data-filter="Variável">Variáveis</button><button class="filter" data-filter="Sazonal">Sazonais</button><button class="filter" data-filter="Assinatura">Assinaturas</button><select class="filter" id="accountMonthFilter" aria-label="Filtrar contas por mês"><option value="all">Todos os meses</option></select></div>
-      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta / serviço</th><th>Categoria</th><th>Mês</th><th>Venc</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta</th><th>Categoria</th><th>Mês</th><th>Venc</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
     </section>
 
     <section class="page" id="page-tarefas">
@@ -960,7 +963,7 @@ $('dashPeriods').addEventListener('click',e=>{const b=e.target.closest('button[d
 $('reportPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;reportPeriod=b.dataset.period;$('reportPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderReports()});
 function renderAccounts(){
  const list=accounts.filter(a=>(accountFilter==='Todas'||a.category===accountFilter)&&(accountMonthFilter==='all'||a.month===accountMonthFilter)).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
- $('accountsTable').innerHTML=list.map(a=>`<tr><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td>${formatAccountMonth(a.month)}</td><td>${a.due}</td><td><strong>${money(a.value)}</strong></td><td><span class="status ${a.status==='Pago'?'paid':'pending'}">${a.status==='Pago'?'✓ Pago':'◷ Pendente'}</span></td><td><button class="action-btn" title="Marcar pagamento" onclick="togglePaid('${a.id}')">✓</button> <button class="action-btn" title="Editar" onclick="openAccountModal('${a.id}')">✎</button> <button class="action-btn" title="Excluir" onclick="openDeleteAccountModal('${a.id}')">×</button></td></tr>`).join('');
+ $('accountsTable').innerHTML=list.map(a=>`<tr><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td>${formatAccountMonth(a.month)}</td><td>${a.due}</td><td><strong>${Number(a.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td><td><span class="status ${a.status==='Pago'?'paid':'pending'}" role="img" aria-label="${a.status==='Pago'?'Pago':'Pendente'}" title="${a.status==='Pago'?'Pago':'Pendente'}">${a.status==='Pago'?'✓':'◷'}</span></td><td><button class="action-btn" title="Marcar pagamento" onclick="togglePaid('${a.id}')">✓</button> <button class="action-btn" title="Editar" onclick="openAccountModal('${a.id}')">✎</button> <button class="action-btn" title="Excluir" onclick="openDeleteAccountModal('${a.id}')">×</button></td></tr>`).join('');
  $('accountsEmpty').hidden=list.length>0;
 }
 function formatAccountMonth(month){
