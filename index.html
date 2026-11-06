@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#ffffff">
 <title>Meu Controle | Finanças e Planejamento</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
 <style>
 :root{
   --green:#08a45b;--green-dark:#07864d;--green-soft:#e8f8f0;
@@ -122,6 +124,7 @@ tbody tr:last-child td{border-bottom:0}
 .auth-card [hidden]{display:none!important}
 .auth-feedback{min-height:18px;margin:12px 0 0!important;color:var(--red)!important;font-size:12px!important}
 .user-email{font-size:11px;color:var(--muted)}
+.notify-button{white-space:nowrap}
 @media(max-width:1050px){.app{grid-template-columns:205px 1fr}.cards{grid-template-columns:repeat(2,1fr)}main{padding:24px 20px}.grid-main{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){
  #appShell.ready{display:block}.app{display:block}.sidebar{display:none}main{padding:20px 14px 88px}
@@ -135,6 +138,7 @@ tbody tr:last-child td{border-bottom:0}
  .form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}
  .calendar-grid{gap:3px}.calendar-grid div{padding:8px 1px;font-size:10px}
  .category-row{grid-template-columns:90px 1fr 78px}
+ .notify-button{padding:8px 9px;font-size:10px}
 }
 </style>
 </head>
@@ -144,6 +148,7 @@ tbody tr:last-child td{border-bottom:0}
     <h1 id="authTitle">Entrar no Meu Controle</h1>
     <p>Acesse suas contas e tarefas salvas com segurança.</p>
     <form id="authForm">
+      <div class="field" id="authNameField" hidden><label for="authName">Nome para exibição</label><input id="authName" type="text" autocomplete="name" maxlength="80"></div>
       <div class="field"><label for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" required></div>
       <div class="field"><label for="authPassword">Senha</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></div>
       <button class="btn" id="authSubmit" type="submit">Entrar</button>
@@ -174,7 +179,7 @@ tbody tr:last-child td{border-bottom:0}
   <main>
     <header class="topbar">
       <div class="hello"><h1 id="greeting">Olá! 👋</h1><p>Aqui está um resumo da sua organização.</p></div>
-      <div class="top-actions"><button class="icon-btn" title="Adicionar conta" onclick="openAccountModal()">＋</button><span class="user-email" id="currentUserEmail"></span><button class="btn outline" id="signOutButton" type="button">Sair</button><div class="avatar">MC</div></div>
+      <div class="top-actions"><button class="icon-btn" title="Adicionar conta" onclick="openAccountModal()">＋</button><span class="user-email" id="currentUserDisplayName"></span><button class="btn outline notify-button" id="pushNotificationsButton" type="button">🔔 Ativar avisos</button><button class="btn outline" id="signOutButton" type="button">Sair</button><div class="avatar" id="userAvatar">MC</div></div>
     </header>
 
     <section class="page active" id="page-inicio">
@@ -278,6 +283,7 @@ tbody tr:last-child td{border-bottom:0}
 const $=id=>document.getElementById(id);
 const SUPABASE_URL='https://bdmpudhhzngqkvoeagur.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_kii2XIRildxXIGMJ5qP3GA_9fAdmTmq';
+const VAPID_PUBLIC_KEY='SUBSTITUA_PELA_CHAVE_PUBLICA_VAPID';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const authRedirectUrl=window.location.href.split(/[?#]/)[0];
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -292,10 +298,55 @@ let calendarDate=new Date();
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 function showAuthFeedback(message,isError=false){const el=$('authFeedback');el.textContent=message;el.style.color=isError?'var(--red)':'var(--green-dark)'}
 function reportError(action,error){console.error(action,error);toast(`${action}: ${error.message||'erro inesperado'}`)}
+function base64UrlToBytes(value){
+ const padding='='.repeat((4-value.length%4)%4),base64=(value+padding).replace(/-/g,'+').replace(/_/g,'/');
+ return Uint8Array.from(atob(base64),char=>char.charCodeAt(0));
+}
+async function updatePushButton(){
+ const button=$('pushNotificationsButton');
+ if(!currentUser||!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window)||!window.isSecureContext){
+  button.hidden=true;return;
+ }
+ button.hidden=false;
+ const registration=await navigator.serviceWorker.getRegistration(new URL('.',document.baseURI).pathname);
+ const subscription=await registration?.pushManager.getSubscription();
+ if(!subscription){button.textContent='🔔 Ativar avisos';button.dataset.active='false';return}
+ const {data,error}=await db.from('push_subscriptions').select('endpoint').eq('user_id',currentUser.id).eq('endpoint',subscription.endpoint).maybeSingle();
+ if(error)throw error;
+ const active=Boolean(data);
+ button.textContent=active?'🔔 Avisos ativos':'🔔 Concluir ativação';
+ button.dataset.active=String(active);
+}
+$('pushNotificationsButton').addEventListener('click',async()=>{
+ const button=$('pushNotificationsButton');
+ if(!currentUser)return;
+ button.disabled=true;
+ try{
+  const registration=await navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:new URL('.',document.baseURI).pathname});
+  let subscription=await registration.pushManager.getSubscription();
+  if(button.dataset.active==='true'&&subscription){
+   const {error}=await db.from('push_subscriptions').delete().eq('user_id',currentUser.id).eq('endpoint',subscription.endpoint);
+   if(error)throw error;
+   await subscription.unsubscribe();
+   toast('Avisos desativados neste dispositivo.');
+  }else{
+   if(VAPID_PUBLIC_KEY==='SUBSTITUA_PELA_CHAVE_PUBLICA_VAPID')throw new Error('A chave pública VAPID ainda não foi configurada no app.');
+   const permission=Notification.permission==='granted'? 'granted':await Notification.requestPermission();
+   if(permission!=='granted')throw new Error('Permita notificações nas configurações do navegador.');
+   subscription ||=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64UrlToBytes(VAPID_PUBLIC_KEY)});
+   const {error}=await db.from('push_subscriptions').upsert({user_id:currentUser.id,endpoint:subscription.endpoint,subscription:subscription.toJSON()},{onConflict:'user_id,endpoint'});
+   if(error)throw error;
+   toast('Avisos ativados neste dispositivo.');
+  }
+  await updatePushButton();
+ }catch(error){reportError('Não foi possível configurar as notificações',error)}
+ finally{button.disabled=false}
+});
 function setAuthMode(mode){
  authMode=mode;
  const signup=mode==='signup';
  $('authForm').hidden=false;$('recoveryForm').hidden=true;$('authToggle').hidden=false;$('forgotPasswordButton').hidden=signup;
+ $('authNameField').hidden=!signup;$('authName').required=signup;
  $('authTitle').textContent=signup?'Criar conta':'Entrar no Meu Controle';
  $('authSubmit').textContent=signup?'Cadastrar':'Entrar';
  $('authToggle').textContent=signup?'Já tem conta? Entrar':'Ainda não tem conta? Cadastre-se';
@@ -306,7 +357,7 @@ function showPasswordRecovery(){
  passwordRecovery=true;
  $('authGate').classList.add('show');$('appShell').classList.remove('ready');
  $('authTitle').textContent='Definir nova senha';
- $('authForm').hidden=true;$('authToggle').hidden=true;$('forgotPasswordButton').hidden=true;$('recoveryForm').hidden=false;
+ $('authForm').hidden=true;$('authNameField').hidden=true;$('authToggle').hidden=true;$('forgotPasswordButton').hidden=true;$('recoveryForm').hidden=false;
  showAuthFeedback('Digite e confirme sua nova senha.');
 }
 $('authToggle').addEventListener('click',()=>setAuthMode(authMode==='signin'?'signup':'signin'));
@@ -341,10 +392,12 @@ $('recoveryForm').addEventListener('submit',async e=>{
 $('authForm').addEventListener('submit',async e=>{
  e.preventDefault();
  const email=$('authEmail').value.trim(),password=$('authPassword').value;
+ const displayName=$('authName').value.trim();
+ if(authMode==='signup'&&!displayName){showAuthFeedback('Informe seu nome para exibição.',true);$('authName').focus();return}
  $('authSubmit').disabled=true;showAuthFeedback(authMode==='signup'?'Criando sua conta...':'Entrando...');
  try{
   const result=authMode==='signup'
-   ?await db.auth.signUp({email,password,options:{emailRedirectTo:authRedirectUrl}})
+   ?await db.auth.signUp({email,password,options:{emailRedirectTo:authRedirectUrl,data:{display_name:displayName}}})
    :await db.auth.signInWithPassword({email,password});
   if(result.error)throw result.error;
   if(authMode==='signup'&&!result.data.session)showAuthFeedback('Cadastro realizado. Confira seu e-mail para confirmar a conta.');
@@ -358,6 +411,14 @@ $('signOutButton').addEventListener('click',async()=>{
 });
 function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||''}}
 function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||'',notes:row.notes||'',done:Boolean(row.done)}}
+function setUserDisplay(user){
+ const displayName=user.user_metadata?.display_name?.trim()||'';
+ const hour=Number(new Intl.DateTimeFormat('pt-BR',{hour:'2-digit'}).format(new Date()));
+ const greeting=hour<12?'Bom dia':hour<18?'Boa tarde':'Boa noite';
+ $('greeting').textContent=`${greeting}${displayName?`, ${displayName}`:''}! 👋`;
+ $('currentUserDisplayName').textContent=displayName||user.email||'';
+ $('userAvatar').textContent=displayName?displayName.split(/\s+/).slice(0,2).map(part=>part[0]).join('').toLocaleUpperCase('pt-BR'):'MC';
+}
 function updateReportYears(){
  const selected=Number($('reportYear').value)||new Date().getFullYear();
  const years=[...new Set([new Date().getFullYear()-1,new Date().getFullYear(),new Date().getFullYear()+1,...accounts.map(a=>Number(a.month.slice(0,4)))])].sort((a,b)=>a-b);
@@ -411,11 +472,12 @@ async function handleAuthSession(event,session){
  const user=session?.user||null;
  if(!user){
   currentUser=null;accounts=[];tasks=[];
-  $('appShell').classList.remove('ready');$('authGate').classList.add('show');$('currentUserEmail').textContent='';
+  $('appShell').classList.remove('ready');$('authGate').classList.add('show');$('currentUserDisplayName').textContent='';$('userAvatar').textContent='MC';$('pushNotificationsButton').hidden=true;
   return;
  }
  if(currentUser?.id===user.id)return;
- currentUser=user;$('authGate').classList.remove('show');$('appShell').classList.add('ready');$('currentUserEmail').textContent=user.email||'';
+ currentUser=user;$('authGate').classList.remove('show');$('appShell').classList.add('ready');setUserDisplay(user);
+ try{await updatePushButton()}catch(error){reportError('Não foi possível verificar as notificações',error)}
  showAuthFeedback('');
  try{await loadData()}catch(error){reportError('Não foi possível carregar os dados do Supabase',error)}
 }
