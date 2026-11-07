@@ -168,22 +168,25 @@ tbody tr:last-child td{border-bottom:0}
 .loan-status.early{background:#edf0ff;color:#5865b3}
 .loan-status.on-time{background:var(--green-soft);color:var(--green-dark)}
 .loan-status.late{background:var(--red-soft);color:#d64d63}
+.loan-status.pending{background:#fff6e7;color:#b47a1d}
 .loan-row{cursor:pointer}
 .loan-row:focus-visible{outline:2px solid #72d5a3;outline-offset:-2px}
-.loan-contract-row td,.loan-summary-row td{padding:12px;border-bottom:1px solid var(--line);background:#f8fafb;font-size:12px}
-.loan-contract-primary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center}
+.loan-contract-card{min-width:0;margin-bottom:12px;padding:12px;border:1px solid #edf0f3;border-radius:var(--radius);background:#fff;box-shadow:var(--shadow)}
+.loan-contract-header{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center}
 .loan-contract-edit,.loan-contract-toggle{min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
 .loan-contract-edit{grid-column:1/3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
 .loan-contract-toggle{grid-column:3;text-align:center;font-size:12px;font-weight:700;white-space:nowrap}
 .loan-summary-footer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.loan-contract-card .loan-summary-footer{margin:10px 0}
 .loan-summary-footer span{display:grid;gap:4px;min-width:0;text-align:center}
 .loan-summary-footer small{color:var(--muted);font-size:10px}
 .loan-summary-footer strong{color:var(--ink);overflow-wrap:anywhere}
 .loan-summary-footer .loan-balance strong{color:var(--red)}
 .loan-table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse}
-.loan-table tr[hidden]{display:none}
+.loan-table[hidden]{display:none}
 .loan-column-header th{padding:9px 5px;color:#8792a1;font-size:10px;text-align:center;border-bottom:1px solid var(--line)}
 .loan-installment-row td{text-align:center}
+.loan-installment-row.paid-late td{background:#fff7f8}
 .loan-installment-row td:first-child{text-align:left}
 .loan-date-compact{display:none}
 .mobile-nav{display:none}
@@ -247,7 +250,7 @@ tbody tr:last-child td{border-bottom:0}
  #page-contas .account-diff-increase{color:var(--red);font-weight:700}
  #page-contas .account-diff-decrease{color:var(--green-dark);font-weight:700}
  #page-contas .account-diff-neutral{color:var(--muted)}
- #page-emprestimos .loan-table-wrap{overflow-x:hidden}
+ #page-emprestimos .loan-contract-card{padding:9px 7px}
  #page-emprestimos .loan-table{width:100%;min-width:0;table-layout:fixed}
  #page-emprestimos .loan-table th,#page-emprestimos .loan-table td{padding:8px 2px;font-size:10px;letter-spacing:0;text-align:center;overflow-wrap:anywhere}
  #page-emprestimos .loan-table th{font-size:8px;line-height:1.15}
@@ -256,10 +259,8 @@ tbody tr:last-child td{border-bottom:0}
  #page-emprestimos .loan-column-header th:nth-child(3),#page-emprestimos .loan-installment-row td:nth-child(3){width:24%}
  #page-emprestimos .loan-column-header th:nth-child(4),#page-emprestimos .loan-installment-row td:nth-child(4){width:20%}
  #page-emprestimos .loan-column-header th:nth-child(5),#page-emprestimos .loan-installment-row td:nth-child(5){width:23%}
- #page-emprestimos .loan-contract-row td{padding:9px 7px 9px 15px;text-align:left;font-size:11px}
- #page-emprestimos .loan-summary-row td{padding:9px 7px;text-align:left;font-size:11px}
- #page-emprestimos .loan-contract-primary{gap:6px}
- #page-emprestimos .loan-contract-edit{padding-left:12px}
+ #page-emprestimos .loan-contract-header{gap:6px}
+ #page-emprestimos .loan-contract-edit{padding-left:24px;font-size:10px}
  #page-emprestimos .loan-summary-footer{gap:6px}
  #page-emprestimos .loan-summary-footer small{font-size:9px}
  #page-emprestimos .loan-contract-edit,#page-emprestimos .loan-contract-toggle,#page-emprestimos .loan-summary-footer strong{font-size:10px}
@@ -360,7 +361,7 @@ tbody tr:last-child td{border-bottom:0}
 
     <section class="page" id="page-emprestimos">
       <div class="section-toolbar"><h2>Controle de Empréstimos</h2><div class="toolbar-actions"><button class="btn" type="button" onclick="openLoanModal()">+ Contrato</button></div></div>
-      <div class="panel"><div class="table-wrap loan-table-wrap"><table class="loan-table"><tbody id="loansTable"></tbody></table></div><div id="loansEmpty" class="empty" hidden>Nenhum empréstimo cadastrado.</div></div>
+      <div id="loansTable"></div><div id="loansEmpty" class="empty" hidden>Nenhum empréstimo cadastrado.</div>
     </section>
 
     <section class="page" id="page-relatorios">
@@ -417,11 +418,11 @@ tbody tr:last-child td{border-bottom:0}
     <div class="field"><label for="loanInstallmentValue">Valor da Parcela</label><input id="loanInstallmentValue" readonly></div>
     <div class="field"><label for="loanInstallmentReference">Mês Ref</label><input id="loanInstallmentReference" readonly></div>
     <div class="field"><label for="loanInstallmentDue">Data de Venc</label><input id="loanInstallmentDue" type="date" required></div>
-    <div class="field"><label for="loanPaymentDate">Data do Pagamento</label><input id="loanPaymentDate" type="date"></div>
+    <div class="field"><label for="loanPaymentDate">Data do Pagamento</label><input id="loanPaymentDate" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" autocomplete="off"></div>
     <div class="field"><label for="loanPaymentValue">Valor do Pagamento (R$)</label><input id="loanPaymentValue" type="number" min="0" step="0.01" placeholder="0,00"></div>
     <div class="field full"><label for="loanPaymentStatus">Status automático</label><input id="loanPaymentStatus" readonly></div>
    </div>
-   <div class="modal-actions delete-account-actions"><button class="btn danger" id="deleteLoanButton" type="button">Excluir Empréstimo</button><span style="flex:1"></span><button class="btn outline" type="button" onclick="closeModal('loanInstallmentModal')">Cancelar</button><button class="btn" id="saveLoanInstallmentButton" type="submit">Salvar Parcela</button></div>
+   <div class="modal-actions delete-account-actions"><button class="btn danger" id="deleteLoanButton" type="button">Excluir</button><span style="flex:1"></span><button class="btn outline" type="button" onclick="closeModal('loanInstallmentModal')">Cancelar</button><button class="btn" id="saveLoanInstallmentButton" type="submit">Salvar Parcela</button></div>
   </form>
  </section>
 </div>
@@ -537,6 +538,19 @@ const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.get
 const monthISO=()=>todayISO().slice(0,7);
 const parseDate=s=>s?new Date(s+'T12:00:00'):null;
 const fmtDate=s=>{if(!s)return '—';return parseDate(s).toLocaleDateString('pt-BR')};
+const formatISODateForInput=value=>value?value.split('-').reverse().join('/'):'';
+function parseBRDate(value){
+ if(!value)return '';
+ const match=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value);
+ if(!match)return null;
+ const [,day,month,year]=match,utcDate=new Date(Date.UTC(Number(year),Number(month)-1,Number(day)));
+ if(utcDate.getUTCFullYear()!==Number(year)||utcDate.getUTCMonth()!==Number(month)-1||utcDate.getUTCDate()!==Number(day))return null;
+ return `${year}-${month}-${day}`;
+}
+function formatBRDateInput(value){
+ const digits=value.replace(/\D/g,'').slice(0,8);
+ return digits.length>4?`${digits.slice(0,2)}/${digits.slice(2,4)}/${digits.slice(4)}`:digits.length>2?`${digits.slice(0,2)}/${digits.slice(2)}`:digits;
+}
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
 const expandedLoanIds=new Set();
@@ -995,15 +1009,19 @@ function buildLoanInstallments({loanId,userId,name,contractTotal,installmentCoun
   due_date:addMonthsToDate(firstDueDate,index),payment_date:null,payment_value:0
  }));
 }
+function isLoanInstallmentPaid(loan){
+ return Boolean(loan.paymentDate)&&Number(loan.paymentValue||0)>=Number(loan.installmentValue);
+}
 function getLoanStatus(loan,currentDate=todayISO()){
- if(loan.paymentDate&&loan.paymentDate<=currentDate){
+ if(!isLoanInstallmentPaid(loan))return currentDate>loan.dueDate?'Atrasado':'Pendente';
+ if(loan.paymentDate<=currentDate){
   const daysEarly=(Date.parse(`${loan.dueDate}T00:00:00Z`)-Date.parse(`${loan.paymentDate}T00:00:00Z`))/86400000;
   if(daysEarly>30)return 'Antecipado';
-  return loan.paymentDate<=loan.dueDate?'Em dia':'Atraso';
+  return 'Pago';
  }
- return currentDate>loan.dueDate?'Atraso':'Em dia';
+ return currentDate>loan.dueDate?'Atrasado':'Pendente';
 }
-function loanStatusClass(status){return status==='Antecipado'?'early':status==='Atraso'?'late':'on-time'}
+function loanStatusClass(status){return status==='Antecipado'?'early':status==='Atrasado'?'late':status==='Pendente'?'pending':'on-time'}
 function formatLoanDateCompact(date){return date?parseDate(date).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'—'}
 function renderLoans(){
  if(loanLoadError){
@@ -1020,19 +1038,21 @@ function renderLoans(){
   const first=group[0];
   const totalPaid=group.reduce((sum,loan)=>sum+Number(loan.paymentValue||0),0);
   const remainingBalance=Math.max(0,Number(first.contractTotal)-totalPaid);
-  const paidInstallments=group.filter(loan=>Boolean(loan.paymentDate)&&Number(loan.paymentValue||0)>=Number(loan.installmentValue)).length;
+  const paidInstallments=group.filter(isLoanInstallmentPaid).length;
   const isExpanded=expandedLoanIds.has(first.loanId);
-  const contractRow=`<tr class="loan-contract-row" data-loan-contract-id="${escapeHTML(first.loanId)}" aria-expanded="${isExpanded}"><td colspan="5"><span class="loan-contract-primary"><button class="loan-contract-edit" type="button" aria-label="Editar contrato ${escapeHTML(first.name)}">${escapeHTML(first.name)}</button><button class="loan-contract-toggle" type="button" aria-expanded="${isExpanded}" aria-label="${isExpanded?'Ocultar':'Mostrar'} parcelas de ${escapeHTML(first.name)}">Parcelas ${paidInstallments}/${first.installmentCount}</button></span></td></tr><tr class="loan-column-header loan-contract-content"${isExpanded?'':' hidden'}><th>PARCELA</th><th>VENC</th><th>PAGAMENTO</th><th>VALOR</th><th>STATUS</th></tr>`;
+  const contractHeader=`<div class="loan-contract-header"><button class="loan-contract-edit" type="button" aria-label="Editar contrato ${escapeHTML(first.name)}">${escapeHTML(first.name)}</button><button class="loan-contract-toggle" type="button" aria-expanded="${isExpanded}" aria-label="${isExpanded?'Ocultar':'Mostrar'} parcelas de ${escapeHTML(first.name)}">Parcelas ${paidInstallments}/${first.installmentCount}</button></div>`;
   const installmentRows=group.map(loan=>{
    const status=getLoanStatus(loan),installmentLabel=`${loan.installmentNumber}/${loan.installmentCount}`;
    const paymentDate=loan.paymentDate?fmtDate(loan.paymentDate):'—';
    const compactPaymentDate=loan.paymentDate?formatLoanDateCompact(loan.paymentDate):'—';
    const compactDueDate=formatLoanDateCompact(loan.dueDate);
    const installmentValue=Number(loan.paymentDate||loan.paymentValue?loan.paymentValue:loan.installmentValue).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-   return `<tr class="loan-row loan-installment-row loan-contract-content" data-loan-installment-id="${escapeHTML(loan.id)}" tabindex="0" aria-label="Editar parcela ${installmentLabel} de ${escapeHTML(loan.name)}"${isExpanded?'':' hidden'}><td>${installmentLabel}<br><small>${formatAccountMonth(loan.referenceMonth.slice(0,7))}</small></td><td title="${fmtDate(loan.dueDate)}"><span class="loan-date-full">${fmtDate(loan.dueDate)}</span><span class="loan-date-compact">${compactDueDate}</span></td><td title="${paymentDate}"><span class="loan-date-full">${paymentDate}</span><span class="loan-date-compact">${compactPaymentDate}</span></td><td title="${loan.paymentDate?'Valor pago':'Valor previsto da parcela'}">${installmentValue}</td><td><span class="loan-status ${loanStatusClass(status)}">${status}</span></td></tr>`;
+   const paidLate=isLoanInstallmentPaid(loan)&&loan.paymentDate>loan.dueDate;
+   return `<tr class="loan-row loan-installment-row${paidLate?' paid-late':''}" data-loan-installment-id="${escapeHTML(loan.id)}" tabindex="0" aria-label="Editar parcela ${installmentLabel} de ${escapeHTML(loan.name)}"><td>${installmentLabel}<br><small>${formatAccountMonth(loan.referenceMonth.slice(0,7))}</small></td><td title="${fmtDate(loan.dueDate)}"><span class="loan-date-full">${fmtDate(loan.dueDate)}</span><span class="loan-date-compact">${compactDueDate}</span></td><td title="${paymentDate}"><span class="loan-date-full">${paymentDate}</span><span class="loan-date-compact">${compactPaymentDate}</span></td><td title="${loan.paymentDate?'Valor pago':'Valor previsto da parcela'}">${installmentValue}</td><td><span class="loan-status ${loanStatusClass(status)}">${status}</span></td></tr>`;
   }).join('');
-  const summaryRow=`<tr class="loan-summary-row"><td colspan="5"><div class="loan-summary-footer"><span><small>Valor Contrato</small><strong>${money(first.contractTotal)}</strong></span><span><small>Total Pago</small><strong>${money(totalPaid)}</strong></span><span class="loan-balance"><small>Saldo Devedor</small><strong>${money(remainingBalance)}</strong></span></div></td></tr>`;
-  return contractRow+installmentRows+summaryRow;
+  const summary=`<div class="loan-summary-footer"><span><small>Valor Contrato</small><strong>${money(first.contractTotal)}</strong></span><span><small>Total Pago</small><strong>${money(totalPaid)}</strong></span><span class="loan-balance"><small>Saldo Devedor</small><strong>${money(remainingBalance)}</strong></span></div>`;
+  const installments=`<table class="loan-table"${isExpanded?'':' hidden'}><thead><tr class="loan-column-header"><th>PARCELA</th><th>VENC</th><th>PAGAMENTO</th><th>VALOR</th><th>STATUS</th></tr></thead><tbody>${installmentRows}</tbody></table>`;
+  return `<article class="loan-contract-card" data-loan-contract-id="${escapeHTML(first.loanId)}" aria-expanded="${isExpanded}">${contractHeader}${summary}${installments}</article>`;
  }).join('');
  $('loansEmpty').hidden=list.length>0;
 }
@@ -1084,15 +1104,17 @@ function openLoanInstallmentModal(id){
  $('loanInstallmentValue').value=money(loan.installmentValue);
  $('loanInstallmentReference').value=formatAccountMonth(loan.referenceMonth.slice(0,7));
  $('loanInstallmentDue').value=loan.dueDate;
- $('loanPaymentDate').value=loan.paymentDate;
- $('loanPaymentDate').max=todayISO();
+ $('loanPaymentDate').value=formatISODateForInput(loan.paymentDate);
  $('loanPaymentValue').value=loan.paymentValue?loan.paymentValue.toFixed(2):'';
  updateLoanStatusPreview();
  $('loanInstallmentModal').classList.add('show');
 }
 function updateLoanStatusPreview(){
  const id=$('loanInstallmentId').value,loan=loans.find(item=>item.id===id);if(!loan)return;
- const status=getLoanStatus({...loan,dueDate:$('loanInstallmentDue').value,paymentDate:$('loanPaymentDate').value});
+ const paymentDate=parseBRDate($('loanPaymentDate').value);
+ if(paymentDate===null){$('loanPaymentStatus').value='Informe uma data válida';return}
+ if(paymentDate>todayISO()){$('loanPaymentStatus').value='Data futura inválida';return}
+ const status=getLoanStatus({...loan,dueDate:$('loanInstallmentDue').value,paymentDate});
  $('loanPaymentStatus').value=status;
 }
 $('loanForm').addEventListener('submit',async event=>{
@@ -1153,13 +1175,16 @@ $('deleteLoanContractButton').addEventListener('click',async()=>{
 $('loanInstallmentForm').addEventListener('submit',async event=>{
  event.preventDefault();
  const loan=loans.find(item=>item.id===selectedLoanInstallmentId);if(!loan||!currentUser)return;
+ const paymentDate=parseBRDate($('loanPaymentDate').value);
+ if(paymentDate===null){toast('Informe a data do pagamento no formato dd/mm/aaaa.');$('loanPaymentDate').focus();return}
+ if(paymentDate&&paymentDate>todayISO()){toast('A data do pagamento não pode ser futura.');$('loanPaymentDate').focus();return}
  const paymentValue=$('loanPaymentValue').value===''?0:Number($('loanPaymentValue').value);
  if(!Number.isFinite(paymentValue)||paymentValue<0){toast('Informe um valor de pagamento válido.');return}
  const button=$('saveLoanInstallmentButton');button.disabled=true;
  try{
   const {error}=await db.from('loans').update({
    due_date:$('loanInstallmentDue').value,
-   payment_date:$('loanPaymentDate').value||null,
+   payment_date:paymentDate||null,
    payment_value:paymentValue
   }).eq('id',loan.id).eq('user_id',currentUser.id);
   if(error)throw error;
@@ -1169,7 +1194,10 @@ $('loanInstallmentForm').addEventListener('submit',async event=>{
  finally{button.disabled=false}
 });
 $('loanInstallmentDue').addEventListener('input',updateLoanStatusPreview);
-$('loanPaymentDate').addEventListener('input',updateLoanStatusPreview);
+$('loanPaymentDate').addEventListener('input',event=>{
+ event.currentTarget.value=formatBRDateInput(event.currentTarget.value);
+ updateLoanStatusPreview();
+});
 $('deleteLoanButton').addEventListener('click',async()=>{
  const loan=loans.find(item=>item.id===selectedLoanInstallmentId);if(!loan||!currentUser)return;
  if(!confirm(`Excluir o empréstimo "${loan.name}" e todas as suas parcelas?`))return;
