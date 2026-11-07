@@ -191,9 +191,10 @@ tbody tr:last-child td{border-bottom:0}
 .report-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:15px}
 .report-card{padding:17px}.report-card small{color:var(--muted);font-size:10px}.report-card strong{display:block;font-size:19px;margin:7px 0}
 #reportComparisonTable{width:100%;min-width:0;table-layout:fixed}
-#reportComparisonTable th,#reportComparisonTable td{padding:8px 5px;font-size:10px;white-space:nowrap}
-#reportComparisonTable th:first-child,#reportComparisonTable td:first-child{width:20%}
-#reportComparisonTable th:last-child,#reportComparisonTable td:last-child{width:15%}
+#reportComparisonTable th{padding:8px 5px;font-size:10px;white-space:nowrap}
+#reportComparisonTable td{padding:8px 5px;font-size:12px;white-space:nowrap}
+#reportComparisonTable th:first-child,#reportComparisonTable td:first-child{width:18%}
+#reportComparisonTable th:last-child,#reportComparisonTable td:last-child{width:18%}
 .calendar-event-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .calendar-event-card{min-width:0}
 .calendar-event-card .panel-head{margin-bottom:8px}
@@ -1840,7 +1841,7 @@ function renderDashboard(){
  const priorityOrder={'URGENTE':0,'OBRIGATÓRIO':1};
  const upcoming=getTaskItems().filter(task=>!task.done&&priorityOrder[task.priority]!==undefined)
   .sort((a,b)=>priorityOrder[a.priority]-priorityOrder[b.priority]||(a.date||'9999').localeCompare(b.date||'9999')).slice(0,4);
- $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(task=>`<div class="task-row"><input type="checkbox" aria-label="Concluir ${escapeHTML(task.name)}" onchange="toggleTask('${task.id}')"><span class="task-name">${escapeHTML(task.name)}</span><span class="task-priority ${task.priority==='URGENTE'?'urgent':'mandatory'}">${task.priority}</span><span class="date-pill">${task.date?fmtDate(task.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa urgente ou obrigatória pendente.</div>';
+ $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(task=>`<div class="task-row"><span class="task-name">${escapeHTML(task.name)}</span><span class="task-priority ${task.priority==='URGENTE'?'urgent':'mandatory'}">${task.priority}</span><span class="date-pill">${task.date?fmtDate(task.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa urgente ou obrigatória pendente.</div>';
  const cats=['Fixa','Variável','Sazonal','Assinatura'];$('categorySummary').innerHTML=cats.map(c=>{const v=current.filter(a=>a.category===c).reduce((s,a)=>s+a.value,0),p=total?v/total*100:0;return `<div class="category-row"><span class="category-name">${c==='Fixa'?'Contas fixas':c==='Variável'?'Variáveis':c==='Sazonal'?'Sazonais':'Assinaturas'}</span><div class="bar"><span style="width:${p}%"></span></div><span class="category-value">${money(v)}</span></div>`}).join('');
 }
 function renderDashboardAccountOptions(){
