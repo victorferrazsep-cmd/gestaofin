@@ -31,6 +31,7 @@ button{cursor:pointer}
 .brand strong{display:block;font-size:16px;line-height:1.1}.brand small{display:block;color:var(--muted);font-size:10px;line-height:1.1}
 .nav{display:grid;gap:7px}
 .nav button{border:0;background:transparent;color:#4c596b;text-align:left;padding:12px 13px;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:600;font-size:13px}
+.nav button[hidden],.mobile-nav button[hidden]{display:none!important}
 .nav button .ico{width:20px;text-align:center;font-size:17px}
 .nav button.active,.nav button:hover{background:var(--green-soft);color:var(--green-dark)}
 .sidebar-note{margin-top:auto;background:linear-gradient(135deg,#e5f8ef,#f4fcf8);border-radius:16px;padding:19px 15px;text-align:center;color:#286348;font-size:12px;line-height:1.5}
@@ -74,6 +75,8 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .photo-crop-actions{display:flex;gap:8px}
 .photo-crop-actions button{min-width:100px}
 .profile-value{margin:0;padding:11px;border:1px solid var(--line);border-radius:10px;background:#f8fafb;font-size:13px;overflow-wrap:anywhere}
+.profile-section-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}
+.profile-section-options .checkbox-label{padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
 .profile-actions{display:flex;gap:8px;margin-top:8px}
 .profile-actions .btn{width:auto;min-width:0;flex:1;padding:10px 8px;line-height:1.25}
 .page{display:none}.page.active{display:block}
@@ -159,8 +162,8 @@ tbody tr:last-child td{border-bottom:0}
 .task-card{display:flex;align-items:flex-start;gap:10px;margin-top:8px;padding:10px;border:0;border-radius:10px;background:#f8fafb}
 .task-card>input{accent-color:var(--green);width:18px;height:18px;margin-top:8px;flex:none}
 .task-card .task-info{flex:1;min-width:0}
-.task-title-button{display:block;width:100%;padding:8px 10px;border:0;border-radius:8px;background:#f3faf6;color:var(--ink);text-align:left;font-size:12px;font-weight:700;cursor:pointer}
-.task-title-button:hover,.task-title-button:focus-visible{background:#e8f6ed;outline:none}
+.task-title-button{display:block;width:100%;padding:8px 10px;border:0;border-radius:8px;background:#f2f3f5;color:var(--ink);text-align:left;font-size:12px;font-weight:700;cursor:pointer}
+.task-title-button:hover,.task-title-button:focus-visible{background:#e9ebee;outline:none}
 .task-title-content{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
 .task-title-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .task-priority{flex:none;padding:3px 7px;border-radius:12px;font-size:9px;font-weight:800;letter-spacing:.25px}
@@ -615,6 +618,13 @@ tbody tr:last-child td{border-bottom:0}
      <div class="photo-crop-actions"><button class="btn outline" id="cancelPhotoCrop" type="button">Cancelar</button><button class="btn" id="applyPhotoCrop" type="button">Usar Foto</button></div>
     </div>
     <div class="field"><label>E-mail</label><p class="profile-value" id="profileEmail"></p></div>
+    <div class="field"><label>Abas exibidas no app</label><div class="profile-section-options">
+     <label class="field checkbox-label"><span>Contas</span><input type="checkbox" data-visible-section="contas" checked></label>
+     <label class="field checkbox-label"><span>Tarefas</span><input type="checkbox" data-visible-section="tarefas" checked></label>
+     <label class="field checkbox-label"><span>Agenda</span><input type="checkbox" data-visible-section="calendario" checked></label>
+     <label class="field checkbox-label"><span>Empréstimos</span><input type="checkbox" data-visible-section="emprestimos" checked></label>
+     <label class="field checkbox-label"><span>Relatórios</span><input type="checkbox" data-visible-section="relatorios" checked></label>
+    </div></div>
     <div class="profile-date-row">
      <div class="field"><label>Cadastrado desde</label><p class="profile-value" id="profileCreatedAt"></p></div>
      <div class="field"><label>Último acesso</label><p class="profile-value" id="profileLastSignIn"></p></div>
@@ -659,6 +669,7 @@ function formatBRDateInput(value){
 }
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
+const configurablePages=['contas','tarefas','calendario','emprestimos','relatorios'];
 const expandedLoanIds=new Set(),expandedTaskMonths=new Set();
 let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',accountDashboardFilter=null,taskFilter='Todas',taskMonthFilter='next6',dashPeriod='sixMonths',dashAccountFilter='',reportPeriod='month';
 let expandedAccountMonthYear=null,expandedTaskMonthYear=null;
@@ -844,9 +855,10 @@ $('profileForm').addEventListener('submit',async event=>{
  const button=$('saveProfileButton');button.disabled=true;
  try{
   const displayName=$('profileName').value.trim();
-  const {data:profileData,error:profileError}=await db.auth.updateUser({data:{...currentUser.user_metadata,display_name:displayName}});
+  const visiblePages=[...document.querySelectorAll('[data-visible-section]:checked')].map(input=>input.dataset.visibleSection);
+  const {data:profileData,error:profileError}=await db.auth.updateUser({data:{...currentUser.user_metadata,display_name:displayName,visible_pages:visiblePages}});
   if(profileError)throw profileError;
-  currentUser=profileData.user;setUserDisplay(currentUser);
+  currentUser=profileData.user;setUserDisplay(currentUser);applyVisiblePages();
   $('profileName').value=displayName;
   if(profileCropBlob){
    const extension='webp';
@@ -938,6 +950,18 @@ function setUserDisplay(user){
  $('greeting').textContent=`Olá${displayName?`, ${displayName}`:''}! 👋`;
  $('userAvatar').textContent=displayName?displayName.split(/\s+/).slice(0,2).map(part=>part[0]).join('').toLocaleUpperCase('pt-BR'):'MC';
 }
+function getVisiblePages(user=currentUser){
+ const stored=user?.user_metadata?.visible_pages;
+ return Array.isArray(stored)?configurablePages.filter(page=>stored.includes(page)):[...configurablePages];
+}
+function applyVisiblePages(){
+ const visible=new Set(getVisiblePages());
+ document.querySelectorAll('[data-page]').forEach(button=>{
+  if(configurablePages.includes(button.dataset.page))button.hidden=!visible.has(button.dataset.page);
+ });
+ const activePage=document.querySelector('.page.active')?.id.slice(5);
+ if(activePage&&configurablePages.includes(activePage)&&!visible.has(activePage))showPage('inicio');
+}
 function formatUserDate(value){
  if(!value)return 'Não disponível';
  const date=new Date(value);
@@ -967,6 +991,8 @@ async function loadProfilePhoto(){
 async function openProfileModal(){
  if(!currentUser)return;
  $('profileName').value=currentUser.user_metadata?.display_name||'';
+ const visiblePages=new Set(getVisiblePages());
+ document.querySelectorAll('[data-visible-section]').forEach(input=>{input.checked=visiblePages.has(input.dataset.visibleSection)});
  $('profileEmail').textContent=currentUser.email||'Não disponível';
  $('profileCreatedAt').textContent=formatUserDate(currentUser.created_at);
  $('profileLastSignIn').textContent=formatUserDate(currentUser.last_sign_in_at);
@@ -1045,7 +1071,7 @@ async function handleAuthSession(event,session){
   return;
  }
  if(currentUser?.id===user.id)return;
- currentUser=user;$('authGate').classList.remove('show');$('appShell').classList.add('ready');setUserDisplay(user);
+ currentUser=user;$('authGate').classList.remove('show');$('appShell').classList.add('ready');setUserDisplay(user);applyVisiblePages();
  try{await updatePushButton()}catch(error){reportError('Não foi possível verificar as notificações',error)}
  try{await loadProfilePhoto()}catch(error){reportError('Não foi possível carregar a foto do perfil',error)}
  showAuthFeedback('');
@@ -1054,6 +1080,7 @@ async function handleAuthSession(event,session){
 db.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{void handleAuthSession(event,session)},0)});
 if(new URLSearchParams(window.location.hash.slice(1)).get('type')==='recovery')showPasswordRecovery();
 function showPage(name,dashboardFilter=null){
+ if(configurablePages.includes(name)&&!getVisiblePages().includes(name))name='inicio';
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
  document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
  if(name==='inicio'){
