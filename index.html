@@ -241,7 +241,8 @@ tbody tr:last-child td{border-bottom:0}
  #accountFilters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;width:100%}
  #accountFilters button[data-filter="Assinatura"]{display:none}
  #accountFilters .filter{width:100%;min-width:0;padding:7px 2px;font-size:9px;text-align:center;white-space:nowrap}
- #accountNameFilter{text-align:left}
+ #accountNameFilter.is-placeholder{text-align:center;text-align-last:center}
+ #accountNameFilter:not(.is-placeholder){text-align:left;text-align-last:left}
  #accountMonthFilter{text-align:center}
  .account-month-menu{width:min(250px,calc(100vw - 28px))}
  #page-contas .table-wrap{overflow-x:hidden}
@@ -250,17 +251,15 @@ tbody tr:last-child td{border-bottom:0}
  #page-contas th,#page-contas td{padding:9px 2px;letter-spacing:0}
  #page-contas th{font-size:10px}
  #page-contas td{font-size:12px}
- #page-contas th:first-child,#page-contas td:first-child{width:19%}
+ #page-contas th:first-child,#page-contas td:first-child{width:24%}
  #page-contas th:nth-child(3),#page-contas td:nth-child(3){width:14%}
  #page-contas th:nth-child(4),#page-contas td:nth-child(4){width:12%}
  #page-contas th:nth-child(5),#page-contas td:nth-child(5){width:23%}
  #page-contas th:nth-child(6),#page-contas td:nth-child(6){width:14%}
- #page-contas th:nth-child(7),#page-contas td:nth-child(7){width:18%}
+ #page-contas th:nth-child(7),#page-contas td:nth-child(7){width:13%}
  #page-contas td:first-child{overflow-wrap:anywhere}
  #page-contas td .status{width:26px;height:26px;padding:0;justify-content:center;border-radius:50%;font-size:16px;line-height:1}
- #page-contas .account-diff-increase{color:var(--red);font-weight:700}
- #page-contas .account-diff-decrease{color:var(--green-dark);font-weight:700}
- #page-contas .account-diff-neutral{color:var(--muted)}
+ #page-contas .account-diff-increase,#page-contas .account-diff-decrease,#page-contas .account-diff-neutral{font-size:10px;font-weight:400}
  #page-emprestimos .loan-contract-card{padding:9px 7px}
  #page-emprestimos .loan-table{width:100%;min-width:0;table-layout:fixed}
  #page-emprestimos .loan-table th,#page-emprestimos .loan-table td{padding:8px 2px;font-size:12px;letter-spacing:0;text-align:center;overflow-wrap:anywhere}
@@ -380,7 +379,7 @@ tbody tr:last-child td{border-bottom:0}
       <div class="section-toolbar"><h2>Relatórios Financeiros</h2><div class="toolbar-actions"><select id="reportYear" class="filter" aria-label="Ano"></select></div></div>
       <div class="filters" id="reportPeriods"><button class="filter active" data-period="month">Mês</button><button class="filter" data-period="quarter">Trimestre</button><button class="filter" data-period="semester">Semestre</button><button class="filter" data-period="year">Ano</button></div>
       <div class="report-cards"><div class="card report-card"><small>Total previsto</small><strong id="report-total">R$ 0,00</strong><small>Contas cadastradas no período</small></div><div class="card report-card"><small>Total pago</small><strong class="positive" id="report-paid">R$ 0,00</strong><small>Contas marcadas como pagas</small></div><div class="card report-card"><small>Em aberto</small><strong class="negative" id="report-open">R$ 0,00</strong><small>Compromissos ainda não pagos</small></div></div>
-      <div class="panel"><div class="panel-head"><h2>Comparativo por Mês</h2><span class="text-link" id="reportPeriodLabel">Ano</span></div><div class="table-wrap"><table><thead><tr><th>Período</th><th>Previsto</th><th>Pago</th><th>Em aberto</th><th>Variação MoM</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
+      <div class="panel"><div class="panel-head"><h2>Comparativo por Mês</h2><span class="text-link" id="reportPeriodLabel">Mês</span></div><div class="table-wrap"><table><thead><tr><th>Período</th><th>Previsto</th><th>Pago</th><th>Em aberto</th><th>Variação MoM</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
     </section>
   </main>
 </div>
@@ -567,7 +566,7 @@ function formatBRDateInput(value){
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
 const expandedLoanIds=new Set();
-let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',taskFilter='Todas',dashPeriod='month',reportPeriod='year';
+let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',taskFilter='Todas',dashPeriod='month',reportPeriod='month';
 let expandedAccountMonthYear=null;
 let calendarDate=new Date();
 let profilePreviewObjectUrl=null;
@@ -965,7 +964,12 @@ function showPage(name){
   $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
   renderAccountMonthOptions();renderAccounts();
  }
- if(name==='calendario')renderCalendar();if(name==='relatorios')renderReports();
+ if(name==='relatorios'){
+  reportPeriod='month';$('reportYear').value=String(new Date().getFullYear());
+  $('reportPeriods').querySelectorAll('button[data-period]').forEach(button=>button.classList.toggle('active',button.dataset.period==='month'));
+  renderReports();
+ }
+ if(name==='calendario')renderCalendar();
  window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
@@ -1358,7 +1362,7 @@ $('cancelDeleteAccount').addEventListener('click',()=>{closeModal('deleteAccount
 $('closeDeleteAccountModal').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
 async function deleteTask(id){if(confirm('Excluir esta tarefa?'))try{const {error}=await db.from('tasks').delete().eq('id',id);if(error)throw error;await loadData(false);toast('Tarefa excluída.')}catch(error){reportError('Não foi possível excluir a tarefa',error)}}
 $('accountFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;accountFilter=b.dataset.filter;$('accountFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderAccounts()});
-$('accountNameFilter').addEventListener('change',e=>{accountNameFilter=e.currentTarget.value;renderAccounts()});
+$('accountNameFilter').addEventListener('change',e=>{accountNameFilter=e.currentTarget.value;e.currentTarget.classList.toggle('is-placeholder',!accountNameFilter);renderAccounts()});
 $('accountMonthFilter').addEventListener('click',()=>{
  const menu=$('accountMonthMenu'),isOpen=!menu.hidden;
  if(!isOpen)expandedAccountMonthYear=null;
@@ -1447,6 +1451,7 @@ function renderAccountNameOptions(){
  if(accountNameFilter&&!names.includes(accountNameFilter))accountNameFilter='';
  select.innerHTML='<option value="">Conta</option>'+names.map(name=>`<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
  select.value=accountNameFilter;
+ select.classList.toggle('is-placeholder',!accountNameFilter);
 }
 function renderTasks(){
  const list=tasks.filter(t=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!t.done:t.done)).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
