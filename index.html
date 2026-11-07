@@ -152,7 +152,7 @@ tbody tr:last-child td{border-bottom:0}
 .action-btn{border:0;background:transparent;color:#7b8798;font-size:17px}
 .empty{padding:35px 15px;text-align:center;color:#8b96a5;font-size:12px}
 .task-month-panel{min-width:0;margin-bottom:12px;padding:12px;border:1px solid #edf0f3;border-radius:var(--radius);background:#fff;box-shadow:var(--shadow)}
-.task-month-header{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:#f3faf6;color:var(--green-dark);text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;cursor:pointer}
+.task-month-header{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:#d8f3e3;color:#087a43;text-align:left;font-size:12px;font-weight:800;text-transform:uppercase;cursor:pointer}
 .task-month-header span:last-child{font-size:11px}
 .task-month-items[hidden]{display:none}
 .task-card{display:flex;align-items:flex-start;gap:10px;margin-top:8px;padding:10px;border:0;border-radius:10px;background:#f8fafb}
@@ -190,6 +190,16 @@ tbody tr:last-child td{border-bottom:0}
 .calendar-grid .has-event{position:relative}.calendar-grid .has-event:after{content:"";width:4px;height:4px;background:var(--green);border-radius:50%;position:absolute;bottom:4px;left:calc(50% - 2px)}
 .report-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:15px}
 .report-card{padding:17px}.report-card small{color:var(--muted);font-size:10px}.report-card strong{display:block;font-size:19px;margin:7px 0}
+#reportComparisonTable{width:100%;min-width:0;table-layout:fixed}
+#reportComparisonTable th,#reportComparisonTable td{padding:8px 5px;font-size:10px;white-space:nowrap}
+#reportComparisonTable th:first-child,#reportComparisonTable td:first-child{width:13%}
+#reportComparisonTable th:last-child,#reportComparisonTable td:last-child{width:19%}
+.calendar-event-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.calendar-event-card{min-width:0}
+.calendar-event-card .panel-head{margin-bottom:8px}
+.calendar-event-card .task-row{gap:7px}
+.calendar-event-card .task-row small{flex:none}
+.calendar-event-card .status{white-space:nowrap}
 .positive{color:var(--green)}.negative{color:var(--red)}
 .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(20,30,42,.35);backdrop-filter:blur(5px);z-index:10;align-items:center;justify-content:center;padding:18px}
 .modal-backdrop.show{display:flex}
@@ -276,6 +286,8 @@ tbody tr:last-child td{border-bottom:0}
  .chart-account-filter{flex:0 0 72px}
  .chart-account-filter select{width:100%;padding:7px 4px;font-size:10px}
  .report-cards{grid-template-columns:1fr 1fr}.report-card:last-child{grid-column:1/-1}
+ .calendar-event-cards{grid-template-columns:1fr}
+ #reportComparisonTable th,#reportComparisonTable td{padding:7px 2px;font-size:8px}
  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:5;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
  .mobile-nav button{border:0;background:transparent;color:#7b8798;font-size:9px;display:grid;justify-items:center;gap:3px;min-width:48px}
  .mobile-nav button span{font-size:18px}.mobile-nav button.active{color:var(--green);font-weight:800}
@@ -432,7 +444,10 @@ tbody tr:last-child td{border-bottom:0}
         <div class="calendar-head"><button class="icon-btn" onclick="changeMonth(-1)">‹</button><strong id="calendarTitle"></strong><button class="icon-btn" onclick="changeMonth(1)">›</button></div>
         <div class="calendar-grid" id="calendarGrid"></div>
       </div>
-      <div class="panel" style="margin-top:15px"><div class="panel-head"><h2>Compromissos do mês</h2></div><div id="calendarEvents"></div></div>
+      <div class="calendar-event-cards" style="margin-top:15px">
+        <div class="panel calendar-event-card"><div class="panel-head"><h2>Tarefas do mês</h2></div><div id="calendarTaskEvents"></div></div>
+        <div class="panel calendar-event-card"><div class="panel-head"><h2>Contas do mês</h2></div><div id="calendarAccountEvents"></div></div>
+      </div>
     </section>
 
     <section class="page" id="page-emprestimos">
@@ -444,7 +459,7 @@ tbody tr:last-child td{border-bottom:0}
       <div class="section-toolbar"><h2>Relatórios Financeiros</h2><div class="toolbar-actions"><select id="reportYear" class="filter" aria-label="Ano"></select></div></div>
       <div class="filters" id="reportPeriods"><button class="filter active" data-period="month">Mês</button><button class="filter" data-period="quarter">Trimestre</button><button class="filter" data-period="semester">Semestre</button><button class="filter" data-period="year">Ano</button></div>
       <div class="report-cards"><div class="card report-card"><small>Total previsto</small><strong id="report-total">R$ 0,00</strong><small>Contas cadastradas no período</small></div><div class="card report-card"><small>Total pago</small><strong class="positive" id="report-paid">R$ 0,00</strong><small>Contas marcadas como pagas</small></div><div class="card report-card"><small>Em aberto</small><strong class="negative" id="report-open">R$ 0,00</strong><small>Compromissos ainda não pagos</small></div></div>
-      <div class="panel"><div class="panel-head"><h2>Comparativo por Mês</h2><span class="text-link" id="reportPeriodLabel">Mês</span></div><div class="table-wrap"><table><thead><tr><th>Período</th><th>Previsto</th><th>Pago</th><th>Em aberto</th><th>Variação MoM</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
+      <div class="panel"><div class="panel-head"><h2>Comparativo por Mês</h2><span class="text-link" id="reportPeriodLabel">Mês</span></div><div class="table-wrap"><table id="reportComparisonTable"><thead><tr><th>Período</th><th>Previsto</th><th>Pago</th><th>Em aberto</th><th>Variação MoM</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
     </section>
   </main>
 </div>
@@ -1869,17 +1884,25 @@ function renderCalendar(){
  const y=calendarDate.getFullYear(),m=calendarDate.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
  $('calendarTitle').textContent=calendarDate.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
  const cells=['D','S','T','Q','Q','S','S'].map(x=>`<div class="weekday">${x}</div>`);for(let i=0;i<first;i++)cells.push('<div></div>');
- for(let d=1;d<=days;d++){const iso=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,isToday=iso===todayISO(),has=tasks.some(t=>t.date===iso)||accounts.some(a=>a.due===d&&a.month===iso.slice(0,7));cells.push(`<div class="day ${isToday?'today':''} ${has?'has-event':''}">${d}</div>`)}
+ const monthKey=`${y}-${String(m+1).padStart(2,'0')}`,taskItems=getTaskItems();
+ for(let d=1;d<=days;d++){const iso=`${monthKey}-${String(d).padStart(2,'0')}`,isToday=iso===todayISO(),has=taskItems.some(task=>task.date===iso||task.month===monthKey)||accounts.some(a=>a.due===d&&a.month===monthKey);cells.push(`<div class="day ${isToday?'today':''} ${has?'has-event':''}">${d}</div>`)}
  $('calendarGrid').innerHTML=cells.join('');
- const monthKey=`${y}-${String(m+1).padStart(2,'0')}`,ev=[...tasks.filter(t=>t.date?.startsWith(monthKey)).map(t=>({date:t.date,name:t.name,type:'Tarefa',done:t.done})),...accounts.filter(a=>a.month===monthKey).map(a=>({date:`${monthKey}-${String(a.due).padStart(2,'0')}`,name:a.name,type:'Conta',done:a.status==='Pago'}))].sort((a,b)=>a.date.localeCompare(b.date));
- $('calendarEvents').innerHTML=ev.length?ev.map(e=>`<div class="task-row"><span class="date-pill">${fmtDate(e.date)}</span><span class="task-name">${escapeHTML(e.name)}</span><small style="color:#8994a2">${e.type}</small><span class="status ${e.done?'paid':'pending'}">${e.done?'Concluído':'Pendente'}</span></div>`).join(''):'<div class="empty">Nenhum compromisso cadastrado para este mês.</div>';
+ const taskEvents=taskItems.filter(task=>task.month===monthKey)
+  .map(task=>({sortDate:task.date||`${monthKey}-01`,dateLabel:task.date?task.date.slice(8,10):'Mês',name:task.name,done:task.done}))
+  .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
+ const accountEvents=accounts.filter(account=>account.month===monthKey)
+  .map(account=>({sortDate:`${monthKey}-${String(account.due).padStart(2,'0')}`,dateLabel:String(account.due).padStart(2,'0'),name:account.name,done:account.status==='Pago'}))
+  .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
+ const renderCalendarEvents=(items,emptyMessage)=>items.length?items.map(item=>`<div class="task-row"><span class="date-pill">${escapeHTML(item.dateLabel)}</span><span class="task-name">${escapeHTML(item.name)}</span><span class="status ${item.done?'paid':'pending'}">${item.done?'Concluído':'Pendente'}</span></div>`).join(''):`<div class="empty">${emptyMessage}</div>`;
+ $('calendarTaskEvents').innerHTML=renderCalendarEvents(taskEvents,'Nenhuma tarefa cadastrada para este mês.');
+ $('calendarAccountEvents').innerHTML=renderCalendarEvents(accountEvents,'Nenhuma conta cadastrada para este mês.');
 }
 function changeMonth(n){calendarDate.setMonth(calendarDate.getMonth()+n);renderCalendar()}
 function renderReports(){
  const year=Number($('reportYear').value||new Date().getFullYear()),now=new Date(),month=now.getMonth();
  let indexes=Array.from({length:12},(_,i)=>i),label='Ano';
  if(reportPeriod==='month'){indexes=[month];label='Mês'}else if(reportPeriod==='quarter'){indexes=[Math.floor(month/3)*3,Math.floor(month/3)*3+1,Math.floor(month/3)*3+2];label='Trimestre'}else if(reportPeriod==='semester'){indexes=month<6?[0,1,2,3,4,5]:[6,7,8,9,10,11];label='Semestre'}
- const rows=indexes.map(i=>{const key=`${year}-${String(i+1).padStart(2,'0')}`,arr=accounts.filter(a=>a.month===key),total=arr.reduce((s,a)=>s+a.value,0),paid=arr.filter(a=>a.status==='Pago').reduce((s,a)=>s+a.value,0);return {key,label:new Date(year,i,1).toLocaleDateString('pt-BR',{month:'long'}),total,paid,open:total-paid}});
+ const rows=indexes.map(i=>{const key=`${year}-${String(i+1).padStart(2,'0')}`,arr=accounts.filter(a=>a.month===key),total=arr.reduce((s,a)=>s+a.value,0),paid=arr.filter(a=>a.status==='Pago').reduce((s,a)=>s+a.value,0);return {key,label:new Date(year,i,1).toLocaleDateString('pt-BR',{month:'short'}).replace(/\./g,'').toLocaleUpperCase('pt-BR'),total,paid,open:total-paid}});
  const sum=k=>rows.reduce((s,r)=>s+r[k],0);$('report-total').textContent=money(sum('total'));$('report-paid').textContent=money(sum('paid'));$('report-open').textContent=money(sum('open'));$('reportPeriodLabel').textContent=label;
  const allMonths=Array.from({length:12},(_,i)=>{const key=`${year}-${String(i+1).padStart(2,'0')}`,arr=accounts.filter(a=>a.month===key);return arr.reduce((s,a)=>s+a.value,0)});
  $('reportTable').innerHTML=rows.map(r=>{const i=Number(r.key.slice(5))-1,prev=i>0?allMonths[i-1]:0,pct=prev?((r.total-prev)/prev*100):null;return `<tr><td><strong>${r.label}</strong></td><td>${money(r.total)}</td><td class="positive">${money(r.paid)}</td><td class="negative">${money(r.open)}</td><td>${pct===null?'—':`<span class="${pct>0?'negative':'positive'}">${pct>0?'+':''}${pct.toFixed(1).replace('.',',')}%</span>`}</td></tr>`}).join('');
