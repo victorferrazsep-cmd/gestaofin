@@ -252,7 +252,7 @@ tbody tr:last-child td{border-bottom:0}
  #page-contas .account-diff-neutral{color:var(--muted)}
  #page-emprestimos .loan-contract-card{padding:9px 7px}
  #page-emprestimos .loan-table{width:100%;min-width:0;table-layout:fixed}
- #page-emprestimos .loan-table th,#page-emprestimos .loan-table td{padding:8px 2px;font-size:10px;letter-spacing:0;text-align:center;overflow-wrap:anywhere}
+ #page-emprestimos .loan-table th,#page-emprestimos .loan-table td{padding:8px 2px;font-size:12px;letter-spacing:0;text-align:center;overflow-wrap:anywhere}
  #page-emprestimos .loan-table th{font-size:8px;line-height:1.15}
  #page-emprestimos .loan-column-header th:nth-child(1),#page-emprestimos .loan-installment-row td:nth-child(1){width:15%}
  #page-emprestimos .loan-column-header th:nth-child(2),#page-emprestimos .loan-installment-row td:nth-child(2){width:18%}
@@ -260,13 +260,14 @@ tbody tr:last-child td{border-bottom:0}
  #page-emprestimos .loan-column-header th:nth-child(4),#page-emprestimos .loan-installment-row td:nth-child(4){width:20%}
  #page-emprestimos .loan-column-header th:nth-child(5),#page-emprestimos .loan-installment-row td:nth-child(5){width:23%}
  #page-emprestimos .loan-contract-header{gap:6px}
- #page-emprestimos .loan-contract-edit{padding-left:24px;font-size:10px}
+ #page-emprestimos .loan-contract-edit{padding-left:24px;font-size:12px}
  #page-emprestimos .loan-summary-footer{gap:6px}
- #page-emprestimos .loan-summary-footer small{font-size:9px}
- #page-emprestimos .loan-contract-edit,#page-emprestimos .loan-contract-toggle,#page-emprestimos .loan-summary-footer strong{font-size:10px}
+ #page-emprestimos .loan-summary-footer small{font-size:12px}
+ #page-emprestimos .loan-summary-footer strong{font-size:12px}
+ #page-emprestimos .loan-contract-toggle{font-size:12px}
  #page-emprestimos .loan-installment-row td:first-child{text-align:center}
- #page-emprestimos .loan-installment-row td:nth-child(2),#page-emprestimos .loan-installment-row td:nth-child(3){font-size:9px}
- #page-emprestimos .loan-status{padding:4px 5px;font-size:9px;white-space:normal}
+ #page-emprestimos .loan-installment-row td:nth-child(2),#page-emprestimos .loan-installment-row td:nth-child(3){font-size:12px}
+ #page-emprestimos .loan-status{padding:4px 5px;font-size:10px;white-space:normal}
  #page-emprestimos .loan-date-full{display:none}
  #page-emprestimos .loan-date-compact{display:inline}
 }
@@ -534,6 +535,7 @@ const VAPID_PUBLIC_KEY='BBRUgK-6ZKVX5aeKKkIrBvfSedRQGwZRoZOesz8WA1U9HmbwGJkiC-gT
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const authRedirectUrl=window.location.href.split(/[?#]/)[0];
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const loanMoney=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0});
 const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 const monthISO=()=>todayISO().slice(0,7);
 const parseDate=s=>s?new Date(s+'T12:00:00'):null;
@@ -1046,11 +1048,11 @@ function renderLoans(){
    const paymentDate=loan.paymentDate?fmtDate(loan.paymentDate):'—';
    const compactPaymentDate=loan.paymentDate?formatLoanDateCompact(loan.paymentDate):'—';
    const compactDueDate=formatLoanDateCompact(loan.dueDate);
-   const installmentValue=Number(loan.paymentDate||loan.paymentValue?loan.paymentValue:loan.installmentValue).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+   const installmentValue=loanMoney(loan.paymentDate||loan.paymentValue?loan.paymentValue:loan.installmentValue);
    const paidLate=isLoanInstallmentPaid(loan)&&loan.paymentDate>loan.dueDate;
    return `<tr class="loan-row loan-installment-row${paidLate?' paid-late':''}" data-loan-installment-id="${escapeHTML(loan.id)}" tabindex="0" aria-label="Editar parcela ${installmentLabel} de ${escapeHTML(loan.name)}"><td>${installmentLabel}<br><small>${formatAccountMonth(loan.referenceMonth.slice(0,7))}</small></td><td title="${fmtDate(loan.dueDate)}"><span class="loan-date-full">${fmtDate(loan.dueDate)}</span><span class="loan-date-compact">${compactDueDate}</span></td><td title="${paymentDate}"><span class="loan-date-full">${paymentDate}</span><span class="loan-date-compact">${compactPaymentDate}</span></td><td title="${loan.paymentDate?'Valor pago':'Valor previsto da parcela'}">${installmentValue}</td><td><span class="loan-status ${loanStatusClass(status)}">${status}</span></td></tr>`;
   }).join('');
-  const summary=`<div class="loan-summary-footer"><span><small>Valor Contrato</small><strong>${money(first.contractTotal)}</strong></span><span><small>Total Pago</small><strong>${money(totalPaid)}</strong></span><span class="loan-balance"><small>Saldo Devedor</small><strong>${money(remainingBalance)}</strong></span></div>`;
+  const summary=`<div class="loan-summary-footer"><span><small>Valor Contrato</small><strong>${loanMoney(first.contractTotal)}</strong></span><span><small>Total Pago</small><strong>${loanMoney(totalPaid)}</strong></span><span class="loan-balance"><small>Saldo Devedor</small><strong>${loanMoney(remainingBalance)}</strong></span></div>`;
   const installments=`<table class="loan-table"${isExpanded?'':' hidden'}><thead><tr class="loan-column-header"><th>PARCELA</th><th>VENC</th><th>PAGAMENTO</th><th>VALOR</th><th>STATUS</th></tr></thead><tbody>${installmentRows}</tbody></table>`;
   return `<article class="loan-contract-card" data-loan-contract-id="${escapeHTML(first.loanId)}" aria-expanded="${isExpanded}">${contractHeader}${summary}${installments}</article>`;
  }).join('');
