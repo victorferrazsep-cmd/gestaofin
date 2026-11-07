@@ -138,6 +138,8 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .field-hint{grid-column:1/-1;margin:0;color:var(--muted);font-size:11px;line-height:1.45}
 .field .checkbox-label{display:flex;align-items:center;gap:8px;cursor:pointer}
 .field .checkbox-label input{width:16px;height:16px;margin:0;padding:0;accent-color:var(--green)}
+.field.checkbox-label{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.field.checkbox-label input{width:16px;height:16px;margin:0;padding:0;accent-color:var(--green)}
 .filter.active{background:var(--green-soft);border-color:#c9efdc;color:var(--green-dark);font-weight:700}
 .table-wrap{overflow:auto}
 table{width:100%;border-collapse:collapse;min-width:620px}
@@ -149,10 +151,31 @@ tbody tr:last-child td{border-bottom:0}
 .status.late{background:var(--red-soft);color:#d64d63}
 .action-btn{border:0;background:transparent;color:#7b8798;font-size:17px}
 .empty{padding:35px 15px;text-align:center;color:#8b96a5;font-size:12px}
-.task-card{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line)}
-.task-card:last-child{border:0}.task-card input{accent-color:var(--green);width:18px;height:18px}
-.task-card .task-info{flex:1}.task-info strong{display:block;font-size:12px}.task-info small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+.task-month-panel{min-width:0;margin-bottom:12px;padding:12px;border:1px solid #edf0f3;border-radius:var(--radius);background:#fff;box-shadow:var(--shadow)}
+.task-month-header{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:#f3faf6;color:var(--green-dark);text-align:left;font-size:13px;font-weight:700;text-transform:capitalize;cursor:pointer}
+.task-month-header span:last-child{font-size:11px}
+.task-month-items[hidden]{display:none}
+.task-card{display:flex;align-items:flex-start;gap:10px;margin-top:10px;padding:10px;border:1px solid #edf0f3;border-radius:10px;background:#fff}
+.task-card>input{accent-color:var(--green);width:18px;height:18px;margin-top:8px;flex:none}
+.task-card .task-info{flex:1;min-width:0}
+.task-title-button{display:block;width:100%;padding:8px 10px;border:0;border-radius:8px;background:#f3faf6;color:var(--ink);text-align:left;font-size:12px;font-weight:700;cursor:pointer}
+.task-title-button:hover,.task-title-button:focus-visible{background:#e8f6ed;outline:none}
+.task-card.done .task-title-button{color:#7d8794;text-decoration:line-through}
+.task-info small{display:block;color:var(--muted);font-size:10px;margin-top:6px;line-height:1.45}
 .task-card.done strong{text-decoration:line-through;color:#9aa3af}
+.task-description{margin:7px 0 0;color:#586579;font-size:11px;line-height:1.5;white-space:pre-wrap}
+.task-subtasks{display:grid;gap:5px;margin-top:9px}
+.task-subtask{display:flex;align-items:center;gap:7px;color:#586579;font-size:11px}
+.task-subtask input{width:15px;height:15px;flex:none}
+.task-subtask.done span{text-decoration:line-through;color:#9aa3af}
+.task-recurring-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.task-recurring-fields[hidden],.task-subtasks-field[hidden]{display:none}
+.task-subtasks-editor{display:grid;gap:7px}
+.task-subtask-input{display:flex;gap:7px}
+.task-subtask-input input{flex:1;min-width:0;border:1px solid #e5e9ee;border-radius:10px;padding:10px;background:#fff;color:var(--ink);font-size:12px}
+.task-subtask-input button{width:36px;border:0;border-radius:9px;background:#fff1f2;color:#d64d63;font-size:17px}
+.task-subtask-add{justify-self:start}
+.task-modal-delete{margin-right:auto}
 .calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
 .calendar-head strong{font-size:15px}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .calendar-grid div{text-align:center;padding:10px 3px;font-size:11px;border-radius:10px;min-height:38px}
@@ -500,19 +523,27 @@ tbody tr:last-child td{border-bottom:0}
 </div>
 
 <div class="modal-backdrop" id="taskModal">
- <div class="modal">
-  <div class="modal-head"><h2 id="taskModalTitle">Nova Tarefa</h2><button class="close" onclick="closeModal('taskModal')">×</button></div>
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+  <div class="modal-head"><h2 id="taskModalTitle">Nova Tarefa</h2><button class="close" type="button" onclick="closeModal('taskModal')" aria-label="Fechar">×</button></div>
   <form id="taskForm">
    <input type="hidden" id="taskId">
    <div class="form-grid">
-    <div class="field full"><label for="taskName">O que você precisa fazer?</label><input id="taskName" required placeholder="Ex.: Pesquisar geladeira"></div>
-    <div class="field"><label for="taskDate">Data / prazo</label><input id="taskDate" type="date"></div>
-    <div class="field"><label for="taskMonth">Mês de planejamento</label><input id="taskMonth" type="month"></div>
-    <div class="field full"><label for="taskNotes">Observações (opcional)</label><textarea id="taskNotes" rows="2" placeholder="Detalhes ou lembretes..."></textarea></div>
+    <div class="field full"><label for="taskName">Nome da Tarefa</label><input id="taskName" maxlength="160" required placeholder="Ex.: Organizar documentos"></div>
+    <div class="field full"><label for="taskMonth">Mês Ref.</label><input id="taskMonth" type="month" required></div>
+    <label class="field checkbox-label full" id="taskRecurringField"><span>Recorrência mensal</span><input id="taskRecurring" type="checkbox"></label>
+    <div class="field full task-recurring-fields" id="taskRecurringFields" hidden><div class="field"><label for="taskEndMonth">Mês final</label><input id="taskEndMonth" type="month"></div></div>
+    <p class="field-hint full" id="taskRecurringHint" hidden>Será criada uma tarefa em cada mês, até o mês final.</p>
+    <label class="field checkbox-label full"><span>Adicionar subtarefas</span><input id="taskHasSubtasks" type="checkbox"></label>
+    <div class="field full task-subtasks-field" id="taskSubtasksField" hidden>
+     <label>Subtarefas</label>
+     <div class="task-subtasks-editor" id="taskSubtasksEditor"></div>
+     <button class="btn secondary task-subtask-add" id="addTaskSubtask" type="button">＋ Adicionar subtarefa</button>
+    </div>
+    <div class="field full"><label for="taskDescription">Descrição (opcional)</label><textarea id="taskDescription" rows="3" placeholder="Detalhes para orientar a tarefa..."></textarea></div>
    </div>
-   <div class="modal-actions"><button type="button" class="btn outline" onclick="closeModal('taskModal')">Cancelar</button><button class="btn" type="submit">Salvar Tarefa</button></div>
+   <div class="modal-actions"><button class="btn danger task-modal-delete" id="deleteTaskButton" type="button" hidden>Excluir tarefa</button><button type="button" class="btn outline" onclick="closeModal('taskModal')">Cancelar</button><button class="btn" type="submit">Salvar Tarefa</button></div>
   </form>
- </div>
+ </section>
 </div>
 <div class="modal-backdrop" id="deleteAccountModal">
  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteAccountModalTitle" aria-describedby="deleteAccountModalDescription">
@@ -602,7 +633,7 @@ function formatBRDateInput(value){
 }
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
-const expandedLoanIds=new Set();
+const expandedLoanIds=new Set(),expandedTaskMonths=new Set();
 let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',accountDashboardFilter=null,taskFilter='Todas',dashPeriod='sixMonths',dashAccountFilter='',reportPeriod='month';
 let expandedAccountMonthYear=null;
 let calendarDate=new Date();
@@ -874,7 +905,7 @@ $('authForm').addEventListener('submit',async e=>{
  finally{$('authSubmit').disabled=false}
 });
 function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||'',recurrenceId:row.recurrence_id||null}}
-function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||'',notes:row.notes||'',done:Boolean(row.done)}}
+function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||row.task_date?.slice(0,7)||'',description:row.description||row.notes||'',notes:row.notes||'',done:Boolean(row.done),subtasks:Array.isArray(row.subtasks)?row.subtasks.filter(item=>item&&typeof item.name==='string').map(item=>({id:typeof item.id==='string'?item.id:crypto.randomUUID(),name:item.name,done:Boolean(item.done)})):[]}}
 function toLoan(row){return {id:row.id,loanId:row.loan_id,userId:row.user_id,name:row.name,contractTotal:Number(row.contract_total),installmentCount:Number(row.installment_count),installmentNumber:Number(row.installment_number),installmentValue:Number(row.installment_value),referenceMonth:row.reference_month,dueDate:row.due_date,paymentDate:row.payment_date||'',paymentValue:Number(row.payment_value||0)}}
 function setUserDisplay(user){
  const displayName=user.user_metadata?.display_name?.trim()||'';
@@ -950,7 +981,10 @@ async function importLegacyData(){
   }
   localStorage.setItem(`mc_migrated_accounts_${currentUser.id}`,'true');
   if(pendingTasks.length){
-   const {error}=await db.from('tasks').insert(pendingTasks.map(t=>({name:t.name,task_date:t.date||null,month:t.month||null,notes:t.notes||null,done:Boolean(t.done)})));
+   const {error}=await db.from('tasks').insert(pendingTasks.map(t=>({
+    name:t.name,task_date:t.date||null,month:t.month||t.date?.slice(0,7)||null,description:t.description||t.notes||null,done:Boolean(t.done),
+    ...(Array.isArray(t.subtasks)?{subtasks:t.subtasks}:{})
+   })));
    if(error)throw error;
   }
   localStorage.setItem(`mc_migrated_tasks_${currentUser.id}`,'true');
@@ -1042,12 +1076,50 @@ function updateAccountRecurrenceFields(isEditing=Boolean($('accountId').value)){
 }
 $('accountRecurring').addEventListener('change',()=>updateAccountRecurrenceFields());
 function openTaskModal(id=null){
- $('taskForm').reset();$('taskId').value='';$('taskDate').value=todayISO();$('taskMonth').value=monthISO();$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';
- if(id){const t=tasks.find(x=>x.id===id);if(!t)return;$('taskId').value=t.id;$('taskName').value=t.name;$('taskDate').value=t.date||'';$('taskMonth').value=t.month||'';$('taskNotes').value=t.notes||''}
+ $('taskForm').reset();$('taskId').value='';$('taskMonth').value=monthISO();$('taskEndMonth').value=monthISO();$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';
+ $('deleteTaskButton').hidden=!id;
+ $('taskRecurringField').hidden=Boolean(id);$('taskRecurring').checked=false;$('taskRecurringFields').hidden=true;$('taskRecurringHint').hidden=true;$('taskEndMonth').required=false;
+ $('taskHasSubtasks').checked=false;$('taskSubtasksField').hidden=true;renderTaskSubtaskInputs([]);
+ if(id){
+  const task=tasks.find(item=>item.id===id);if(!task)return;
+  $('taskId').value=task.id;$('taskName').value=task.name;$('taskMonth').value=task.month||monthISO();$('taskDescription').value=task.description;
+  $('taskHasSubtasks').checked=task.subtasks.length>0;$('taskSubtasksField').hidden=!task.subtasks.length;renderTaskSubtaskInputs(task.subtasks);
+ }
  $('taskModal').classList.add('show');
+}
+function updateTaskRecurringFields(){
+ const recurring=$('taskRecurring').checked;
+ $('taskRecurringFields').hidden=!recurring;$('taskRecurringHint').hidden=!recurring;$('taskEndMonth').required=recurring;
+ if(recurring&&!$('taskEndMonth').value)$('taskEndMonth').value=$('taskMonth').value;
+}
+function renderTaskSubtaskInputs(subtasks){
+ $('taskSubtasksEditor').innerHTML=subtasks.map(subtask=>`<div class="task-subtask-input"><input type="text" maxlength="160" data-task-subtask-id="${escapeHTML(subtask.id)}" data-task-subtask-name value="${escapeHTML(subtask.name)}" placeholder="Nome da subtarefa"><button type="button" data-remove-task-subtask aria-label="Remover subtarefa">×</button></div>`).join('');
+}
+function readTaskSubtasks(){
+ const task=tasks.find(item=>item.id===$('taskId').value);
+ return [...$('taskSubtasksEditor').querySelectorAll('[data-task-subtask-name]')].map(input=>{
+  const name=input.value.trim(),id=input.dataset.taskSubtaskId||crypto.randomUUID(),previous=task?.subtasks.find(subtask=>subtask.id===id);
+  return name?{id,name,done:previous?.done||false}:null;
+ }).filter(Boolean);
+}
+function addTaskSubtaskInput(name=''){
+ const wrapper=document.createElement('div');wrapper.className='task-subtask-input';
+ wrapper.innerHTML=`<input type="text" maxlength="160" data-task-subtask-name placeholder="Nome da subtarefa"><button type="button" data-remove-task-subtask aria-label="Remover subtarefa">×</button>`;
+ const input=wrapper.querySelector('input');input.value=name;$('taskSubtasksEditor').append(wrapper);input.focus();
 }
 function closeModal(id){$(id).classList.remove('show')}
 document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
+ $('taskRecurring').addEventListener('change',updateTaskRecurringFields);
+ $('taskMonth').addEventListener('change',()=>{if(!$('taskEndMonth').value||$('taskEndMonth').value<$('taskMonth').value)$('taskEndMonth').value=$('taskMonth').value});
+ $('taskHasSubtasks').addEventListener('change',event=>{
+  $('taskSubtasksField').hidden=!event.currentTarget.checked;
+  if(event.currentTarget.checked&&!$('taskSubtasksEditor').children.length)addTaskSubtaskInput();
+ });
+ $('addTaskSubtask').addEventListener('click',()=>addTaskSubtaskInput());
+ $('taskSubtasksEditor').addEventListener('click',event=>{
+  const button=event.target.closest('[data-remove-task-subtask]');
+  if(button)button.closest('.task-subtask-input').remove();
+ });
 function accountMonthsInRange(start,end){
  if(!start||!end||start>end)throw new Error('O mês final precisa ser igual ou posterior ao mês inicial.');
  const [startYear,startMonth]=start.split('-').map(Number),[endYear,endMonth]=end.split('-').map(Number);
@@ -1356,14 +1428,32 @@ $('accountForm').addEventListener('submit',async e=>{
  }catch(error){reportError('Não foi possível salvar a conta',error)}
 });
 $('taskForm').addEventListener('submit',async e=>{
- e.preventDefault();const id=$('taskId').value;const old=tasks.find(t=>t.id===id);
- const obj={id:id||crypto.randomUUID(),name:$('taskName').value.trim(),date:$('taskDate').value,month:$('taskMonth').value,notes:$('taskNotes').value.trim(),done:old?.done||false};
- const payload={name:obj.name,task_date:obj.date||null,month:obj.month||null,notes:obj.notes||null,done:obj.done};
+ e.preventDefault();
+ const id=$('taskId').value,month=$('taskMonth').value,recurring=!id&&$('taskRecurring').checked;
+ const subtasks=$('taskHasSubtasks').checked?readTaskSubtasks():[];
+ if($('taskHasSubtasks').checked&&!subtasks.length){toast('Adicione ao menos uma subtarefa ou desmarque essa opção.');return}
  try{
-  const result=id?await db.from('tasks').update(payload).eq('id',id):await db.from('tasks').insert(payload);
-  if(result.error)throw result.error;
-  closeModal('taskModal');await loadData(false);toast('Tarefa salva com sucesso!');
- }catch(error){reportError('Não foi possível salvar a tarefa',error)}
+  const months=recurring?accountMonthsInRange(month,$('taskEndMonth').value):[month];
+  if(id){
+   const task=tasks.find(item=>item.id===id);if(!task)return;
+   const {error}=await db.from('tasks').update({
+    name:$('taskName').value.trim(),month,description:$('taskDescription').value.trim()||null,subtasks,done:subtasks.length?subtasks.every(subtask=>subtask.done):task.done
+   }).eq('id',id);
+   if(error)throw error;
+  }else{
+   const payload=months.map(taskMonth=>({
+    name:$('taskName').value.trim(),task_date:null,month:taskMonth,description:$('taskDescription').value.trim()||null,done:false,
+    subtasks:subtasks.map(subtask=>({...subtask,id:crypto.randomUUID()}))
+   }));
+   const {error}=await db.from('tasks').insert(payload);
+   if(error)throw error;
+  }
+  months.forEach(taskMonth=>expandedTaskMonths.add(taskMonth));
+  closeModal('taskModal');await loadData(false);toast(months.length>1?`${months.length} tarefas criadas, uma por mês.`:'Tarefa salva com sucesso!');
+ }catch(error){
+  if(error instanceof Error&&error.message.includes('mês final'))toast(error.message);
+  else reportError('Não foi possível salvar a tarefa',error);
+ }
 });
 async function togglePaid(id){
  const account=accounts.find(a=>a.id===id);if(!account)return;
@@ -1373,8 +1463,17 @@ async function togglePaid(id){
 }
 async function toggleTask(id){
  const task=tasks.find(t=>t.id===id);if(!task)return;
- try{const {error}=await db.from('tasks').update({done:!task.done}).eq('id',id);if(error)throw error;await loadData(false)}
+ const done=!task.done,subtasks=task.subtasks.map(subtask=>({...subtask,done}));
+ const update=task.subtasks.length?{done,subtasks}:{done};
+ try{const {error}=await db.from('tasks').update(update).eq('id',id);if(error)throw error;await loadData(false)}
  catch(error){reportError('Não foi possível atualizar a tarefa',error)}
+}
+async function toggleSubtask(taskId,subtaskId){
+ const task=tasks.find(item=>item.id===taskId);if(!task)return;
+ const subtasks=task.subtasks.map(subtask=>subtask.id===subtaskId?{...subtask,done:!subtask.done}:subtask);
+ const done=subtasks.length>0&&subtasks.every(subtask=>subtask.done);
+ try{const {error}=await db.from('tasks').update({done,subtasks}).eq('id',taskId);if(error)throw error;await loadData(false)}
+ catch(error){reportError('Não foi possível atualizar a subtarefa',error)}
 }
 function openDeleteAccountModal(id){
  const account=accounts.find(item=>item.id===id);if(!account)return;
@@ -1457,7 +1556,19 @@ $('deleteSingleAccount').addEventListener('click',()=>void deletePendingAccount(
 $('deleteRecurringAccounts').addEventListener('click',()=>void deletePendingAccount(true));
 $('cancelDeleteAccount').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
 $('closeDeleteAccountModal').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
-async function deleteTask(id){if(confirm('Excluir esta tarefa?'))try{const {error}=await db.from('tasks').delete().eq('id',id);if(error)throw error;await loadData(false);toast('Tarefa excluída.')}catch(error){reportError('Não foi possível excluir a tarefa',error)}}
+async function deleteTask(id){
+ if(!confirm('Excluir esta tarefa?'))return false;
+ try{
+  const {error}=await db.from('tasks').delete().eq('id',id);if(error)throw error;
+  await loadData(false);toast('Tarefa excluída.');return true;
+ }catch(error){reportError('Não foi possível excluir a tarefa',error);return false}
+}
+$('deleteTaskButton').addEventListener('click',async()=>{
+ const id=$('taskId').value;if(!id)return;
+ const button=$('deleteTaskButton');button.disabled=true;
+ try{if(await deleteTask(id))closeModal('taskModal')}
+ finally{button.disabled=false}
+});
 $('accountFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;accountDashboardFilter=null;accountFilter=b.dataset.filter;$('accountFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderAccounts()});
 $('accountNameFilter').addEventListener('change',e=>{accountDashboardFilter=null;accountNameFilter=e.currentTarget.value;e.currentTarget.classList.toggle('is-placeholder',!accountNameFilter);renderAccounts()});
 $('clearAccountDashboardFilter').addEventListener('click',()=>{
@@ -1569,9 +1680,31 @@ function renderAccountNameOptions(){
  select.classList.toggle('is-placeholder',!accountNameFilter);
 }
 function renderTasks(){
- const list=tasks.filter(t=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!t.done:t.done)).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
- $('tasksList').innerHTML=list.length?list.map(t=>`<div class="task-card ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}')"><div class="task-info"><strong>${escapeHTML(t.name)}</strong><small>${t.date?'Prazo: '+fmtDate(t.date):'Sem data definida'}${t.month?' · Planejado para '+t.month.split('-').reverse().join('/') :''}${t.notes?' · '+escapeHTML(t.notes):''}</small></div><button class="action-btn" onclick="openTaskModal('${t.id}')">✎</button><button class="action-btn" onclick="deleteTask('${t.id}')">×</button></div>`).join(''):'<div class="empty">Nenhuma tarefa por aqui. Adicione seu primeiro planejamento!</div>';
+ const list=tasks.filter(task=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!task.done:task.done));
+ const groups=new Map();
+ list.forEach(task=>{
+  const month=/^\d{4}-(0[1-9]|1[0-2])$/.test(task.month)?task.month:'';
+  if(!groups.has(month))groups.set(month,[]);
+  groups.get(month).push(task);
+ });
+ const orderedMonths=[...groups.keys()].sort((a,b)=>a&&b?a.localeCompare(b):a?-1:b?1:0);
+ $('tasksList').innerHTML=orderedMonths.length?orderedMonths.map(month=>{
+  const title=month?new Date(Number(month.slice(0,4)),Number(month.slice(5))-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}):'Sem mês de referência';
+  const monthTasks=groups.get(month).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+  const isExpanded=expandedTaskMonths.has(month);
+  return `<section class="task-month-panel"><button class="task-month-header" type="button" data-task-month="${escapeHTML(month)}" aria-expanded="${isExpanded}"><span>${escapeHTML(title)} · ${monthTasks.length} ${monthTasks.length===1?'tarefa':'tarefas'}</span><span aria-hidden="true">${isExpanded?'▾':'▸'}</span></button><div class="task-month-items"${isExpanded?'':' hidden'}>${monthTasks.map(task=>{
+   const details=task.subtasks.length?`${task.subtasks.filter(subtask=>subtask.done).length}/${task.subtasks.length} subtarefas concluídas`:'';
+   const subtasks=task.subtasks.length?`<div class="task-subtasks">${task.subtasks.map(subtask=>`<label class="task-subtask ${subtask.done?'done':''}"><input type="checkbox" ${subtask.done?'checked':''} onchange="toggleSubtask('${task.id}','${subtask.id}')"><span>${escapeHTML(subtask.name)}</span></label>`).join('')}</div>`:'';
+   return `<article class="task-card ${task.done?'done':''}"><input type="checkbox" aria-label="Concluir ${escapeHTML(task.name)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><div class="task-info"><button class="task-title-button" type="button" onclick="openTaskModal('${task.id}')">${escapeHTML(task.name)}</button>${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
+  }).join('')}</div></section>`;
+ }).join(''):'<div class="empty">Nenhuma tarefa por aqui. Adicione seu primeiro planejamento!</div>';
 }
+$('tasksList').addEventListener('click',event=>{
+ const monthButton=event.target.closest('[data-task-month]');if(!monthButton)return;
+ const month=monthButton.dataset.taskMonth;
+ if(expandedTaskMonths.has(month))expandedTaskMonths.delete(month);else expandedTaskMonths.add(month);
+ renderTasks();
+});
 function getUpcomingAccounts(){
  const today=todayISO(),endDate=new Date();
  endDate.setHours(0,0,0,0);endDate.setDate(endDate.getDate()+7);
