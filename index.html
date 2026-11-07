@@ -116,6 +116,15 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
 .filter{border:1px solid var(--line);background:#fff;color:#687589;border-radius:20px;padding:7px 12px;font-size:11px}
 #accountMonthFilter{background:#f2fbf6;border-color:#d6efdf;color:var(--green-dark)}
+.account-month-picker{position:relative;min-width:0}
+.account-month-menu{position:absolute;top:calc(100% + 6px);right:0;z-index:10;width:230px;max-height:min(60vh,380px);overflow-y:auto;padding:8px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px #17203324}
+.account-month-menu[hidden]{display:none}
+.account-month-menu button{width:100%;border:0;background:transparent;color:#405064;border-radius:8px;text-align:left;padding:9px 10px;font-size:12px}
+.account-month-menu button:hover,.account-month-menu button:focus-visible{background:#f2fbf6;outline:none}
+.account-month-menu .month-year{display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.account-month-menu .month-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;padding:2px 0 6px}
+.account-month-menu .month-options button{text-align:center;padding:8px 2px;font-size:11px}
+.account-month-menu .month-options button[aria-pressed="true"],.account-month-menu .all-months[aria-pressed="true"]{background:var(--green-soft);color:var(--green-dark);font-weight:700}
 .field-hint{grid-column:1/-1;margin:0;color:var(--muted);font-size:11px;line-height:1.45}
 .field .checkbox-label{display:flex;align-items:center;gap:8px;cursor:pointer}
 .field .checkbox-label input{width:16px;height:16px;margin:0;padding:0;accent-color:var(--green)}
@@ -172,7 +181,7 @@ tbody tr:last-child td{border-bottom:0}
 .loan-row{cursor:pointer}
 .loan-row:focus-visible{outline:2px solid #72d5a3;outline-offset:-2px}
 .loan-contract-card{min-width:0;margin-bottom:12px;padding:12px;border:1px solid #edf0f3;border-radius:var(--radius);background:#fff;box-shadow:var(--shadow)}
-.loan-contract-header{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center}
+.loan-contract-header{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;padding:8px 0;border-radius:8px;background:#f3faf6}
 .loan-contract-edit,.loan-contract-toggle{min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
 .loan-contract-edit{grid-column:1/3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
 .loan-contract-toggle{grid-column:3;text-align:center;font-size:12px;font-weight:700;white-space:nowrap}
@@ -229,10 +238,12 @@ tbody tr:last-child td{border-bottom:0}
  .profile-date-row{gap:8px}
 }
 @media(max-width:700px){
- #accountFilters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;width:100%}
+ #accountFilters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;width:100%}
  #accountFilters button[data-filter="Assinatura"]{display:none}
- #accountFilters .filter{width:100%;min-width:0;padding:7px 3px;font-size:9px;text-align:center;white-space:nowrap}
- #accountMonthFilter{text-align:center;text-align-last:center}
+ #accountFilters .filter{width:100%;min-width:0;padding:7px 2px;font-size:9px;text-align:center;white-space:nowrap}
+ #accountNameFilter{text-align:left}
+ #accountMonthFilter{text-align:center}
+ .account-month-menu{width:min(250px,calc(100vw - 28px))}
  #page-contas .table-wrap{overflow-x:hidden}
  #page-contas table{width:100%;min-width:0;table-layout:fixed}
  #page-contas th:nth-child(2),#page-contas td:nth-child(2){display:none}
@@ -260,7 +271,7 @@ tbody tr:last-child td{border-bottom:0}
  #page-emprestimos .loan-column-header th:nth-child(4),#page-emprestimos .loan-installment-row td:nth-child(4){width:20%}
  #page-emprestimos .loan-column-header th:nth-child(5),#page-emprestimos .loan-installment-row td:nth-child(5){width:23%}
  #page-emprestimos .loan-contract-header{gap:6px}
- #page-emprestimos .loan-contract-edit{padding-left:24px;font-size:12px}
+ #page-emprestimos .loan-contract-edit{padding-left:15px;font-size:12px}
  #page-emprestimos .loan-summary-footer{gap:6px}
  #page-emprestimos .loan-summary-footer small{font-size:12px}
  #page-emprestimos .loan-summary-footer strong{font-size:12px}
@@ -341,7 +352,7 @@ tbody tr:last-child td{border-bottom:0}
 
     <section class="page" id="page-contas">
       <div class="section-toolbar"><h2>Minhas Contas</h2><div class="toolbar-actions"><button class="btn" onclick="openAccountModal()">＋ Nova Conta</button></div></div>
-      <div class="filters" id="accountFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Fixa">Fixas</button><button class="filter" data-filter="Variável">Variáveis</button><button class="filter" data-filter="Sazonal">Sazonais</button><button class="filter" data-filter="Assinatura">Assinaturas</button><select class="filter" id="accountMonthFilter" aria-label="Filtrar contas por mês"><option value="all">Todos os meses</option></select></div>
+      <div class="filters" id="accountFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Fixa">Fix.</button><button class="filter" data-filter="Variável">Var.</button><button class="filter" data-filter="Sazonal">Saz.</button><button class="filter" data-filter="Assinatura">Assin.</button><select class="filter" id="accountNameFilter" aria-label="Filtrar contas pelo nome"><option value="">Conta</option></select><div class="account-month-picker"><button type="button" class="filter" id="accountMonthFilter" aria-label="Filtrar contas por mês" aria-expanded="false" aria-controls="accountMonthMenu">Mês</button><div class="account-month-menu" id="accountMonthMenu" aria-label="Meses disponíveis" hidden></div></div></div>
       <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta</th><th>Categoria</th><th class="account-centered-cell">Mês</th><th class="account-centered-cell">Venc</th><th class="account-centered-cell">Valor</th><th class="account-centered-cell">Status</th><th class="account-centered-cell" title="Diferença percentual em relação ao mês anterior">Δ DIF</th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
     </section>
 
@@ -556,7 +567,8 @@ function formatBRDateInput(value){
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
 const expandedLoanIds=new Set();
-let accountFilter='Todas',accountMonthFilter=monthISO(),taskFilter='Todas',dashPeriod='month',reportPeriod='year';
+let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',taskFilter='Todas',dashPeriod='month',reportPeriod='year';
+let expandedAccountMonthYear=null;
 let calendarDate=new Date();
 let profilePreviewObjectUrl=null;
 let profileCropImageObjectUrl=null,profileCropResultUrl=null,profileCropBlob=null;
@@ -922,7 +934,7 @@ async function loadData(checkMigration=true){
  accounts=accountsResult.data.map(toAccount);tasks=tasksResult.data.map(toTask);
  if(loansResult.error){loans=[];loanLoadError=loansResult.error.message}
  else{loans=loansResult.data.map(toLoan);loanLoadError=null}
- renderAccountMonthOptions();
+ renderAccountMonthOptions();renderAccountNameOptions();
  updateReportYears();renderAll();
  if(loansResult.error)reportError('Controle de empréstimos indisponível. Execute supabase/loans.sql no Supabase',loansResult.error);
  if(checkMigration)await importLegacyData();
@@ -948,6 +960,11 @@ if(new URLSearchParams(window.location.hash.slice(1)).get('type')==='recovery')s
 function showPage(name){
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
  document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+ if(name==='contas'){
+  accountMonthFilter=monthISO();
+  $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
+  renderAccountMonthOptions();renderAccounts();
+ }
  if(name==='calendario')renderCalendar();if(name==='relatorios')renderReports();
  window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -1231,7 +1248,7 @@ $('accountForm').addEventListener('submit',async e=>{
   }
   if(result.error)throw result.error;
   if(!id){
-   accountFilter='Todas';accountMonthFilter='all';
+   accountFilter='Todas';accountMonthFilter='all';accountNameFilter='';
    $('accountFilters').querySelectorAll('button[data-filter]').forEach(button=>button.classList.toggle('active',button.dataset.filter==='Todas'));
   }
   closeModal('accountModal');await loadData(false);toast(successMessage);
@@ -1341,12 +1358,41 @@ $('cancelDeleteAccount').addEventListener('click',()=>{closeModal('deleteAccount
 $('closeDeleteAccountModal').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
 async function deleteTask(id){if(confirm('Excluir esta tarefa?'))try{const {error}=await db.from('tasks').delete().eq('id',id);if(error)throw error;await loadData(false);toast('Tarefa excluída.')}catch(error){reportError('Não foi possível excluir a tarefa',error)}}
 $('accountFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;accountFilter=b.dataset.filter;$('accountFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderAccounts()});
-$('accountMonthFilter').addEventListener('change',e=>{accountMonthFilter=e.currentTarget.value;renderAccounts()});
+$('accountNameFilter').addEventListener('change',e=>{accountNameFilter=e.currentTarget.value;renderAccounts()});
+$('accountMonthFilter').addEventListener('click',()=>{
+ const menu=$('accountMonthMenu'),isOpen=!menu.hidden;
+ if(!isOpen)expandedAccountMonthYear=null;
+ menu.hidden=isOpen;
+ $('accountMonthFilter').setAttribute('aria-expanded',String(!isOpen));
+});
+$('accountMonthMenu').addEventListener('click',event=>{
+ event.stopPropagation();
+ const yearButton=event.target.closest('button[data-month-year]');
+ if(yearButton){
+  const year=yearButton.dataset.monthYear;
+  expandedAccountMonthYear=expandedAccountMonthYear===year?null:year;
+  renderAccountMonthOptions();
+  return;
+ }
+ const monthButton=event.target.closest('button[data-month-value]');
+ if(!monthButton)return;
+ accountMonthFilter=monthButton.dataset.monthValue;
+ $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
+ renderAccountMonthOptions();renderAccounts();
+});
+document.addEventListener('click',event=>{
+ if(event.target.closest('.account-month-picker'))return;
+ $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
+});
+document.addEventListener('keydown',event=>{
+ if(event.key!=='Escape'||$('accountMonthMenu').hidden)return;
+ $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');$('accountMonthFilter').focus();
+});
 $('taskFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;taskFilter=b.dataset.filter;$('taskFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderTasks()});
 $('dashPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;dashPeriod=b.dataset.period;$('dashPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));drawChart()});
 $('reportPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;reportPeriod=b.dataset.period;$('reportPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderReports()});
 function renderAccounts(){
- const list=accounts.filter(a=>(accountFilter==='Todas'||a.category===accountFilter)&&(accountMonthFilter==='all'||a.month===accountMonthFilter)).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
+ const list=accounts.filter(a=>(accountFilter==='Todas'||a.category===accountFilter)&&(accountMonthFilter==='all'||a.month===accountMonthFilter)&&(!accountNameFilter||a.name===accountNameFilter)).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
  $('accountsTable').innerHTML=list.map(a=>`<tr class="account-row" data-account-id="${a.id}" tabindex="0" aria-label="Abrir ações de ${escapeHTML(a.name)}"><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td class="account-centered-cell">${formatAccountMonth(a.month)}</td><td class="account-centered-cell">${a.due}</td><td class="account-centered-cell"><strong>${Number(a.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td><td class="account-centered-cell"><span class="status ${a.status==='Pago'?'paid':'pending'}" role="img" aria-label="${a.status==='Pago'?'Pago':'Pendente'}" title="${a.status==='Pago'?'Pago':'Pendente'}">${a.status==='Pago'?'✓':'◷'}</span></td><td class="account-centered-cell">${formatAccountMonthDifference(a)}</td></tr>`).join('');
  $('accountsEmpty').hidden=list.length>0;
 }
@@ -1379,16 +1425,28 @@ function formatAccountMonth(month){
  return `${monthNumber}/${year.slice(-2)}`;
 }
 function renderAccountMonthOptions(){
- const select=$('accountMonthFilter'),months=new Set([monthISO(),...accounts.map(account=>account.month)]);
- const options=[...months].sort((a,b)=>b.localeCompare(a)).map(month=>{
-  const [year,monthNumber]=month.split('-').map(Number);
-  const monthLabel=new Date(year,monthNumber-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace(/\./g,'');
-  const label=`${monthLabel.charAt(0).toLocaleUpperCase('pt-BR')+monthLabel.slice(1)} ${String(year).slice(-2)}`;
-  return `<option value="${month}">${label}</option>`;
- });
- select.innerHTML='<option value="all">Todos os meses</option>'+options.join('');
- if(accountMonthFilter!=='all'&&!months.has(accountMonthFilter))accountMonthFilter=monthISO();
- select.value=accountMonthFilter;
+ const availableYears=new Set([monthISO().slice(0,4),...accounts.map(account=>account.month).filter(month=>/^\d{4}-(0[1-9]|1[0-2])$/.test(month)).map(month=>month.slice(0,4))]);
+ if(accountMonthFilter!=='all'&&(!/^\d{4}-(0[1-9]|1[0-2])$/.test(accountMonthFilter)||!availableYears.has(accountMonthFilter.slice(0,4))))accountMonthFilter=monthISO();
+ const [selectedYear,selectedMonth]=accountMonthFilter==='all'?[]:accountMonthFilter.split('-').map(Number);
+ const selectedLabel=accountMonthFilter==='all'?'Mês':new Date(selectedYear,selectedMonth-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace(/\./g,'');
+ $('accountMonthFilter').textContent=accountMonthFilter==='all'?'Mês':`${selectedLabel.charAt(0).toLocaleUpperCase('pt-BR')+selectedLabel.slice(1)} ${String(selectedYear).slice(-2)}`;
+ const yearOptions=[...availableYears].sort((a,b)=>Number(b)-Number(a)).map(yearKey=>{
+  const year=Number(yearKey),expanded=expandedAccountMonthYear===yearKey;
+  const options=Array.from({length:12},(_,index)=>12-index).map(monthNumber=>{
+   const key=`${yearKey}-${String(monthNumber).padStart(2,'0')}`;
+   const label=new Date(year,monthNumber-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace(/\./g,'');
+   const monthLabel=label.charAt(0).toLocaleUpperCase('pt-BR')+label.slice(1);
+   return `<button type="button" data-month-value="${key}" aria-label="${monthLabel} ${year}" aria-pressed="${accountMonthFilter===key}">${monthLabel}</button>`;
+  }).join('');
+  return `<div class="month-year-group"><button type="button" class="month-year" data-month-year="${yearKey}" aria-expanded="${expanded}">${year}<span aria-hidden="true">${expanded?'▾':'▸'}</span></button>${expanded?`<div class="month-options">${options}</div>`:''}</div>`;
+ }).join('');
+ $('accountMonthMenu').innerHTML=`<button type="button" class="all-months" data-month-value="all" aria-pressed="${accountMonthFilter==='all'}">Todos os meses</button>${yearOptions}`;
+}
+function renderAccountNameOptions(){
+ const select=$('accountNameFilter'),names=[...new Set(accounts.map(account=>account.name))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+ if(accountNameFilter&&!names.includes(accountNameFilter))accountNameFilter='';
+ select.innerHTML='<option value="">Conta</option>'+names.map(name=>`<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
+ select.value=accountNameFilter;
 }
 function renderTasks(){
  const list=tasks.filter(t=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!t.done:t.done)).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
