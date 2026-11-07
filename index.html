@@ -19,6 +19,7 @@
   --shadow:0 5px 18px rgba(27,43,65,.07);--radius:17px;
 }
 *{box-sizing:border-box}
+html{scrollbar-gutter:stable}
 body{min-height:100vh;min-height:100dvh;margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
@@ -163,6 +164,28 @@ tbody tr:last-child td{border-bottom:0}
 .account-action-button:hover{background:#d7f3e5}
 .account-action-button.danger{background:var(--red-soft);color:#d94a61}
 .account-action-button.danger:hover{background:#ffe1e6}
+.loan-status{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.loan-status.early{background:#edf0ff;color:#5865b3}
+.loan-status.on-time{background:var(--green-soft);color:var(--green-dark)}
+.loan-status.late{background:var(--red-soft);color:#d64d63}
+.loan-row{cursor:pointer}
+.loan-row:focus-visible{outline:2px solid #72d5a3;outline-offset:-2px}
+.loan-contract-row td,.loan-summary-row td{padding:12px;border-bottom:1px solid var(--line);background:#f8fafb;font-size:12px}
+.loan-contract-primary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center}
+.loan-contract-edit,.loan-contract-toggle{min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
+.loan-contract-edit{grid-column:1/3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.loan-contract-toggle{grid-column:3;text-align:center;font-size:12px;font-weight:700;white-space:nowrap}
+.loan-summary-footer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.loan-summary-footer span{display:grid;gap:4px;min-width:0;text-align:center}
+.loan-summary-footer small{color:var(--muted);font-size:10px}
+.loan-summary-footer strong{color:var(--ink);overflow-wrap:anywhere}
+.loan-summary-footer .loan-balance strong{color:var(--red)}
+.loan-table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse}
+.loan-table tr[hidden]{display:none}
+.loan-column-header th{padding:9px 5px;color:#8792a1;font-size:10px;text-align:center;border-bottom:1px solid var(--line)}
+.loan-installment-row td{text-align:center}
+.loan-installment-row td:first-child{text-align:left}
+.loan-date-compact{display:none}
 .mobile-nav{display:none}
 .toast{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom));right:22px;background:#17243a;color:#fff;padding:12px 16px;border-radius:12px;font-size:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:.2s;z-index:20}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -185,7 +208,7 @@ tbody tr:last-child td{border-bottom:0}
 @media(max-width:1050px){.app{grid-template-columns:205px 1fr}.cards{grid-template-columns:repeat(2,1fr)}main{padding:24px 20px}.grid-main{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){
  #appShell.ready{display:block}.app{display:block}.sidebar{display:none}main{padding:calc(20px + env(safe-area-inset-top)) 14px calc(88px + env(safe-area-inset-bottom))}
- .topbar{margin-bottom:18px;align-items:flex-start}.hello-heading{gap:7px}.mobile-header-logo{display:block;width:30px;height:30px;flex:0 0 30px;border-radius:9px;object-fit:cover}.hello h1{font-size:21px}.hello p{font-size:11px;margin-left:37px}
+ .topbar{margin-bottom:18px;align-items:flex-start}.hello{display:grid;grid-template-columns:30px minmax(0,1fr);grid-template-rows:auto auto;column-gap:7px;align-items:center}.hello-heading{display:contents}.mobile-header-logo{display:block;grid-column:1;grid-row:1/3;align-self:center;width:30px;height:30px;flex:0 0 30px;border-radius:9px;object-fit:cover}.hello h1{grid-column:2;grid-row:1;font-size:21px}.hello p{grid-column:2;grid-row:2;font-size:11px;margin-left:0}
  .top-actions{gap:7px;flex-wrap:wrap;justify-content:flex-end}.user-email{display:none}.avatar{width:34px;height:34px;min-width:34px;min-height:34px;flex-basis:34px}.profile-trigger{width:34px;height:34px;min-width:34px;flex-basis:34px}.avatar img{width:34px;height:34px}
  .cards{gap:9px}.metric{padding:13px 11px;min-height:88px;gap:9px}.metric-icon{width:34px;height:34px;border-radius:11px;font-size:16px}.metric strong{font-size:16px}.metric label{font-size:10px}
  .grid-main,.bottom-grid{grid-template-columns:1fr}.panel{padding:15px}.chart-wrap{height:185px}
@@ -224,6 +247,27 @@ tbody tr:last-child td{border-bottom:0}
  #page-contas .account-diff-increase{color:var(--red);font-weight:700}
  #page-contas .account-diff-decrease{color:var(--green-dark);font-weight:700}
  #page-contas .account-diff-neutral{color:var(--muted)}
+ #page-emprestimos .loan-table-wrap{overflow-x:hidden}
+ #page-emprestimos .loan-table{width:100%;min-width:0;table-layout:fixed}
+ #page-emprestimos .loan-table th,#page-emprestimos .loan-table td{padding:8px 2px;font-size:10px;letter-spacing:0;text-align:center;overflow-wrap:anywhere}
+ #page-emprestimos .loan-table th{font-size:8px;line-height:1.15}
+ #page-emprestimos .loan-column-header th:nth-child(1),#page-emprestimos .loan-installment-row td:nth-child(1){width:15%}
+ #page-emprestimos .loan-column-header th:nth-child(2),#page-emprestimos .loan-installment-row td:nth-child(2){width:18%}
+ #page-emprestimos .loan-column-header th:nth-child(3),#page-emprestimos .loan-installment-row td:nth-child(3){width:24%}
+ #page-emprestimos .loan-column-header th:nth-child(4),#page-emprestimos .loan-installment-row td:nth-child(4){width:20%}
+ #page-emprestimos .loan-column-header th:nth-child(5),#page-emprestimos .loan-installment-row td:nth-child(5){width:23%}
+ #page-emprestimos .loan-contract-row td{padding:9px 7px 9px 15px;text-align:left;font-size:11px}
+ #page-emprestimos .loan-summary-row td{padding:9px 7px;text-align:left;font-size:11px}
+ #page-emprestimos .loan-contract-primary{gap:6px}
+ #page-emprestimos .loan-contract-edit{padding-left:12px}
+ #page-emprestimos .loan-summary-footer{gap:6px}
+ #page-emprestimos .loan-summary-footer small{font-size:9px}
+ #page-emprestimos .loan-contract-edit,#page-emprestimos .loan-contract-toggle,#page-emprestimos .loan-summary-footer strong{font-size:10px}
+ #page-emprestimos .loan-installment-row td:first-child{text-align:center}
+ #page-emprestimos .loan-installment-row td:nth-child(2),#page-emprestimos .loan-installment-row td:nth-child(3){font-size:9px}
+ #page-emprestimos .loan-status{padding:4px 5px;font-size:9px;white-space:normal}
+ #page-emprestimos .loan-date-full{display:none}
+ #page-emprestimos .loan-date-compact{display:inline}
 }
 </style>
 </head>
@@ -256,6 +300,7 @@ tbody tr:last-child td{border-bottom:0}
       <button data-page="contas"><span class="ico">▤</span>Contas</button>
       <button data-page="tarefas"><span class="ico">☑</span>Tarefas</button>
       <button data-page="calendario"><span class="ico">▦</span>Calendário</button>
+      <button data-page="emprestimos"><span class="ico">↔</span>Emprést.</button>
       <button data-page="relatorios"><span class="ico">◷</span>Relatórios</button>
     </nav>
     <div class="sidebar-note"><b>◎</b><strong>Um passo de cada vez.</strong><br>Organização hoje, tranquilidade sempre.</div>
@@ -313,6 +358,11 @@ tbody tr:last-child td{border-bottom:0}
       <div class="panel" style="margin-top:15px"><div class="panel-head"><h2>Compromissos do mês</h2></div><div id="calendarEvents"></div></div>
     </section>
 
+    <section class="page" id="page-emprestimos">
+      <div class="section-toolbar"><h2>Controle de Empréstimos</h2><div class="toolbar-actions"><button class="btn" type="button" onclick="openLoanModal()">+ Contrato</button></div></div>
+      <div class="panel"><div class="table-wrap loan-table-wrap"><table class="loan-table"><tbody id="loansTable"></tbody></table></div><div id="loansEmpty" class="empty" hidden>Nenhum empréstimo cadastrado.</div></div>
+    </section>
+
     <section class="page" id="page-relatorios">
       <div class="section-toolbar"><h2>Relatórios Financeiros</h2><div class="toolbar-actions"><select id="reportYear" class="filter" aria-label="Ano"></select></div></div>
       <div class="filters" id="reportPeriods"><button class="filter active" data-period="month">Mês</button><button class="filter" data-period="quarter">Trimestre</button><button class="filter" data-period="semester">Semestre</button><button class="filter" data-period="year">Ano</button></div>
@@ -323,8 +373,58 @@ tbody tr:last-child td{border-bottom:0}
 </div>
 
 <nav class="mobile-nav" id="mobileNav">
-  <button class="active" data-page="inicio"><span>⌂</span>Início</button><button data-page="contas"><span>▤</span>Contas</button><button data-page="tarefas"><span>☑</span>Tarefas</button><button data-page="calendario"><span>▦</span>Agenda</button><button data-page="relatorios"><span>◷</span>Relatórios</button>
+  <button class="active" data-page="inicio"><span>⌂</span>Início</button><button data-page="contas"><span>▤</span>Contas</button><button data-page="tarefas"><span>☑</span>Tarefas</button><button data-page="calendario"><span>▦</span>Agenda</button><button data-page="emprestimos"><span>↔</span>Emprést.</button><button data-page="relatorios"><span>◷</span>Relatórios</button>
 </nav>
+
+<div class="modal-backdrop" id="loanModal">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="loanModalTitle">
+  <div class="modal-head"><h2 id="loanModalTitle">Dinheiro Emprestado</h2><button class="close" type="button" onclick="closeModal('loanModal')" aria-label="Fechar">×</button></div>
+  <form id="loanForm">
+   <div class="form-grid">
+    <div class="field full"><label for="loanName">Nome</label><input id="loanName" maxlength="120" required placeholder="Pessoa ou identificação do empréstimo"></div>
+    <div class="field"><label for="loanTotal">Valor total do contrato (R$)</label><input id="loanTotal" type="number" min="0.01" step="0.01" required></div>
+    <div class="field"><label for="loanInstallmentCount">Quantidade de Parcelas</label><input id="loanInstallmentCount" type="number" min="1" max="120" step="1" required></div>
+    <div class="field"><label for="loanReferenceMonth">Mês Ref</label><input id="loanReferenceMonth" type="month" required></div>
+    <div class="field"><label for="loanFirstDueDate">Data de Venc</label><input id="loanFirstDueDate" type="date" required></div>
+    <p class="field-hint full">O contrato será dividido em parcelas mensais. Você poderá informar a data e o valor pago em cada parcela depois de salvar.</p>
+   </div>
+   <div class="modal-actions"><button class="btn outline" type="button" onclick="closeModal('loanModal')">Cancelar</button><button class="btn" id="saveLoanButton" type="submit">Criar Empréstimo</button></div>
+  </form>
+ </section>
+</div>
+<div class="modal-backdrop" id="loanContractModal">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="loanContractModalTitle">
+  <div class="modal-head"><h2 id="loanContractModalTitle">Editar Contrato</h2><button class="close" type="button" onclick="closeModal('loanContractModal')" aria-label="Fechar">×</button></div>
+  <form id="loanContractForm">
+   <input type="hidden" id="loanContractId">
+   <div class="form-grid">
+    <div class="field full"><label for="loanContractName">Nome</label><input id="loanContractName" maxlength="120" required></div>
+    <div class="field full"><label for="loanContractTotal">Valor total do contrato (R$)</label><input id="loanContractTotal" type="number" min="0.01" step="0.01" required></div>
+   </div>
+   <div class="modal-actions delete-account-actions"><button class="btn danger" id="deleteLoanContractButton" type="button">Excluir contrato e parcelas</button><span style="flex:1"></span><button class="btn outline" type="button" onclick="closeModal('loanContractModal')">Cancelar</button><button class="btn" id="saveLoanContractButton" type="submit">Salvar alterações</button></div>
+  </form>
+ </section>
+</div>
+<div class="modal-backdrop" id="loanInstallmentModal">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="loanInstallmentModalTitle">
+  <div class="modal-head"><h2 id="loanInstallmentModalTitle">Parcela do Empréstimo</h2><button class="close" type="button" onclick="closeModal('loanInstallmentModal')" aria-label="Fechar">×</button></div>
+  <form id="loanInstallmentForm">
+   <input type="hidden" id="loanInstallmentId">
+   <div class="form-grid">
+    <div class="field full"><label for="loanInstallmentName">Nome</label><input id="loanInstallmentName" readonly></div>
+    <div class="field"><label for="loanInstallmentTotal">Valor total do contrato</label><input id="loanInstallmentTotal" readonly></div>
+    <div class="field"><label for="loanInstallmentPosition">Parcela</label><input id="loanInstallmentPosition" readonly></div>
+    <div class="field"><label for="loanInstallmentValue">Valor da Parcela</label><input id="loanInstallmentValue" readonly></div>
+    <div class="field"><label for="loanInstallmentReference">Mês Ref</label><input id="loanInstallmentReference" readonly></div>
+    <div class="field"><label for="loanInstallmentDue">Data de Venc</label><input id="loanInstallmentDue" type="date" required></div>
+    <div class="field"><label for="loanPaymentDate">Data do Pagamento</label><input id="loanPaymentDate" type="date"></div>
+    <div class="field"><label for="loanPaymentValue">Valor do Pagamento (R$)</label><input id="loanPaymentValue" type="number" min="0" step="0.01" placeholder="0,00"></div>
+    <div class="field full"><label for="loanPaymentStatus">Status automático</label><input id="loanPaymentStatus" readonly></div>
+   </div>
+   <div class="modal-actions delete-account-actions"><button class="btn danger" id="deleteLoanButton" type="button">Excluir Empréstimo</button><span style="flex:1"></span><button class="btn outline" type="button" onclick="closeModal('loanInstallmentModal')">Cancelar</button><button class="btn" id="saveLoanInstallmentButton" type="submit">Salvar Parcela</button></div>
+  </form>
+ </section>
+</div>
 
 <div class="modal-backdrop" id="accountModal">
  <div class="modal">
@@ -438,7 +538,8 @@ const monthISO=()=>todayISO().slice(0,7);
 const parseDate=s=>s?new Date(s+'T12:00:00'):null;
 const fmtDate=s=>{if(!s)return '—';return parseDate(s).toLocaleDateString('pt-BR')};
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let accounts=[],tasks=[],currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null;
+let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
+const expandedLoanIds=new Set();
 let accountFilter='Todas',accountMonthFilter=monthISO(),taskFilter='Todas',dashPeriod='month',reportPeriod='year';
 let calendarDate=new Date();
 let profilePreviewObjectUrl=null;
@@ -710,6 +811,7 @@ $('authForm').addEventListener('submit',async e=>{
 });
 function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||'',recurrenceId:row.recurrence_id||null}}
 function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||'',notes:row.notes||'',done:Boolean(row.done)}}
+function toLoan(row){return {id:row.id,loanId:row.loan_id,userId:row.user_id,name:row.name,contractTotal:Number(row.contract_total),installmentCount:Number(row.installment_count),installmentNumber:Number(row.installment_number),installmentValue:Number(row.installment_value),referenceMonth:row.reference_month,dueDate:row.due_date,paymentDate:row.payment_date||'',paymentValue:Number(row.payment_value||0)}}
 function setUserDisplay(user){
  const displayName=user.user_metadata?.display_name?.trim()||'';
  $('greeting').textContent=`Olá${displayName?`, ${displayName}`:''}! 👋`;
@@ -793,15 +895,20 @@ async function importLegacyData(){
 }
 async function loadData(checkMigration=true){
  if(!currentUser)return;
- const [accountsResult,tasksResult]=await Promise.all([
+ expandedLoanIds.clear();
+ const [accountsResult,tasksResult,loansResult]=await Promise.all([
   db.from('accounts').select('*').order('month').order('due'),
-  db.from('tasks').select('*').order('task_date')
+  db.from('tasks').select('*').order('task_date'),
+  db.from('loans').select('*').order('reference_month').order('installment_number')
  ]);
  if(accountsResult.error)throw accountsResult.error;
  if(tasksResult.error)throw tasksResult.error;
  accounts=accountsResult.data.map(toAccount);tasks=tasksResult.data.map(toTask);
+ if(loansResult.error){loans=[];loanLoadError=loansResult.error.message}
+ else{loans=loansResult.data.map(toLoan);loanLoadError=null}
  renderAccountMonthOptions();
  updateReportYears();renderAll();
+ if(loansResult.error)reportError('Controle de empréstimos indisponível. Execute supabase/loans.sql no Supabase',loansResult.error);
  if(checkMigration)await importLegacyData();
 }
 async function handleAuthSession(event,session){
@@ -809,7 +916,7 @@ async function handleAuthSession(event,session){
  if(passwordRecovery)return;
  const user=session?.user||null;
  if(!user){
-  currentUser=null;accounts=[];tasks=[];
+  currentUser=null;accounts=[];tasks=[];loans=[];loanLoadError=null;expandedLoanIds.clear();selectedLoanContractId=null;selectedLoanInstallmentId=null;
   $('appShell').classList.remove('ready');$('authGate').classList.add('show');$('userAvatar').textContent='MC';$('profileAvatarPreview').textContent='MC';$('pushNotificationsButton').hidden=true;closeModal('profileModal');
   return;
  }
@@ -864,6 +971,217 @@ function accountMonthsInRange(start,end){
   return `${year}-${String(month).padStart(2,'0')}`;
  });
 }
+function addMonthsToDate(date,offset){
+ const [year,month,day]=date.split('-').map(Number),monthIndex=year*12+month-1+offset;
+ const targetYear=Math.floor(monthIndex/12),targetMonth=monthIndex%12+1;
+ const lastDay=new Date(Date.UTC(targetYear,targetMonth,0)).getUTCDate();
+ return `${targetYear}-${String(targetMonth).padStart(2,'0')}-${String(Math.min(day,lastDay)).padStart(2,'0')}`;
+}
+function addMonthsToReference(month,offset){
+ const [year,monthNumber]=month.split('-').map(Number),monthIndex=year*12+monthNumber-1+offset;
+ return `${Math.floor(monthIndex/12)}-${String(monthIndex%12+1).padStart(2,'0')}-01`;
+}
+function splitLoanTotal(contractTotal,installmentCount){
+ const totalCents=Math.round(contractTotal*100),baseCents=Math.floor(totalCents/installmentCount),remainderCents=totalCents%installmentCount;
+ return {baseValue:baseCents/100,remainderValue:(baseCents+1)/100,remainderCount:remainderCents};
+}
+function buildLoanInstallments({loanId,userId,name,contractTotal,installmentCount,referenceMonth,firstDueDate}){
+ const {baseValue,remainderValue,remainderCount}=splitLoanTotal(contractTotal,installmentCount);
+ return Array.from({length:installmentCount},(_,index)=>({
+  id:crypto.randomUUID(),loan_id:loanId,user_id:userId,name,contract_total:contractTotal,
+  installment_count:installmentCount,installment_number:index+1,
+  installment_value:index<remainderCount?remainderValue:baseValue,
+  reference_month:addMonthsToReference(referenceMonth,index),
+  due_date:addMonthsToDate(firstDueDate,index),payment_date:null,payment_value:0
+ }));
+}
+function getLoanStatus(loan,currentDate=todayISO()){
+ if(loan.paymentDate&&loan.paymentDate<=currentDate){
+  const daysEarly=(Date.parse(`${loan.dueDate}T00:00:00Z`)-Date.parse(`${loan.paymentDate}T00:00:00Z`))/86400000;
+  if(daysEarly>30)return 'Antecipado';
+  return loan.paymentDate<=loan.dueDate?'Em dia':'Atraso';
+ }
+ return currentDate>loan.dueDate?'Atraso':'Em dia';
+}
+function loanStatusClass(status){return status==='Antecipado'?'early':status==='Atraso'?'late':'on-time'}
+function formatLoanDateCompact(date){return date?parseDate(date).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'—'}
+function renderLoans(){
+ if(loanLoadError){
+  $('loansTable').innerHTML='';$('loansEmpty').textContent='Não foi possível carregar os empréstimos. Verifique a configuração do Supabase.';$('loansEmpty').hidden=false;return;
+ }
+ $('loansEmpty').textContent='Nenhum empréstimo cadastrado.';
+ const list=[...loans].sort((a,b)=>a.referenceMonth.localeCompare(b.referenceMonth)||a.installmentNumber-b.installmentNumber);
+ const groups=new Map();
+ list.forEach(loan=>{
+  if(!groups.has(loan.loanId))groups.set(loan.loanId,[]);
+  groups.get(loan.loanId).push(loan);
+ });
+ $('loansTable').innerHTML=[...groups.values()].map(group=>{
+  const first=group[0];
+  const totalPaid=group.reduce((sum,loan)=>sum+Number(loan.paymentValue||0),0);
+  const remainingBalance=Math.max(0,Number(first.contractTotal)-totalPaid);
+  const paidInstallments=group.filter(loan=>Boolean(loan.paymentDate)&&Number(loan.paymentValue||0)>=Number(loan.installmentValue)).length;
+  const isExpanded=expandedLoanIds.has(first.loanId);
+  const contractRow=`<tr class="loan-contract-row" data-loan-contract-id="${escapeHTML(first.loanId)}" aria-expanded="${isExpanded}"><td colspan="5"><span class="loan-contract-primary"><button class="loan-contract-edit" type="button" aria-label="Editar contrato ${escapeHTML(first.name)}">${escapeHTML(first.name)}</button><button class="loan-contract-toggle" type="button" aria-expanded="${isExpanded}" aria-label="${isExpanded?'Ocultar':'Mostrar'} parcelas de ${escapeHTML(first.name)}">Parcelas ${paidInstallments}/${first.installmentCount}</button></span></td></tr><tr class="loan-column-header loan-contract-content"${isExpanded?'':' hidden'}><th>PARCELA</th><th>VENC</th><th>PAGAMENTO</th><th>VALOR</th><th>STATUS</th></tr>`;
+  const installmentRows=group.map(loan=>{
+   const status=getLoanStatus(loan),installmentLabel=`${loan.installmentNumber}/${loan.installmentCount}`;
+   const paymentDate=loan.paymentDate?fmtDate(loan.paymentDate):'—';
+   const compactPaymentDate=loan.paymentDate?formatLoanDateCompact(loan.paymentDate):'—';
+   const compactDueDate=formatLoanDateCompact(loan.dueDate);
+   const installmentValue=Number(loan.paymentDate||loan.paymentValue?loan.paymentValue:loan.installmentValue).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+   return `<tr class="loan-row loan-installment-row loan-contract-content" data-loan-installment-id="${escapeHTML(loan.id)}" tabindex="0" aria-label="Editar parcela ${installmentLabel} de ${escapeHTML(loan.name)}"${isExpanded?'':' hidden'}><td>${installmentLabel}<br><small>${formatAccountMonth(loan.referenceMonth.slice(0,7))}</small></td><td title="${fmtDate(loan.dueDate)}"><span class="loan-date-full">${fmtDate(loan.dueDate)}</span><span class="loan-date-compact">${compactDueDate}</span></td><td title="${paymentDate}"><span class="loan-date-full">${paymentDate}</span><span class="loan-date-compact">${compactPaymentDate}</span></td><td title="${loan.paymentDate?'Valor pago':'Valor previsto da parcela'}">${installmentValue}</td><td><span class="loan-status ${loanStatusClass(status)}">${status}</span></td></tr>`;
+  }).join('');
+  const summaryRow=`<tr class="loan-summary-row"><td colspan="5"><div class="loan-summary-footer"><span><small>Valor Contrato</small><strong>${money(first.contractTotal)}</strong></span><span><small>Total Pago</small><strong>${money(totalPaid)}</strong></span><span class="loan-balance"><small>Saldo Devedor</small><strong>${money(remainingBalance)}</strong></span></div></td></tr>`;
+  return contractRow+installmentRows+summaryRow;
+ }).join('');
+ $('loansEmpty').hidden=list.length>0;
+}
+function toggleLoanContract(loanId){
+ if(expandedLoanIds.has(loanId))expandedLoanIds.delete(loanId);
+ else expandedLoanIds.add(loanId);
+ renderLoans();
+}
+$('loansTable').addEventListener('click',event=>{
+ const editButton=event.target.closest('.loan-contract-edit');
+ if(editButton){
+  const row=editButton.closest('[data-loan-contract-id]');
+  if(row)openLoanContractModal(row.dataset.loanContractId);
+  return;
+ }
+ const toggle=event.target.closest('.loan-contract-toggle');
+ if(toggle){
+  const row=toggle.closest('[data-loan-contract-id]');
+  if(row)toggleLoanContract(row.dataset.loanContractId);
+  return;
+ }
+ const row=event.target.closest('tr[data-loan-installment-id]');
+ if(row)openLoanInstallmentModal(row.dataset.loanInstallmentId);
+});
+$('loansTable').addEventListener('keydown',event=>{
+ if(event.key!=='Enter'&&event.key!==' ')return;
+ const row=event.target.closest('tr[data-loan-installment-id]');if(!row)return;
+ event.preventDefault();openLoanInstallmentModal(row.dataset.loanInstallmentId);
+});
+function openLoanModal(){
+ $('loanForm').reset();$('loanReferenceMonth').value=monthISO();$('loanFirstDueDate').value=todayISO();
+ $('loanModal').classList.add('show');
+}
+function openLoanContractModal(loanId){
+ const loan=loans.find(item=>item.loanId===loanId);if(!loan)return;
+ selectedLoanContractId=loanId;
+ $('loanContractId').value=loanId;
+ $('loanContractName').value=loan.name;
+ $('loanContractTotal').value=loan.contractTotal.toFixed(2);
+ $('loanContractModal').classList.add('show');
+}
+function openLoanInstallmentModal(id){
+ const loan=loans.find(item=>item.id===id);if(!loan)return;
+ selectedLoanInstallmentId=id;
+ $('loanInstallmentId').value=loan.id;
+ $('loanInstallmentName').value=loan.name;
+ $('loanInstallmentTotal').value=money(loan.contractTotal);
+ $('loanInstallmentPosition').value=`${loan.installmentNumber} de ${loan.installmentCount}`;
+ $('loanInstallmentValue').value=money(loan.installmentValue);
+ $('loanInstallmentReference').value=formatAccountMonth(loan.referenceMonth.slice(0,7));
+ $('loanInstallmentDue').value=loan.dueDate;
+ $('loanPaymentDate').value=loan.paymentDate;
+ $('loanPaymentDate').max=todayISO();
+ $('loanPaymentValue').value=loan.paymentValue?loan.paymentValue.toFixed(2):'';
+ updateLoanStatusPreview();
+ $('loanInstallmentModal').classList.add('show');
+}
+function updateLoanStatusPreview(){
+ const id=$('loanInstallmentId').value,loan=loans.find(item=>item.id===id);if(!loan)return;
+ const status=getLoanStatus({...loan,dueDate:$('loanInstallmentDue').value,paymentDate:$('loanPaymentDate').value});
+ $('loanPaymentStatus').value=status;
+}
+$('loanForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ if(!currentUser){toast('Entre na sua conta para criar um empréstimo.');return}
+ const name=$('loanName').value.trim(),contractTotal=Number($('loanTotal').value);
+ const installmentCount=Number($('loanInstallmentCount').value),referenceMonth=$('loanReferenceMonth').value,firstDueDate=$('loanFirstDueDate').value;
+ if(!name||!Number.isFinite(contractTotal)||contractTotal<=0||!Number.isInteger(installmentCount)||installmentCount<1||installmentCount>120||!referenceMonth||!firstDueDate){toast('Confira os dados do contrato antes de salvar.');return}
+ const button=$('saveLoanButton');button.disabled=true;
+ try{
+  const payload=buildLoanInstallments({loanId:crypto.randomUUID(),userId:currentUser.id,name,contractTotal,installmentCount,referenceMonth,firstDueDate});
+  const {error}=await db.from('loans').insert(payload);if(error)throw error;
+  closeModal('loanModal');await loadData(false);toast(`${installmentCount} parcela(s) criada(s) com sucesso.`);
+ }catch(error){
+  if(error.code==='PGRST205'||error.message?.includes("Could not find the table 'public.loans'"))reportError('Tabela loans não encontrada. Execute supabase/loans.sql no Supabase e recarregue o app',error);
+  else reportError('Não foi possível criar o empréstimo',error);
+ }
+ finally{button.disabled=false}
+});
+$('loanContractForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ if(!currentUser||!selectedLoanContractId)return;
+ const group=loans.filter(loan=>loan.loanId===selectedLoanContractId);
+ const name=$('loanContractName').value.trim(),contractTotal=Number($('loanContractTotal').value);
+ if(!group.length)return;
+ if(!name||!Number.isFinite(contractTotal)||contractTotal<=0){toast('Confira o nome e o valor total do contrato.');return}
+ const button=$('saveLoanContractButton');button.disabled=true;
+ try{
+  const {baseValue,remainderValue,remainderCount}=splitLoanTotal(contractTotal,group[0].installmentCount);
+  const {error}=await db.from('loans').update({
+   name,contract_total:contractTotal,installment_value:baseValue
+  }).eq('loan_id',selectedLoanContractId).eq('user_id',currentUser.id);
+  if(error)throw error;
+  if(remainderCount){
+   const {error:remainderError}=await db.from('loans').update({
+    installment_value:remainderValue
+   }).eq('loan_id',selectedLoanContractId).eq('user_id',currentUser.id).lte('installment_number',remainderCount);
+   if(remainderError)throw remainderError;
+  }
+  closeModal('loanContractModal');selectedLoanContractId=null;
+  await loadData(false);toast('Contrato atualizado com sucesso.');
+ }catch(error){reportError('Não foi possível atualizar o contrato',error)}
+ finally{button.disabled=false}
+});
+$('deleteLoanContractButton').addEventListener('click',async()=>{
+ if(!currentUser||!selectedLoanContractId)return;
+ const loan=loans.find(item=>item.loanId===selectedLoanContractId);if(!loan)return;
+ if(!confirm(`Excluir o contrato "${loan.name}" e todas as suas parcelas?`))return;
+ const button=$('deleteLoanContractButton');button.disabled=true;
+ try{
+  const {error}=await db.from('loans').delete().eq('loan_id',selectedLoanContractId).eq('user_id',currentUser.id);
+  if(error)throw error;
+  closeModal('loanContractModal');selectedLoanContractId=null;
+  await loadData(false);toast('Contrato e parcelas excluídos.');
+ }catch(error){reportError('Não foi possível excluir o contrato',error)}
+ finally{button.disabled=false}
+});
+$('loanInstallmentForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ const loan=loans.find(item=>item.id===selectedLoanInstallmentId);if(!loan||!currentUser)return;
+ const paymentValue=$('loanPaymentValue').value===''?0:Number($('loanPaymentValue').value);
+ if(!Number.isFinite(paymentValue)||paymentValue<0){toast('Informe um valor de pagamento válido.');return}
+ const button=$('saveLoanInstallmentButton');button.disabled=true;
+ try{
+  const {error}=await db.from('loans').update({
+   due_date:$('loanInstallmentDue').value,
+   payment_date:$('loanPaymentDate').value||null,
+   payment_value:paymentValue
+  }).eq('id',loan.id).eq('user_id',currentUser.id);
+  if(error)throw error;
+  closeModal('loanInstallmentModal');selectedLoanInstallmentId=null;
+  await loadData(false);toast('Parcela atualizada com sucesso.');
+ }catch(error){reportError('Não foi possível atualizar a parcela',error)}
+ finally{button.disabled=false}
+});
+$('loanInstallmentDue').addEventListener('input',updateLoanStatusPreview);
+$('loanPaymentDate').addEventListener('input',updateLoanStatusPreview);
+$('deleteLoanButton').addEventListener('click',async()=>{
+ const loan=loans.find(item=>item.id===selectedLoanInstallmentId);if(!loan||!currentUser)return;
+ if(!confirm(`Excluir o empréstimo "${loan.name}" e todas as suas parcelas?`))return;
+ const button=$('deleteLoanButton');button.disabled=true;
+ try{
+  const {error}=await db.from('loans').delete().eq('loan_id',loan.loanId).eq('user_id',currentUser.id);
+  if(error)throw error;
+  closeModal('loanInstallmentModal');selectedLoanInstallmentId=null;
+  await loadData(false);toast('Empréstimo excluído.');
+ }catch(error){reportError('Não foi possível excluir o empréstimo',error)}
+ finally{button.disabled=false}
+});
 $('accountForm').addEventListener('submit',async e=>{
  e.preventDefault();const id=$('accountId').value;
  const enteredValue=$('accountValue').value;
@@ -1085,7 +1403,7 @@ function renderReports(){
  const allMonths=Array.from({length:12},(_,i)=>{const key=`${year}-${String(i+1).padStart(2,'0')}`,arr=accounts.filter(a=>a.month===key);return arr.reduce((s,a)=>s+a.value,0)});
  $('reportTable').innerHTML=rows.map(r=>{const i=Number(r.key.slice(5))-1,prev=i>0?allMonths[i-1]:0,pct=prev?((r.total-prev)/prev*100):null;return `<tr><td><strong>${r.label}</strong></td><td>${money(r.total)}</td><td class="positive">${money(r.paid)}</td><td class="negative">${money(r.open)}</td><td>${pct===null?'—':`<span class="${pct>0?'negative':'positive'}">${pct>0?'+':''}${pct.toFixed(1).replace('.',',')}%</span>`}</td></tr>`}).join('');
 }
-function renderAll(){renderAccounts();renderTasks();renderDashboard();renderCalendar();renderReports();drawChart()}
+function renderAll(){renderAccounts();renderLoans();renderTasks();renderDashboard();renderCalendar();renderReports();drawChart()}
 function initializeApp(){
  $('greeting').textContent='Olá! 👋';
  updateReportYears();$('reportYear').addEventListener('change',renderReports);
