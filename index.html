@@ -93,7 +93,11 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .periods{display:flex;gap:3px;background:#f3f5f7;border-radius:10px;padding:3px}
 .periods button{border:0;background:transparent;border-radius:8px;padding:7px 10px;color:#657184;font-size:10px}
 .periods button.active{background:var(--green);color:#fff}
-.chart-wrap{height:205px;position:relative}.chart-wrap canvas{width:100%;height:100%}
+.dashboard-title-compact{display:none}
+.dash-chart-controls{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0;flex:0 0 auto;margin-left:auto}
+.chart-account-filter{min-width:0}
+.chart-account-filter select{width:150px;max-width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:#fff;color:#687589;font-size:11px}
+.chart-wrap{height:235px;position:relative;overflow-x:auto;overflow-y:hidden}.chart-wrap canvas{display:block;height:100%}
 .legend{display:flex;justify-content:center;gap:18px;font-size:10px;color:#697589;margin-top:7px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
 .task-list{display:grid;gap:0}
@@ -184,7 +188,12 @@ tbody tr:last-child td{border-bottom:0}
 .loan-contract-header{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;padding:8px 0;border-radius:8px;background:#f3faf6}
 .loan-contract-edit,.loan-contract-toggle{min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
 .loan-contract-edit{grid-column:1/3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
-.loan-contract-toggle{grid-column:3;text-align:center;font-size:12px;font-weight:700;white-space:nowrap}
+.loan-contract-actions{grid-column:3;display:flex;align-items:center;justify-content:center;gap:4px;min-width:0}
+.loan-contract-toggle{min-width:0;text-align:center;font-size:12px;font-weight:700;white-space:nowrap}
+.loan-contract-download-row{display:flex;justify-content:flex-end;margin-top:8px}
+.loan-contract-download{display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:8px;background:#e5f5ec;color:var(--green-dark);cursor:pointer}
+.loan-contract-download:hover{background:#d7f3e5}
+.loan-contract-download svg{width:16px;height:16px}
 .loan-summary-footer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .loan-contract-card .loan-summary-footer{margin:10px 0}
 .loan-summary-footer span{display:grid;gap:4px;min-width:0;text-align:center}
@@ -223,7 +232,14 @@ tbody tr:last-child td{border-bottom:0}
  .topbar{margin-bottom:18px;align-items:flex-start}.hello{display:grid;grid-template-columns:30px minmax(0,1fr);grid-template-rows:auto auto;column-gap:7px;align-items:center}.hello-heading{display:contents}.mobile-header-logo{display:block;grid-column:1;grid-row:1/3;align-self:center;width:30px;height:30px;flex:0 0 30px;border-radius:9px;object-fit:cover}.hello h1{grid-column:2;grid-row:1;font-size:21px}.hello p{grid-column:2;grid-row:2;font-size:11px;margin-left:0}
  .top-actions{gap:7px;flex-wrap:wrap;justify-content:flex-end}.user-email{display:none}.avatar{width:34px;height:34px;min-width:34px;min-height:34px;flex-basis:34px}.profile-trigger{width:34px;height:34px;min-width:34px;flex-basis:34px}.avatar img{width:34px;height:34px}
  .cards{gap:9px}.metric{padding:13px 11px;min-height:88px;gap:9px}.metric-icon{width:34px;height:34px;border-radius:11px;font-size:16px}.metric strong{font-size:16px}.metric label{font-size:10px}
- .grid-main,.bottom-grid{grid-template-columns:1fr}.panel{padding:15px}.chart-wrap{height:185px}
+ .grid-main,.bottom-grid{grid-template-columns:1fr}.panel{padding:15px}.chart-wrap{height:235px}
+ .dashboard-chart-head{align-items:center;flex-direction:row;flex-wrap:nowrap;gap:4px}
+ .dashboard-chart-head h2{flex:0 0 100px;min-width:0;font-size:14px;line-height:1.2;white-space:nowrap}
+ .dashboard-title-full{display:none}
+ .dashboard-title-compact{display:inline}
+ .dash-chart-controls{flex:0 0 auto;gap:4px;margin-left:auto;justify-content:flex-end}
+ .chart-account-filter{flex:0 0 72px}
+ .chart-account-filter select{width:100%;padding:7px 4px;font-size:10px}
  .report-cards{grid-template-columns:1fr 1fr}.report-card:last-child{grid-column:1/-1}
  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:5;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
  .mobile-nav button{border:0;background:transparent;color:#7b8798;font-size:9px;display:grid;justify-items:center;gap:3px;min-width:48px}
@@ -236,6 +252,17 @@ tbody tr:last-child td{border-bottom:0}
  .profile-actions{gap:6px}
  .profile-actions .btn{padding:9px 5px;font-size:10px}
  .profile-date-row{gap:8px}
+}
+@media(min-width:361px) and (max-width:700px){
+ .dashboard-chart-head{gap:0}
+}
+@media(max-width:360px){
+ .dashboard-chart-panel{position:relative;left:-14px;width:calc(100% + 28px);padding:12px 8px}
+ .dashboard-chart-head{gap:2px}
+ .dashboard-chart-head h2{flex-basis:100px;font-size:14px}
+ .dash-chart-controls{gap:4px}
+ .chart-account-filter{flex-basis:64px}
+ #dashPeriods{gap:0;padding:0}
 }
 @media(max-width:700px){
  #accountFilters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;width:100%}
@@ -270,6 +297,9 @@ tbody tr:last-child td{border-bottom:0}
  #page-emprestimos .loan-column-header th:nth-child(4),#page-emprestimos .loan-installment-row td:nth-child(4){width:20%}
  #page-emprestimos .loan-column-header th:nth-child(5),#page-emprestimos .loan-installment-row td:nth-child(5){width:23%}
  #page-emprestimos .loan-contract-header{gap:6px}
+ #page-emprestimos .loan-contract-actions{gap:2px}
+ #page-emprestimos .loan-contract-toggle{font-size:10px}
+ #page-emprestimos .loan-contract-download{width:24px;height:24px}
  #page-emprestimos .loan-contract-edit{padding-left:15px;font-size:12px}
  #page-emprestimos .loan-summary-footer{gap:6px}
  #page-emprestimos .loan-summary-footer small{font-size:12px}
@@ -332,11 +362,11 @@ tbody tr:last-child td{border-bottom:0}
         <div class="card metric purple"><div class="metric-icon">✓</div><div><label>Próximos vencimentos</label><strong id="dash-due">0</strong><small>Nos próximos 7 dias</small></div></div>
       </div>
       <div class="grid-main">
-        <div class="panel">
-          <div class="panel-head"><h2>Visão dos Compromissos</h2><div class="periods" id="dashPeriods"><button class="active" data-period="month">Mês</button><button data-period="quarter">Tri</button><button data-period="semester">Sem.</button><button data-period="year">Ano</button></div></div>
-          <div class="chart-wrap"><canvas id="financeChart"></canvas></div>
-          <div class="legend"><span><i class="dot" style="background:#08a45b"></i>Pagas</span><span><i class="dot" style="background:#f15b72"></i>Em aberto</span></div>
-        </div>
+        <div class="panel dashboard-chart-panel">
+            <div class="panel-head dashboard-chart-head"><h2 aria-label="Visão dos Compromissos"><span class="dashboard-title-full">Visão dos Compromissos</span><span class="dashboard-title-compact" aria-hidden="true">Compromissos</span></h2><div class="dash-chart-controls"><div class="chart-account-filter"><select id="dashAccountFilter" aria-label="Filtrar gráfico por conta"><option value="">Conta</option></select></div><div class="periods" id="dashPeriods"><button class="active" data-period="sixMonths">6 meses</button><button data-period="year">Ano</button></div></div></div>
+            <div class="chart-wrap"><canvas id="financeChart"></canvas></div>
+            <div class="legend"><span><i class="dot" style="background:#08a45b"></i>Pagas</span><span><i class="dot" style="background:#f15b72"></i>Em aberto</span></div>
+          </div>
         <div class="panel">
           <div class="panel-head"><h2>Tarefas e Planejamento</h2><a onclick="showPage('tarefas')">Ver todas →</a></div>
           <div class="task-list" id="dashboardTasks"></div>
@@ -566,7 +596,7 @@ function formatBRDateInput(value){
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
 const expandedLoanIds=new Set();
-let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',taskFilter='Todas',dashPeriod='month',reportPeriod='month';
+let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',taskFilter='Todas',dashPeriod='sixMonths',dashAccountFilter='',reportPeriod='month';
 let expandedAccountMonthYear=null;
 let calendarDate=new Date();
 let profilePreviewObjectUrl=null;
@@ -933,7 +963,7 @@ async function loadData(checkMigration=true){
  accounts=accountsResult.data.map(toAccount);tasks=tasksResult.data.map(toTask);
  if(loansResult.error){loans=[];loanLoadError=loansResult.error.message}
  else{loans=loansResult.data.map(toLoan);loanLoadError=null}
- renderAccountMonthOptions();renderAccountNameOptions();
+ renderAccountMonthOptions();renderAccountNameOptions();renderDashboardAccountOptions();
  updateReportYears();renderAll();
  if(loansResult.error)reportError('Controle de empréstimos indisponível. Execute supabase/loans.sql no Supabase',loansResult.error);
  if(checkMigration)await importLegacyData();
@@ -959,6 +989,11 @@ if(new URLSearchParams(window.location.hash.slice(1)).get('type')==='recovery')s
 function showPage(name){
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
  document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+ if(name==='inicio'){
+  dashPeriod='sixMonths';
+  $('dashPeriods').querySelectorAll('button[data-period]').forEach(button=>button.classList.toggle('active',button.dataset.period===dashPeriod));
+  drawChart();
+ }
  if(name==='contas'){
   accountMonthFilter=monthISO();
   $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
@@ -1063,7 +1098,7 @@ function renderLoans(){
   const remainingBalance=Math.max(0,Number(first.contractTotal)-totalPaid);
   const paidInstallments=group.filter(isLoanInstallmentPaid).length;
   const isExpanded=expandedLoanIds.has(first.loanId);
-  const contractHeader=`<div class="loan-contract-header"><button class="loan-contract-edit" type="button" aria-label="Editar contrato ${escapeHTML(first.name)}">${escapeHTML(first.name)}</button><button class="loan-contract-toggle" type="button" aria-expanded="${isExpanded}" aria-label="${isExpanded?'Ocultar':'Mostrar'} parcelas de ${escapeHTML(first.name)}">Parcelas ${paidInstallments}/${first.installmentCount}</button></div>`;
+  const contractHeader=`<div class="loan-contract-header"><button class="loan-contract-edit" type="button" aria-label="Editar contrato ${escapeHTML(first.name)}">${escapeHTML(first.name)}</button><div class="loan-contract-actions"><button class="loan-contract-toggle" type="button" aria-expanded="${isExpanded}" aria-label="${isExpanded?'Ocultar':'Mostrar'} parcelas de ${escapeHTML(first.name)}">Parcelas ${paidInstallments}/${first.installmentCount}</button></div></div>`;
   const installmentRows=group.map(loan=>{
    const status=getLoanStatus(loan),installmentLabel=`${loan.installmentNumber}/${loan.installmentCount}`;
    const paymentDate=loan.paymentDate?fmtDate(loan.paymentDate):'—';
@@ -1075,9 +1110,51 @@ function renderLoans(){
   }).join('');
   const summary=`<div class="loan-summary-footer"><span><small>Valor Contrato</small><strong>${loanMoney(first.contractTotal)}</strong></span><span><small>Total Pago</small><strong>${loanMoney(totalPaid)}</strong></span><span class="loan-balance"><small>Saldo Devedor</small><strong>${loanMoney(remainingBalance)}</strong></span></div>`;
   const installments=`<table class="loan-table"${isExpanded?'':' hidden'}><thead><tr class="loan-column-header"><th>PARCELA</th><th>VENC</th><th>PAGAMENTO</th><th>VALOR</th><th>STATUS</th></tr></thead><tbody>${installmentRows}</tbody></table>`;
-  return `<article class="loan-contract-card" data-loan-contract-id="${escapeHTML(first.loanId)}" aria-expanded="${isExpanded}">${contractHeader}${summary}${installments}</article>`;
+  const downloadButton=isExpanded?`<div class="loan-contract-download-row"><button class="loan-contract-download" type="button" aria-label="Baixar imagem do contrato ${escapeHTML(first.name)}" title="Baixar contrato como imagem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></button></div>`:'';
+  return `<article class="loan-contract-card" data-loan-contract-id="${escapeHTML(first.loanId)}" aria-expanded="${isExpanded}">${contractHeader}${summary}${installments}${downloadButton}</article>`;
  }).join('');
  $('loansEmpty').hidden=list.length>0;
+}
+async function downloadLoanContractImage(loanId){
+ const group=loans.filter(loan=>loan.loanId===loanId).sort((a,b)=>a.installmentNumber-b.installmentNumber);
+ const first=group[0];if(!first)throw new Error('Não foi possível encontrar este contrato.');
+ const width=1200,padding=64,tableTop=390,rowHeight=64,headerHeight=58,height=tableTop+headerHeight+group.length*rowHeight+100;
+ const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+ const context=canvas.getContext('2d');if(!context)throw new Error('Não foi possível preparar a imagem do contrato.');
+ const totalPaid=group.reduce((sum,loan)=>sum+Number(loan.paymentValue||0),0),remainingBalance=Math.max(0,Number(first.contractTotal)-totalPaid);
+ context.fillStyle='#f4f7f8';context.fillRect(0,0,width,height);
+ context.fillStyle='#08a45b';context.fillRect(0,0,width,14);
+ context.fillStyle='#17243a';context.font='700 38px system-ui, sans-serif';context.textBaseline='alphabetic';context.fillText(first.name,padding,92,width-padding*2);
+ context.fillStyle='#667487';context.font='18px system-ui, sans-serif';context.fillText('CONTROLE DE EMPRÉSTIMOS',padding,128);
+ const cardGap=18,cardWidth=(width-padding*2-cardGap*2)/3,cardTop=166,cardHeight=150;
+ const summaryCards=[['VALOR CONTRATO',loanMoney(first.contractTotal)],['TOTAL PAGO',loanMoney(totalPaid)],['SALDO DEVEDOR',loanMoney(remainingBalance)]];
+ summaryCards.forEach(([label,value],index)=>{
+  const x=padding+index*(cardWidth+cardGap);
+  context.fillStyle='#ffffff';context.beginPath();context.roundRect(x,cardTop,cardWidth,cardHeight,16);context.fill();
+  context.fillStyle='#758193';context.font='600 17px system-ui, sans-serif';context.fillText(label,x+24,cardTop+42);
+  context.fillStyle=index===2?'#d64d63':'#17243a';context.font='700 30px system-ui, sans-serif';context.fillText(value,x+24,cardTop+94,cardWidth-48);
+  if(index===0){context.fillStyle='#758193';context.font='17px system-ui, sans-serif';context.fillText(`${first.installmentCount} parcelas`,x+24,cardTop+126)}
+ });
+ context.fillStyle='#17243a';context.font='700 24px system-ui, sans-serif';context.fillText('Parcelas',padding,tableTop-20);
+ context.fillStyle='#eaf5ee';context.beginPath();context.roundRect(padding,tableTop,width-padding*2,headerHeight,10);context.fill();
+ const columns=[padding+18,padding+210,padding+430,padding+680,padding+895],headers=['PARCELA','VENCIMENTO','PAGAMENTO','VALOR','STATUS'];
+ context.fillStyle='#536174';context.font='700 16px system-ui, sans-serif';headers.forEach((label,index)=>context.fillText(label,columns[index],tableTop+37));
+ group.forEach((loan,index)=>{
+  const y=tableTop+headerHeight+index*rowHeight,status=getLoanStatus(loan),paidLate=isLoanInstallmentPaid(loan)&&loan.paymentDate>loan.dueDate;
+  context.fillStyle=paidLate?'#fff5f6':'#ffffff';context.fillRect(padding,y,width-padding*2,rowHeight);
+  context.strokeStyle='#edf0f3';context.beginPath();context.moveTo(padding,y+rowHeight);context.lineTo(width-padding,y+rowHeight);context.stroke();
+  const values=[`${loan.installmentNumber}/${loan.installmentCount} · ${formatAccountMonth(loan.referenceMonth.slice(0,7))}`,fmtDate(loan.dueDate),loan.paymentDate?fmtDate(loan.paymentDate):'—',loanMoney(loan.paymentDate||loan.paymentValue?loan.paymentValue:loan.installmentValue),status];
+  context.font='16px system-ui, sans-serif';values.forEach((value,columnIndex)=>{
+   context.fillStyle=columnIndex===4?status==='Atrasado'?'#d64d63':status==='Pendente'?'#b47a1d':'#087b46':'#344256';
+   context.fillText(value,columns[columnIndex],y+39,columns[columnIndex+1]?columns[columnIndex+1]-columns[columnIndex]-20:width-padding-columns[columnIndex]);
+  });
+ });
+ context.fillStyle='#8792a1';context.font='15px system-ui, sans-serif';context.fillText(`Gerado em ${new Date().toLocaleDateString('pt-BR')}`,padding,height-34);
+ const blob=await new Promise((resolve,reject)=>canvas.toBlob(result=>result?resolve(result):reject(new Error('Não foi possível gerar a imagem do contrato.')),'image/png'));
+ const url=URL.createObjectURL(blob),link=document.createElement('a');
+ link.href=url;link.download=`contrato-${first.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').toLowerCase()||'emprestimo'}.png`;
+ document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ toast('Imagem do contrato baixada.');
 }
 function toggleLoanContract(loanId){
  if(expandedLoanIds.has(loanId))expandedLoanIds.delete(loanId);
@@ -1085,6 +1162,12 @@ function toggleLoanContract(loanId){
  renderLoans();
 }
 $('loansTable').addEventListener('click',event=>{
+ const downloadButton=event.target.closest('.loan-contract-download');
+ if(downloadButton){
+  const card=downloadButton.closest('[data-loan-contract-id]');
+  if(card)void downloadLoanContractImage(card.dataset.loanContractId).catch(error=>reportError('Não foi possível baixar a imagem do contrato',error));
+  return;
+ }
  const editButton=event.target.closest('.loan-contract-edit');
  if(editButton){
   const row=editButton.closest('[data-loan-contract-id]');
@@ -1394,6 +1477,7 @@ document.addEventListener('keydown',event=>{
 });
 $('taskFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;taskFilter=b.dataset.filter;$('taskFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderTasks()});
 $('dashPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;dashPeriod=b.dataset.period;$('dashPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));drawChart()});
+$('dashAccountFilter').addEventListener('change',event=>{dashAccountFilter=event.currentTarget.value;drawChart()});
 $('reportPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;reportPeriod=b.dataset.period;$('reportPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderReports()});
 function renderAccounts(){
  const list=accounts.filter(a=>(accountFilter==='Todas'||a.category===accountFilter)&&(accountMonthFilter==='all'||a.month===accountMonthFilter)&&(!accountNameFilter||a.name===accountNameFilter)).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
@@ -1465,17 +1549,42 @@ function renderDashboard(){
  $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(t=>`<div class="task-row"><input type="checkbox" onchange="toggleTask('${t.id}')"><span class="task-name">${escapeHTML(t.name)}</span><span class="date-pill">${t.date?fmtDate(t.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa pendente.</div>';
  const cats=['Fixa','Variável','Sazonal','Assinatura'];$('categorySummary').innerHTML=cats.map(c=>{const v=current.filter(a=>a.category===c).reduce((s,a)=>s+a.value,0),p=total?v/total*100:0;return `<div class="category-row"><span class="category-name">${c==='Fixa'?'Contas fixas':c==='Variável'?'Variáveis':c==='Sazonal'?'Sazonais':'Assinaturas'}</span><div class="bar"><span style="width:${p}%"></span></div><span class="category-value">${money(v)}</span></div>`}).join('');
 }
+function renderDashboardAccountOptions(){
+ const select=$('dashAccountFilter'),names=[...new Set(accounts.map(account=>account.name))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+ if(dashAccountFilter&&!names.includes(dashAccountFilter))dashAccountFilter='';
+ select.innerHTML='<option value="">Todas as contas</option>'+names.map(name=>`<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
+ select.value=dashAccountFilter;
+}
 function drawChart(){
- const canvas=$('financeChart'),ctx=canvas.getContext('2d'),w=canvas.clientWidth,h=canvas.clientHeight,dpr=window.devicePixelRatio||1;canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
- const now=new Date(),count=dashPeriod==='month'?6:dashPeriod==='quarter'?3:dashPeriod==='semester'?6:12,labels=[];
- for(let i=count-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);labels.push({key:d.toISOString().slice(0,7),label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','')})}
- const paid=labels.map(l=>accounts.filter(a=>a.month===l.key&&a.status==='Pago').reduce((s,a)=>s+a.value,0));
- const open=labels.map(l=>accounts.filter(a=>a.month===l.key&&a.status!=='Pago').reduce((s,a)=>s+a.value,0));
- const max=Math.max(100,...paid,...open)*1.2,left=35,right=10,top=12,bottom=27,cw=w-left-right,ch=h-top-bottom;
+ const canvas=$('financeChart'),viewportWidth=canvas.parentElement.clientWidth,h=canvas.parentElement.clientHeight,dpr=window.devicePixelRatio||1;
+ if(!viewportWidth||!h)return;
+ const now=new Date(),count=dashPeriod==='sixMonths'?6:12,labels=[];
+ for(let i=count-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);labels.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','')})}
+ const chartAccounts=dashAccountFilter?accounts.filter(account=>account.name===dashAccountFilter):accounts;
+ const paid=labels.map(label=>chartAccounts.filter(account=>account.month===label.key&&account.status==='Pago').reduce((sum,account)=>sum+account.value,0));
+ const open=labels.map(label=>chartAccounts.filter(account=>account.month===label.key&&account.status!=='Pago').reduce((sum,account)=>sum+account.value,0));
+ const left=35,right=38,w=viewportWidth;
+ canvas.style.width=`${w}px`;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
+ const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+ const max=Math.max(100,...paid,...open)*1.2,top=18,bottom=62,cw=w-left-right,ch=h-top-bottom;
  ctx.font='10px system-ui';ctx.textAlign='right';ctx.fillStyle='#8994a2';
  for(let i=0;i<4;i++){const y=top+ch*i/3;ctx.strokeStyle='#edf0f3';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.fillText(Math.round(max*(1-i/3)/1000)+'k',left-7,y+3)}
- const line=(vals,color)=>{ctx.beginPath();vals.forEach((v,i)=>{const x=left+(count===1?cw/2:cw*i/(count-1)),y=top+ch-(v/max)*ch;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle=color;ctx.lineWidth=2.3;ctx.lineJoin='round';ctx.stroke();vals.forEach((v,i)=>{const x=left+(count===1?cw/2:cw*i/(count-1)),y=top+ch-(v/max)*ch;ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle=color;ctx.fill()})};
- line(paid,'#08a45b');line(open,'#f15b72');ctx.textAlign='center';ctx.fillStyle='#8994a2';labels.forEach((l,i)=>ctx.fillText(l.label,left+(count===1?cw/2:cw*i/(count-1)),h-7));
+ const point=(value,index)=>({x:left+(count===1?cw/2:cw*index/(count-1)),y:top+ch-(value/max)*ch});
+ const line=(values,color)=>{ctx.beginPath();values.forEach((value,index)=>{const {x,y}=point(value,index);index?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle=color;ctx.lineWidth=2.3;ctx.lineJoin='round';ctx.stroke();values.forEach((value,index)=>{const {x,y}=point(value,index);ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle=color;ctx.fill()})};
+ line(paid,'#08a45b');line(open,'#f15b72');
+ const valueLabel=(value,index,color,seriesOffset)=>{
+  const {x,y}=point(value,index),label=new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(value);
+  ctx.font='600 9px system-ui';const boxWidth=Math.min(66,Math.ceil(ctx.measureText(label).width+10)),boxHeight=17,boxY=Math.max(2,Math.min(h-22,y+seriesOffset));
+  ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x-boxWidth/2,boxY,boxWidth,boxHeight,5);ctx.fill();
+  ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,x,boxY+boxHeight/2,boxWidth-6);
+ };
+ labels.forEach((label,index)=>{
+  valueLabel(paid[index],index,'#08a45b',-22);
+  valueLabel(open[index],index,'#f15b72',-42);
+ });
+ ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillStyle='#8994a2';labels.forEach((label,index)=>ctx.fillText(label.label,left+(count===1?cw/2:cw*index/(count-1)),h-5));
+ const filterName=dashAccountFilter||'Todas as contas';
+ canvas.setAttribute('aria-label',`Visão dos compromissos de ${filterName}. ${labels.map((label,index)=>`${label.label}: pagas ${money(paid[index])}, em aberto ${money(open[index])}`).join('; ')}.`);
 }
 function renderCalendar(){
  const y=calendarDate.getFullYear(),m=calendarDate.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
