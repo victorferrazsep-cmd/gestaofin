@@ -152,14 +152,20 @@ tbody tr:last-child td{border-bottom:0}
 .action-btn{border:0;background:transparent;color:#7b8798;font-size:17px}
 .empty{padding:35px 15px;text-align:center;color:#8b96a5;font-size:12px}
 .task-month-panel{min-width:0;margin-bottom:12px;padding:12px;border:1px solid #edf0f3;border-radius:var(--radius);background:#fff;box-shadow:var(--shadow)}
-.task-month-header{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:#f3faf6;color:var(--green-dark);text-align:left;font-size:13px;font-weight:700;text-transform:capitalize;cursor:pointer}
+.task-month-header{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:#f3faf6;color:var(--green-dark);text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;cursor:pointer}
 .task-month-header span:last-child{font-size:11px}
 .task-month-items[hidden]{display:none}
-.task-card{display:flex;align-items:flex-start;gap:10px;margin-top:10px;padding:10px;border:1px solid #edf0f3;border-radius:10px;background:#fff}
+.task-card{display:flex;align-items:flex-start;gap:10px;margin-top:8px;padding:10px;border:0;border-radius:10px;background:#f8fafb}
 .task-card>input{accent-color:var(--green);width:18px;height:18px;margin-top:8px;flex:none}
 .task-card .task-info{flex:1;min-width:0}
 .task-title-button{display:block;width:100%;padding:8px 10px;border:0;border-radius:8px;background:#f3faf6;color:var(--ink);text-align:left;font-size:12px;font-weight:700;cursor:pointer}
 .task-title-button:hover,.task-title-button:focus-visible{background:#e8f6ed;outline:none}
+.task-title-content{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.task-title-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task-priority{flex:none;padding:3px 7px;border-radius:12px;font-size:9px;font-weight:800;letter-spacing:.25px}
+.task-priority.urgent{background:#fff0f1;color:#d64d63}
+.task-priority.mandatory{background:#fff6e7;color:#a86b0b}
+.task-priority.neutral{background:#edf1f4;color:#657184}
 .task-card.done .task-title-button{color:#7d8794;text-decoration:line-through}
 .task-info small{display:block;color:var(--muted);font-size:10px;margin-top:6px;line-height:1.45}
 .task-card.done strong{text-decoration:line-through;color:#9aa3af}
@@ -399,7 +405,6 @@ tbody tr:last-child td{border-bottom:0}
         <div class="panel">
           <div class="panel-head"><h2>Tarefas e Planejamento</h2><a onclick="showPage('tarefas')">Ver todas →</a></div>
           <div class="task-list" id="dashboardTasks"></div>
-          <div style="margin-top:12px"><button class="btn secondary" onclick="openTaskModal()">＋ Nova Tarefa</button></div>
         </div>
       </div>
       <div class="bottom-grid">
@@ -417,7 +422,7 @@ tbody tr:last-child td{border-bottom:0}
 
     <section class="page" id="page-tarefas">
       <div class="section-toolbar"><h2>Minhas Tarefas</h2><div class="toolbar-actions"><button class="btn" onclick="openTaskModal()">＋ Nova Tarefa</button></div></div>
-      <div class="filters" id="taskFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Pendentes">Pendentes</button><button class="filter" data-filter="Concluídas">Concluídas</button></div>
+      <div class="filters" id="taskFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Pendentes">Pendentes</button><button class="filter" data-filter="Concluídas">Concluídas</button><div class="account-month-picker task-month-picker"><button type="button" class="filter" id="taskMonthFilter" aria-label="Filtrar tarefas por mês" aria-expanded="false" aria-controls="taskMonthMenu">6 meses</button><div class="account-month-menu task-month-menu" id="taskMonthMenu" aria-label="Meses das tarefas" hidden></div></div></div>
       <div class="panel" id="tasksList"></div>
     </section>
 
@@ -529,6 +534,7 @@ tbody tr:last-child td{border-bottom:0}
    <input type="hidden" id="taskId">
    <div class="form-grid">
     <div class="field full"><label for="taskName">Nome da Tarefa</label><input id="taskName" maxlength="160" required placeholder="Ex.: Organizar documentos"></div>
+    <div class="field full"><label for="taskPriority">Prioridade</label><select id="taskPriority" required><option value="URGENTE">URGENTE</option><option value="OBRIGATÓRIO">OBRIGATÓRIO</option><option value="NEUTRO" selected>NEUTRO</option></select></div>
     <div class="field full"><label for="taskMonth">Mês Ref.</label><input id="taskMonth" type="month" required></div>
     <label class="field checkbox-label full" id="taskRecurringField"><span>Recorrência mensal</span><input id="taskRecurring" type="checkbox"></label>
     <div class="field full task-recurring-fields" id="taskRecurringFields" hidden><div class="field"><label for="taskEndMonth">Mês final</label><input id="taskEndMonth" type="month"></div></div>
@@ -634,8 +640,8 @@ function formatBRDateInput(value){
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
 const expandedLoanIds=new Set(),expandedTaskMonths=new Set();
-let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',accountDashboardFilter=null,taskFilter='Todas',dashPeriod='sixMonths',dashAccountFilter='',reportPeriod='month';
-let expandedAccountMonthYear=null;
+let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',accountDashboardFilter=null,taskFilter='Todas',taskMonthFilter='next6',dashPeriod='sixMonths',dashAccountFilter='',reportPeriod='month';
+let expandedAccountMonthYear=null,expandedTaskMonthYear=null;
 let calendarDate=new Date();
 let profilePreviewObjectUrl=null;
 let profileCropImageObjectUrl=null,profileCropResultUrl=null,profileCropBlob=null;
@@ -905,7 +911,7 @@ $('authForm').addEventListener('submit',async e=>{
  finally{$('authSubmit').disabled=false}
 });
 function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||'',recurrenceId:row.recurrence_id||null}}
-function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||row.task_date?.slice(0,7)||'',description:row.description||row.notes||'',notes:row.notes||'',done:Boolean(row.done),subtasks:Array.isArray(row.subtasks)?row.subtasks.filter(item=>item&&typeof item.name==='string').map(item=>({id:typeof item.id==='string'?item.id:crypto.randomUUID(),name:item.name,done:Boolean(item.done)})):[]}}
+function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||row.task_date?.slice(0,7)||'',priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(row.priority)?row.priority:'NEUTRO',description:row.description||row.notes||'',notes:row.notes||'',done:Boolean(row.done),subtasks:Array.isArray(row.subtasks)?row.subtasks.filter(item=>item&&typeof item.name==='string').map(item=>({id:typeof item.id==='string'?item.id:crypto.randomUUID(),name:item.name,done:Boolean(item.done)})):[]}}
 function toLoan(row){return {id:row.id,loanId:row.loan_id,userId:row.user_id,name:row.name,contractTotal:Number(row.contract_total),installmentCount:Number(row.installment_count),installmentNumber:Number(row.installment_number),installmentValue:Number(row.installment_value),referenceMonth:row.reference_month,dueDate:row.due_date,paymentDate:row.payment_date||'',paymentValue:Number(row.payment_value||0)}}
 function setUserDisplay(user){
  const displayName=user.user_metadata?.display_name?.trim()||'';
@@ -982,7 +988,7 @@ async function importLegacyData(){
   localStorage.setItem(`mc_migrated_accounts_${currentUser.id}`,'true');
   if(pendingTasks.length){
    const {error}=await db.from('tasks').insert(pendingTasks.map(t=>({
-    name:t.name,task_date:t.date||null,month:t.month||t.date?.slice(0,7)||null,description:t.description||t.notes||null,done:Boolean(t.done),
+    name:t.name,task_date:t.date||null,month:t.month||t.date?.slice(0,7)||null,priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(t.priority)?t.priority:'NEUTRO',description:t.description||t.notes||null,done:Boolean(t.done),
     ...(Array.isArray(t.subtasks)?{subtasks:t.subtasks}:{})
    })));
    if(error)throw error;
@@ -1004,7 +1010,7 @@ async function loadData(checkMigration=true){
  accounts=accountsResult.data.map(toAccount);tasks=tasksResult.data.map(toTask);
  if(loansResult.error){loans=[];loanLoadError=loansResult.error.message}
  else{loans=loansResult.data.map(toLoan);loanLoadError=null}
- renderAccountMonthOptions();renderAccountNameOptions();renderDashboardAccountOptions();
+ renderAccountMonthOptions();renderAccountNameOptions();renderDashboardAccountOptions();renderTaskMonthOptions();
  updateReportYears();renderAll();
  if(loansResult.error)reportError('Controle de empréstimos indisponível. Execute supabase/loans.sql no Supabase',loansResult.error);
  if(checkMigration)await importLegacyData();
@@ -1047,6 +1053,12 @@ function showPage(name,dashboardFilter=null){
   $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
   renderAccountMonthOptions();renderAccounts();
  }
+ if(name==='tarefas'){
+  taskMonthFilter='next6';expandedTaskMonthYear=null;
+  $('taskMonthMenu').hidden=true;$('taskMonthFilter').setAttribute('aria-expanded','false');
+  expandedTaskMonths.clear();expandedTaskMonths.add(monthISO());
+  renderTaskMonthOptions();renderTasks();
+ }
  if(name==='relatorios'){
   reportPeriod='month';$('reportYear').value=String(new Date().getFullYear());
   $('reportPeriods').querySelectorAll('button[data-period]').forEach(button=>button.classList.toggle('active',button.dataset.period==='month'));
@@ -1082,7 +1094,7 @@ function openTaskModal(id=null){
  $('taskHasSubtasks').checked=false;$('taskSubtasksField').hidden=true;renderTaskSubtaskInputs([]);
  if(id){
   const task=tasks.find(item=>item.id===id);if(!task)return;
-  $('taskId').value=task.id;$('taskName').value=task.name;$('taskMonth').value=task.month||monthISO();$('taskDescription').value=task.description;
+  $('taskId').value=task.id;$('taskName').value=task.name;$('taskPriority').value=task.priority;$('taskMonth').value=task.month||monthISO();$('taskDescription').value=task.description;
   $('taskHasSubtasks').checked=task.subtasks.length>0;$('taskSubtasksField').hidden=!task.subtasks.length;renderTaskSubtaskInputs(task.subtasks);
  }
  $('taskModal').classList.add('show');
@@ -1437,12 +1449,12 @@ $('taskForm').addEventListener('submit',async e=>{
   if(id){
    const task=tasks.find(item=>item.id===id);if(!task)return;
    const {error}=await db.from('tasks').update({
-    name:$('taskName').value.trim(),month,description:$('taskDescription').value.trim()||null,subtasks,done:subtasks.length?subtasks.every(subtask=>subtask.done):task.done
+    name:$('taskName').value.trim(),month,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,subtasks,done:subtasks.length?subtasks.every(subtask=>subtask.done):task.done
    }).eq('id',id);
    if(error)throw error;
   }else{
    const payload=months.map(taskMonth=>({
-    name:$('taskName').value.trim(),task_date:null,month:taskMonth,description:$('taskDescription').value.trim()||null,done:false,
+    name:$('taskName').value.trim(),task_date:null,month:taskMonth,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,done:false,
     subtasks:subtasks.map(subtask=>({...subtask,id:crypto.randomUUID()}))
    }));
    const {error}=await db.from('tasks').insert(payload);
@@ -1462,6 +1474,19 @@ async function togglePaid(id){
  catch(error){reportError('Não foi possível atualizar o pagamento',error)}
 }
 async function toggleTask(id){
+ const loanTask=getTaskItems().find(task=>task.id===id&&task.loanInstallmentId);
+ if(loanTask){
+  const loan=loans.find(item=>item.id===loanTask.loanInstallmentId);if(!loan||!currentUser)return;
+  const wasPaid=isLoanInstallmentPaid(loan);
+  try{
+   const {error}=await db.from('loans').update({
+    payment_date:wasPaid?null:todayISO(),payment_value:wasPaid?0:Number(loan.installmentValue)
+   }).eq('id',loan.id).eq('user_id',currentUser.id);
+   if(error)throw error;
+   await loadData(false);toast(wasPaid?'Parcela marcada como pendente.':'Parcela marcada como paga.');
+  }catch(error){reportError('Não foi possível atualizar o pagamento da parcela',error)}
+  return;
+ }
  const task=tasks.find(t=>t.id===id);if(!task)return;
  const done=!task.done,subtasks=task.subtasks.map(subtask=>({...subtask,done}));
  const update=task.subtasks.length?{done,subtasks}:{done};
@@ -1599,12 +1624,42 @@ $('accountMonthMenu').addEventListener('click',event=>{
 document.addEventListener('click',event=>{
  if(event.target.closest('.account-month-picker'))return;
  $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
+ $('taskMonthMenu').hidden=true;$('taskMonthFilter').setAttribute('aria-expanded','false');
 });
 document.addEventListener('keydown',event=>{
- if(event.key!=='Escape'||$('accountMonthMenu').hidden)return;
- $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');$('accountMonthFilter').focus();
+ if(event.key!=='Escape')return;
+ if(!$('accountMonthMenu').hidden){$('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');$('accountMonthFilter').focus()}
+ else if(!$('taskMonthMenu').hidden){$('taskMonthMenu').hidden=true;$('taskMonthFilter').setAttribute('aria-expanded','false');$('taskMonthFilter').focus()}
 });
-$('taskFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;taskFilter=b.dataset.filter;$('taskFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderTasks()});
+$('taskMonthFilter').addEventListener('click',()=>{
+ const menu=$('taskMonthMenu'),isOpen=!menu.hidden;
+ if(!isOpen)expandedTaskMonthYear=null;
+ renderTaskMonthOptions();menu.hidden=isOpen;
+ $('taskMonthFilter').setAttribute('aria-expanded',String(!isOpen));
+});
+$('taskMonthMenu').addEventListener('click',event=>{
+ event.stopPropagation();
+ const yearButton=event.target.closest('button[data-task-month-year]');
+ if(yearButton){
+  const year=yearButton.dataset.taskMonthYear;
+  expandedTaskMonthYear=expandedTaskMonthYear===year?null:year;
+  renderTaskMonthOptions();return;
+ }
+ const monthButton=event.target.closest('button[data-task-month-value]');
+ if(!monthButton)return;
+ taskMonthFilter=monthButton.dataset.taskMonthValue;
+ expandedTaskMonths.clear();
+ if(taskMonthFilter==='next6'||taskMonthFilter==='all')expandedTaskMonths.add(monthISO());
+ else expandedTaskMonths.add(taskMonthFilter);
+ $('taskMonthMenu').hidden=true;$('taskMonthFilter').setAttribute('aria-expanded','false');
+ renderTaskMonthOptions();renderTasks();
+});
+$('taskFilters').addEventListener('click',e=>{
+ const button=e.target.closest('button[data-filter]');if(!button)return;
+ taskFilter=button.dataset.filter;
+ $('taskFilters').querySelectorAll('button[data-filter]').forEach(item=>item.classList.toggle('active',item===button));
+ renderTasks();
+});
 $('page-inicio').addEventListener('click',event=>{
  const card=event.target.closest('[data-dashboard-filter]');
  if(card)showPage('contas',card.dataset.dashboardFilter);
@@ -1679,23 +1734,69 @@ function renderAccountNameOptions(){
  select.value=accountNameFilter;
  select.classList.toggle('is-placeholder',!accountNameFilter);
 }
+function getTaskItems(){
+ const regularTasks=tasks.map(task=>({...task,loanInstallmentId:null}));
+ const loanTasks=loans.map(loan=>({
+  id:`loan:${loan.id}`,name:`${loan.name} — Parcela ${loan.installmentNumber}/${loan.installmentCount}`,
+  date:loan.dueDate,month:loan.referenceMonth.slice(0,7),priority:'OBRIGATÓRIO',
+  description:`Vencimento: ${fmtDate(loan.dueDate)} · Valor: ${money(loan.installmentValue)}`,
+  notes:'',done:isLoanInstallmentPaid(loan),subtasks:[],loanInstallmentId:loan.id
+ }));
+ return [...regularTasks,...loanTasks];
+}
+function getTaskDefaultMonths(){return accountMonthsInRange(monthISO(),addMonthsToReference(monthISO(),5).slice(0,7))}
+function formatTaskMonthLabel(month){
+ if(!month)return 'SEM MÊS';
+ const [year,monthNumber]=month.split('-').map(Number);
+ const name=new Date(year,monthNumber-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace(/\./g,'').toLocaleUpperCase('pt-BR');
+ return `${name} ${year}`;
+}
+function renderTaskMonthOptions(){
+ const validMonths=getTaskItems().map(task=>task.month).filter(month=>/^\d{4}-(0[1-9]|1[0-2])$/.test(month));
+ const defaultMonths=getTaskDefaultMonths(),years=new Set([...defaultMonths,...validMonths].map(month=>month.slice(0,4)));
+ if(taskMonthFilter!=='next6'&&taskMonthFilter!=='all'&&!/^\d{4}-(0[1-9]|1[0-2])$/.test(taskMonthFilter))taskMonthFilter='next6';
+ $('taskMonthFilter').textContent=taskMonthFilter==='next6'?'6 meses':taskMonthFilter==='all'?'Todos os meses':formatTaskMonthLabel(taskMonthFilter);
+ const yearOptions=[...years].sort((a,b)=>Number(b)-Number(a)).map(yearKey=>{
+  const year=Number(yearKey),expanded=expandedTaskMonthYear===yearKey;
+  const options=Array.from({length:12},(_,index)=>12-index).map(monthNumber=>{
+   const key=`${yearKey}-${String(monthNumber).padStart(2,'0')}`;
+   const label=new Date(year,monthNumber-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace(/\./g,'');
+   const monthLabel=label.charAt(0).toLocaleUpperCase('pt-BR')+label.slice(1);
+   return `<button type="button" data-task-month-value="${key}" aria-label="${monthLabel} ${year}" aria-pressed="${taskMonthFilter===key}">${monthLabel}</button>`;
+  }).join('');
+  return `<div class="month-year-group"><button type="button" class="month-year" data-task-month-year="${yearKey}" aria-expanded="${expanded}">${year}<span aria-hidden="true">${expanded?'▾':'▸'}</span></button>${expanded?`<div class="month-options">${options}</div>`:''}</div>`;
+ }).join('');
+ $('taskMonthMenu').innerHTML=`<button type="button" class="all-months" data-task-month-value="next6" aria-pressed="${taskMonthFilter==='next6'}">Mês atual + 5</button><button type="button" class="all-months" data-task-month-value="all" aria-pressed="${taskMonthFilter==='all'}">Todos os meses</button>${yearOptions}`;
+}
 function renderTasks(){
- const list=tasks.filter(task=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!task.done:task.done));
+ const allTasks=getTaskItems();
+ let list=allTasks.filter(task=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!task.done:task.done));
+ const defaultMonths=getTaskDefaultMonths();
+ if(taskMonthFilter==='next6')list=list.filter(task=>defaultMonths.includes(task.month));
+ else if(taskMonthFilter!=='all')list=list.filter(task=>task.month===taskMonthFilter);
  const groups=new Map();
  list.forEach(task=>{
   const month=/^\d{4}-(0[1-9]|1[0-2])$/.test(task.month)?task.month:'';
   if(!groups.has(month))groups.set(month,[]);
   groups.get(month).push(task);
  });
- const orderedMonths=[...groups.keys()].sort((a,b)=>a&&b?a.localeCompare(b):a?-1:b?1:0);
+ const displayedMonths=taskFilter==='Todas'
+  ?taskMonthFilter==='next6'?defaultMonths:taskMonthFilter==='all'?[...new Set([...groups.keys(),...allTasks.map(task=>task.month).filter(month=>/^\d{4}-(0[1-9]|1[0-2])$/.test(month))])]:[taskMonthFilter]
+  :[...groups.keys()];
+ if(taskMonthFilter==='all'&&groups.has(''))displayedMonths.push('');
+ if(taskFilter==='Todas')displayedMonths.forEach(month=>{if(!groups.has(month))groups.set(month,[])});
+ const orderedMonths=displayedMonths.sort((a,b)=>a&&b?a.localeCompare(b):a?-1:b?1:0);
  $('tasksList').innerHTML=orderedMonths.length?orderedMonths.map(month=>{
-  const title=month?new Date(Number(month.slice(0,4)),Number(month.slice(5))-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}):'Sem mês de referência';
-  const monthTasks=groups.get(month).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+  const title=formatTaskMonthLabel(month),monthItems=allTasks.filter(task=>task.month===month),completedCount=monthItems.filter(task=>task.done).length,totalCount=monthItems.length;
+  const priorityOrder={'URGENTE':0,'OBRIGATÓRIO':1,'NEUTRO':2};
+  const monthTasks=groups.get(month).sort((a,b)=>priorityOrder[a.priority]-priorityOrder[b.priority]||a.name.localeCompare(b.name,'pt-BR'));
   const isExpanded=expandedTaskMonths.has(month);
-  return `<section class="task-month-panel"><button class="task-month-header" type="button" data-task-month="${escapeHTML(month)}" aria-expanded="${isExpanded}"><span>${escapeHTML(title)} · ${monthTasks.length} ${monthTasks.length===1?'tarefa':'tarefas'}</span><span aria-hidden="true">${isExpanded?'▾':'▸'}</span></button><div class="task-month-items"${isExpanded?'':' hidden'}>${monthTasks.map(task=>{
+  return `<section class="task-month-panel"><button class="task-month-header" type="button" data-task-month="${escapeHTML(month)}" aria-expanded="${isExpanded}"><span>${escapeHTML(title)} - ${completedCount}/${totalCount} Tarefas</span><span aria-hidden="true">${isExpanded?'▾':'▸'}</span></button><div class="task-month-items"${isExpanded?'':' hidden'}>${monthTasks.map(task=>{
    const details=task.subtasks.length?`${task.subtasks.filter(subtask=>subtask.done).length}/${task.subtasks.length} subtarefas concluídas`:'';
    const subtasks=task.subtasks.length?`<div class="task-subtasks">${task.subtasks.map(subtask=>`<label class="task-subtask ${subtask.done?'done':''}"><input type="checkbox" ${subtask.done?'checked':''} onchange="toggleSubtask('${task.id}','${subtask.id}')"><span>${escapeHTML(subtask.name)}</span></label>`).join('')}</div>`:'';
-   return `<article class="task-card ${task.done?'done':''}"><input type="checkbox" aria-label="Concluir ${escapeHTML(task.name)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><div class="task-info"><button class="task-title-button" type="button" onclick="openTaskModal('${task.id}')">${escapeHTML(task.name)}</button>${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
+   const priorityClass=task.priority==='URGENTE'?'urgent':task.priority==='OBRIGATÓRIO'?'mandatory':'neutral';
+   const titleClick=task.loanInstallmentId?`openLoanInstallmentModal('${task.loanInstallmentId}')`:`openTaskModal('${task.id}')`;
+   return `<article class="task-card ${task.done?'done':''}"><input type="checkbox" aria-label="Concluir ${escapeHTML(task.name)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><div class="task-info"><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${escapeHTML(task.name)}</span><span class="task-priority ${priorityClass}">${task.priority}</span></span></button>${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
   }).join('')}</div></section>`;
  }).join(''):'<div class="empty">Nenhuma tarefa por aqui. Adicione seu primeiro planejamento!</div>';
 }
@@ -1721,8 +1822,10 @@ function renderDashboard(){
  const month=monthISO(),current=accounts.filter(a=>a.month===month),total=current.reduce((s,a)=>s+a.value,0),paid=current.filter(a=>a.status==='Pago'),open=current.filter(a=>a.status!=='Pago'),due=getUpcomingAccounts();
  $('dash-total').textContent=money(total);$('dash-paid').textContent=money(paid.reduce((s,a)=>s+a.value,0));$('dash-open').textContent=money(open.reduce((s,a)=>s+a.value,0));
  $('dash-paid-count').textContent=`${paid.length} ${paid.length===1?'conta Paga':'Contas Pagas'}`;$('dash-open-count').textContent=`${open.length} ${open.length===1?'Conta Pendente':'Contas Pendentes'}`;$('dash-due').textContent=due.length;
- const upcoming=tasks.filter(t=>!t.done).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).slice(0,4);
- $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(t=>`<div class="task-row"><input type="checkbox" onchange="toggleTask('${t.id}')"><span class="task-name">${escapeHTML(t.name)}</span><span class="date-pill">${t.date?fmtDate(t.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa pendente.</div>';
+ const priorityOrder={'URGENTE':0,'OBRIGATÓRIO':1};
+ const upcoming=getTaskItems().filter(task=>!task.done&&priorityOrder[task.priority]!==undefined)
+  .sort((a,b)=>priorityOrder[a.priority]-priorityOrder[b.priority]||(a.date||'9999').localeCompare(b.date||'9999')).slice(0,4);
+ $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(task=>`<div class="task-row"><input type="checkbox" aria-label="Concluir ${escapeHTML(task.name)}" onchange="toggleTask('${task.id}')"><span class="task-name">${escapeHTML(task.name)}</span><span class="task-priority ${task.priority==='URGENTE'?'urgent':'mandatory'}">${task.priority}</span><span class="date-pill">${task.date?fmtDate(task.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa urgente ou obrigatória pendente.</div>';
  const cats=['Fixa','Variável','Sazonal','Assinatura'];$('categorySummary').innerHTML=cats.map(c=>{const v=current.filter(a=>a.category===c).reduce((s,a)=>s+a.value,0),p=total?v/total*100:0;return `<div class="category-row"><span class="category-name">${c==='Fixa'?'Contas fixas':c==='Variável'?'Variáveis':c==='Sazonal'?'Sazonais':'Assinaturas'}</span><div class="bar"><span style="width:${p}%"></span></div><span class="category-value">${money(v)}</span></div>`}).join('');
 }
 function renderDashboardAccountOptions(){
