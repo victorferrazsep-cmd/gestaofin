@@ -192,8 +192,8 @@ tbody tr:last-child td{border-bottom:0}
 .report-card{padding:17px}.report-card small{color:var(--muted);font-size:10px}.report-card strong{display:block;font-size:19px;margin:7px 0}
 #reportComparisonTable{width:100%;min-width:0;table-layout:fixed}
 #reportComparisonTable th,#reportComparisonTable td{padding:8px 5px;font-size:10px;white-space:nowrap}
-#reportComparisonTable th:first-child,#reportComparisonTable td:first-child{width:13%}
-#reportComparisonTable th:last-child,#reportComparisonTable td:last-child{width:19%}
+#reportComparisonTable th:first-child,#reportComparisonTable td:first-child{width:20%}
+#reportComparisonTable th:last-child,#reportComparisonTable td:last-child{width:15%}
 .calendar-event-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .calendar-event-card{min-width:0}
 .calendar-event-card .panel-head{margin-bottom:8px}
@@ -287,7 +287,7 @@ tbody tr:last-child td{border-bottom:0}
  .chart-account-filter select{width:100%;padding:7px 4px;font-size:10px}
  .report-cards{grid-template-columns:1fr 1fr}.report-card:last-child{grid-column:1/-1}
  .calendar-event-cards{grid-template-columns:1fr}
- #reportComparisonTable th,#reportComparisonTable td{padding:7px 2px;font-size:8px}
+ #reportComparisonTable th,#reportComparisonTable td{padding:7px 3px}
  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:5;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
  .mobile-nav button{border:0;background:transparent;color:#7b8798;font-size:9px;display:grid;justify-items:center;gap:3px;min-width:48px}
  .mobile-nav button span{font-size:18px}.mobile-nav button.active{color:var(--green);font-weight:800}
@@ -459,7 +459,7 @@ tbody tr:last-child td{border-bottom:0}
       <div class="section-toolbar"><h2>Relatórios Financeiros</h2><div class="toolbar-actions"><select id="reportYear" class="filter" aria-label="Ano"></select></div></div>
       <div class="filters" id="reportPeriods"><button class="filter active" data-period="month">Mês</button><button class="filter" data-period="quarter">Trimestre</button><button class="filter" data-period="semester">Semestre</button><button class="filter" data-period="year">Ano</button></div>
       <div class="report-cards"><div class="card report-card"><small>Total previsto</small><strong id="report-total">R$ 0,00</strong><small>Contas cadastradas no período</small></div><div class="card report-card"><small>Total pago</small><strong class="positive" id="report-paid">R$ 0,00</strong><small>Contas marcadas como pagas</small></div><div class="card report-card"><small>Em aberto</small><strong class="negative" id="report-open">R$ 0,00</strong><small>Compromissos ainda não pagos</small></div></div>
-      <div class="panel"><div class="panel-head"><h2>Comparativo por Mês</h2><span class="text-link" id="reportPeriodLabel">Mês</span></div><div class="table-wrap"><table id="reportComparisonTable"><thead><tr><th>Período</th><th>Previsto</th><th>Pago</th><th>Em aberto</th><th>Variação MoM</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
+      <div class="panel"><div class="panel-head"><h2>Comparativo por Mês</h2><span class="text-link" id="reportPeriodLabel">Mês</span></div><div class="table-wrap"><table id="reportComparisonTable"><thead><tr><th>Período</th><th>Pago</th><th>Em aberto</th><th>MOM</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
     </section>
   </main>
 </div>
@@ -1905,7 +1905,7 @@ function renderReports(){
  const rows=indexes.map(i=>{const key=`${year}-${String(i+1).padStart(2,'0')}`,arr=accounts.filter(a=>a.month===key),total=arr.reduce((s,a)=>s+a.value,0),paid=arr.filter(a=>a.status==='Pago').reduce((s,a)=>s+a.value,0);return {key,label:new Date(year,i,1).toLocaleDateString('pt-BR',{month:'short'}).replace(/\./g,'').toLocaleUpperCase('pt-BR'),total,paid,open:total-paid}});
  const sum=k=>rows.reduce((s,r)=>s+r[k],0);$('report-total').textContent=money(sum('total'));$('report-paid').textContent=money(sum('paid'));$('report-open').textContent=money(sum('open'));$('reportPeriodLabel').textContent=label;
  const allMonths=Array.from({length:12},(_,i)=>{const key=`${year}-${String(i+1).padStart(2,'0')}`,arr=accounts.filter(a=>a.month===key);return arr.reduce((s,a)=>s+a.value,0)});
- $('reportTable').innerHTML=rows.map(r=>{const i=Number(r.key.slice(5))-1,prev=i>0?allMonths[i-1]:0,pct=prev?((r.total-prev)/prev*100):null;return `<tr><td><strong>${r.label}</strong></td><td>${money(r.total)}</td><td class="positive">${money(r.paid)}</td><td class="negative">${money(r.open)}</td><td>${pct===null?'—':`<span class="${pct>0?'negative':'positive'}">${pct>0?'+':''}${pct.toFixed(1).replace('.',',')}%</span>`}</td></tr>`}).join('');
+ $('reportTable').innerHTML=rows.map(r=>{const i=Number(r.key.slice(5))-1,prev=i>0?allMonths[i-1]:0,pct=prev?((r.total-prev)/prev*100):null;return `<tr><td><strong>${r.label}</strong></td><td class="positive">${money(r.paid)}</td><td class="negative">${money(r.open)}</td><td>${pct===null?'—':`<span class="${pct>0?'negative':'positive'}">${pct>0?'+':''}${pct.toFixed(1).replace('.',',')}%</span>`}</td></tr>`}).join('');
 }
 function renderAll(){renderAccounts();renderLoans();renderTasks();renderDashboard();renderCalendar();renderReports();drawChart()}
 function initializeApp(){
