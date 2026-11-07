@@ -80,6 +80,9 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:17px}
 .card,.panel{background:#fff;border:1px solid #edf0f3;border-radius:var(--radius);box-shadow:var(--shadow)}
 .metric{padding:17px 18px;min-height:104px;display:flex;align-items:center;gap:13px}
+.metric[data-dashboard-filter]{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.metric[data-dashboard-filter]:hover{transform:translateY(-2px);box-shadow:0 8px 22px #17203318}
+.metric[data-dashboard-filter]:focus-visible{outline:3px solid #72d5a3;outline-offset:2px}
 .metric-icon{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:19px;background:var(--green-soft);color:var(--green)}
 .metric.red .metric-icon{background:var(--red-soft);color:var(--red)}
 .metric.blue .metric-icon{background:#edf4ff;color:var(--blue)}
@@ -118,6 +121,9 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .section-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .section-toolbar h2{font-size:18px;margin:0}.toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
 .filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.account-dashboard-filter{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-4px 0 14px;padding:9px 12px;border:1px solid #d6efdf;border-radius:10px;background:#f2fbf6;color:var(--green-dark);font-size:11px}
+.account-dashboard-filter[hidden]{display:none}
+.account-dashboard-filter button{border:0;background:transparent;color:var(--green-dark);font-size:11px;font-weight:700;text-decoration:underline}
 .filter{border:1px solid var(--line);background:#fff;color:#687589;border-radius:20px;padding:7px 12px;font-size:11px}
 #accountMonthFilter{background:#f2fbf6;border-color:#d6efdf;color:var(--green-dark)}
 .account-month-picker{position:relative;min-width:0}
@@ -356,14 +362,14 @@ tbody tr:last-child td{border-bottom:0}
 
     <section class="page active" id="page-inicio">
       <div class="cards">
-        <div class="card metric"><div class="metric-icon">↗</div><div><label>Contas previstas no mês</label><strong id="dash-total">R$ 0,00</strong><small>Compromissos cadastrados</small></div></div>
-        <div class="card metric red"><div class="metric-icon">▣</div><div><label>Já pagas</label><strong id="dash-paid">R$ 0,00</strong><small id="dash-paid-count">0 contas quitadas</small></div></div>
-        <div class="card metric blue"><div class="metric-icon">◷</div><div><label>Em aberto</label><strong id="dash-open">R$ 0,00</strong><small id="dash-open-count">0 contas pendentes</small></div></div>
-        <div class="card metric purple"><div class="metric-icon">✓</div><div><label>Próximos vencimentos</label><strong id="dash-due">0</strong><small>Nos próximos 7 dias</small></div></div>
+        <div class="card metric"><div class="metric-icon">↗</div><div><label>Previstas no Mês</label><strong id="dash-total">R$ 0,00</strong><small>Compromissos Cadastrados</small></div></div>
+        <div class="card metric red"><div class="metric-icon">▣</div><div><label>Já Pagas</label><strong id="dash-paid">R$ 0,00</strong><small id="dash-paid-count">0 Contas Quitadas</small></div></div>
+        <div class="card metric blue" data-dashboard-filter="open" role="button" tabindex="0" aria-label="Mostrar contas em aberto"><div class="metric-icon">◷</div><div><label>Em Aberto</label><strong id="dash-open">R$ 0,00</strong><small id="dash-open-count">0 Contas Pendentes</small></div></div>
+        <div class="card metric purple" data-dashboard-filter="upcoming" role="button" tabindex="0" aria-label="Mostrar próximos vencimentos"><div class="metric-icon">✓</div><div><label>Próx. Vencimentos</label><strong id="dash-due">0</strong><small>Nos próximos 7 dias</small></div></div>
       </div>
       <div class="grid-main">
         <div class="panel dashboard-chart-panel">
-            <div class="panel-head dashboard-chart-head"><h2 aria-label="Visão dos Compromissos"><span class="dashboard-title-full">Visão dos Compromissos</span><span class="dashboard-title-compact" aria-hidden="true">Compromissos</span></h2><div class="dash-chart-controls"><div class="chart-account-filter"><select id="dashAccountFilter" aria-label="Filtrar gráfico por conta"><option value="">Conta</option></select></div><div class="periods" id="dashPeriods"><button class="active" data-period="sixMonths">6 meses</button><button data-period="year">Ano</button></div></div></div>
+            <div class="panel-head dashboard-chart-head"><h2 aria-label="Visão dos Compromissos"><span class="dashboard-title-full">Visão dos Compromissos</span><span class="dashboard-title-compact" aria-hidden="true">Compromissos</span></h2><div class="dash-chart-controls"><div class="chart-account-filter"><select id="dashAccountFilter" aria-label="Filtrar gráfico por conta"><option value="">Conta</option></select></div><div class="periods" id="dashPeriods"><button class="active" data-period="sixMonths">6 M</button><button data-period="year">Ano</button></div></div></div>
             <div class="chart-wrap"><canvas id="financeChart"></canvas></div>
             <div class="legend"><span><i class="dot" style="background:#08a45b"></i>Pagas</span><span><i class="dot" style="background:#f15b72"></i>Em aberto</span></div>
           </div>
@@ -382,6 +388,7 @@ tbody tr:last-child td{border-bottom:0}
     <section class="page" id="page-contas">
       <div class="section-toolbar"><h2>Minhas Contas</h2><div class="toolbar-actions"><button class="btn" onclick="openAccountModal()">＋ Nova Conta</button></div></div>
       <div class="filters" id="accountFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Fixa">Fix.</button><button class="filter" data-filter="Variável">Var.</button><button class="filter" data-filter="Sazonal">Saz.</button><button class="filter" data-filter="Assinatura">Assin.</button><select class="filter" id="accountNameFilter" aria-label="Filtrar contas pelo nome"><option value="">Conta</option></select><div class="account-month-picker"><button type="button" class="filter" id="accountMonthFilter" aria-label="Filtrar contas por mês" aria-expanded="false" aria-controls="accountMonthMenu">Mês</button><div class="account-month-menu" id="accountMonthMenu" aria-label="Meses disponíveis" hidden></div></div></div>
+      <div class="account-dashboard-filter" id="accountDashboardFilterNotice" hidden><span id="accountDashboardFilterLabel"></span><button type="button" id="clearAccountDashboardFilter">Limpar filtro</button></div>
       <div class="panel"><div class="table-wrap"><table><thead><tr><th>Conta</th><th>Categoria</th><th class="account-centered-cell">Mês</th><th class="account-centered-cell">Venc</th><th class="account-centered-cell">Valor</th><th class="account-centered-cell">Status</th><th class="account-centered-cell" title="Diferença percentual em relação ao mês anterior">Δ DIF</th></tr></thead><tbody id="accountsTable"></tbody></table></div><div id="accountsEmpty" class="empty" hidden>Nenhuma conta encontrada com esses filtros.</div></div>
     </section>
 
@@ -596,7 +603,7 @@ function formatBRDateInput(value){
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
 const expandedLoanIds=new Set();
-let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',taskFilter='Todas',dashPeriod='sixMonths',dashAccountFilter='',reportPeriod='month';
+let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',accountDashboardFilter=null,taskFilter='Todas',dashPeriod='sixMonths',dashAccountFilter='',reportPeriod='month';
 let expandedAccountMonthYear=null;
 let calendarDate=new Date();
 let profilePreviewObjectUrl=null;
@@ -986,7 +993,7 @@ async function handleAuthSession(event,session){
 }
 db.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{void handleAuthSession(event,session)},0)});
 if(new URLSearchParams(window.location.hash.slice(1)).get('type')==='recovery')showPasswordRecovery();
-function showPage(name){
+function showPage(name,dashboardFilter=null){
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
  document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
  if(name==='inicio'){
@@ -995,7 +1002,14 @@ function showPage(name){
   drawChart();
  }
  if(name==='contas'){
-  accountMonthFilter=monthISO();
+  accountDashboardFilter=dashboardFilter;
+  if(dashboardFilter){
+   accountFilter='Todas';accountNameFilter='';
+   $('accountNameFilter').value='';
+   $('accountNameFilter').classList.add('is-placeholder');
+   $('accountFilters').querySelectorAll('button[data-filter]').forEach(button=>button.classList.toggle('active',button.dataset.filter==='Todas'));
+  }
+  accountMonthFilter=dashboardFilter==='upcoming'?'all':monthISO();
   $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
   renderAccountMonthOptions();renderAccounts();
  }
@@ -1335,7 +1349,7 @@ $('accountForm').addEventListener('submit',async e=>{
   }
   if(result.error)throw result.error;
   if(!id){
-   accountFilter='Todas';accountMonthFilter='all';accountNameFilter='';
+   accountFilter='Todas';accountMonthFilter='all';accountNameFilter='';accountDashboardFilter=null;
    $('accountFilters').querySelectorAll('button[data-filter]').forEach(button=>button.classList.toggle('active',button.dataset.filter==='Todas'));
   }
   closeModal('accountModal');await loadData(false);toast(successMessage);
@@ -1444,8 +1458,12 @@ $('deleteRecurringAccounts').addEventListener('click',()=>void deletePendingAcco
 $('cancelDeleteAccount').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
 $('closeDeleteAccountModal').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
 async function deleteTask(id){if(confirm('Excluir esta tarefa?'))try{const {error}=await db.from('tasks').delete().eq('id',id);if(error)throw error;await loadData(false);toast('Tarefa excluída.')}catch(error){reportError('Não foi possível excluir a tarefa',error)}}
-$('accountFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;accountFilter=b.dataset.filter;$('accountFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderAccounts()});
-$('accountNameFilter').addEventListener('change',e=>{accountNameFilter=e.currentTarget.value;e.currentTarget.classList.toggle('is-placeholder',!accountNameFilter);renderAccounts()});
+$('accountFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;accountDashboardFilter=null;accountFilter=b.dataset.filter;$('accountFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderAccounts()});
+$('accountNameFilter').addEventListener('change',e=>{accountDashboardFilter=null;accountNameFilter=e.currentTarget.value;e.currentTarget.classList.toggle('is-placeholder',!accountNameFilter);renderAccounts()});
+$('clearAccountDashboardFilter').addEventListener('click',()=>{
+ accountDashboardFilter=null;accountMonthFilter=monthISO();
+ renderAccountMonthOptions();renderAccounts();
+});
 $('accountMonthFilter').addEventListener('click',()=>{
  const menu=$('accountMonthMenu'),isOpen=!menu.hidden;
  if(!isOpen)expandedAccountMonthYear=null;
@@ -1463,7 +1481,7 @@ $('accountMonthMenu').addEventListener('click',event=>{
  }
  const monthButton=event.target.closest('button[data-month-value]');
  if(!monthButton)return;
- accountMonthFilter=monthButton.dataset.monthValue;
+ accountDashboardFilter=null;accountMonthFilter=monthButton.dataset.monthValue;
  $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
  renderAccountMonthOptions();renderAccounts();
 });
@@ -1476,13 +1494,26 @@ document.addEventListener('keydown',event=>{
  $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');$('accountMonthFilter').focus();
 });
 $('taskFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;taskFilter=b.dataset.filter;$('taskFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderTasks()});
+$('page-inicio').addEventListener('click',event=>{
+ const card=event.target.closest('[data-dashboard-filter]');
+ if(card)showPage('contas',card.dataset.dashboardFilter);
+});
+$('page-inicio').addEventListener('keydown',event=>{
+ if(event.key!=='Enter'&&event.key!==' ')return;
+ const card=event.target.closest('[data-dashboard-filter]');
+ if(!card)return;
+ event.preventDefault();showPage('contas',card.dataset.dashboardFilter);
+});
 $('dashPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;dashPeriod=b.dataset.period;$('dashPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));drawChart()});
 $('dashAccountFilter').addEventListener('change',event=>{dashAccountFilter=event.currentTarget.value;drawChart()});
 $('reportPeriods').addEventListener('click',e=>{const b=e.target.closest('button[data-period]');if(!b)return;reportPeriod=b.dataset.period;$('reportPeriods').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderReports()});
 function renderAccounts(){
- const list=accounts.filter(a=>(accountFilter==='Todas'||a.category===accountFilter)&&(accountMonthFilter==='all'||a.month===accountMonthFilter)&&(!accountNameFilter||a.name===accountNameFilter)).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
+ const upcomingAccountIds=new Set(accountDashboardFilter==='upcoming'?getUpcomingAccounts().map(account=>account.id):[]);
+ const list=accounts.filter(a=>(accountDashboardFilter==='open'?a.status!=='Pago':accountDashboardFilter==='upcoming'?upcomingAccountIds.has(a.id):true)&&(accountFilter==='Todas'||a.category===accountFilter)&&(accountMonthFilter==='all'||a.month===accountMonthFilter)&&(!accountNameFilter||a.name===accountNameFilter)).sort((a,b)=>a.month.localeCompare(b.month)||a.due-b.due);
  $('accountsTable').innerHTML=list.map(a=>`<tr class="account-row" data-account-id="${a.id}" tabindex="0" aria-label="Abrir ações de ${escapeHTML(a.name)}"><td><strong>${escapeHTML(a.name)}</strong>${a.notes?`<br><small style="color:#8994a2">${escapeHTML(a.notes)}</small>`:''}</td><td>${escapeHTML(a.category)}</td><td class="account-centered-cell">${formatAccountMonth(a.month)}</td><td class="account-centered-cell">${a.due}</td><td class="account-centered-cell"><strong>${Number(a.value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></td><td class="account-centered-cell"><span class="status ${a.status==='Pago'?'paid':'pending'}" role="img" aria-label="${a.status==='Pago'?'Pago':'Pendente'}" title="${a.status==='Pago'?'Pago':'Pendente'}">${a.status==='Pago'?'✓':'◷'}</span></td><td class="account-centered-cell">${formatAccountMonthDifference(a)}</td></tr>`).join('');
  $('accountsEmpty').hidden=list.length>0;
+ $('accountDashboardFilterNotice').hidden=!accountDashboardFilter;
+ $('accountDashboardFilterLabel').textContent=accountDashboardFilter==='open'?'Filtro aplicado: contas em aberto':'Filtro aplicado: próximos vencimentos (7 dias)';
 }
 function formatAccountMonthDifference(account){
  const [year,month]=account.month.split('-').map(Number);
@@ -1541,10 +1572,22 @@ function renderTasks(){
  const list=tasks.filter(t=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!t.done:t.done)).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
  $('tasksList').innerHTML=list.length?list.map(t=>`<div class="task-card ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}')"><div class="task-info"><strong>${escapeHTML(t.name)}</strong><small>${t.date?'Prazo: '+fmtDate(t.date):'Sem data definida'}${t.month?' · Planejado para '+t.month.split('-').reverse().join('/') :''}${t.notes?' · '+escapeHTML(t.notes):''}</small></div><button class="action-btn" onclick="openTaskModal('${t.id}')">✎</button><button class="action-btn" onclick="deleteTask('${t.id}')">×</button></div>`).join(''):'<div class="empty">Nenhuma tarefa por aqui. Adicione seu primeiro planejamento!</div>';
 }
+function getUpcomingAccounts(){
+ const today=todayISO(),endDate=new Date();
+ endDate.setHours(0,0,0,0);endDate.setDate(endDate.getDate()+7);
+ const end=`${endDate.getFullYear()}-${String(endDate.getMonth()+1).padStart(2,'0')}-${String(endDate.getDate()).padStart(2,'0')}`;
+ return accounts.filter(account=>{
+  if(account.status==='Pago')return false;
+  const [year,month]=account.month.split('-').map(Number),due=Number(account.due),date=new Date(year,month-1,due);
+  if(date.getFullYear()!==year||date.getMonth()!==month-1||date.getDate()!==due)return false;
+  const dueDate=`${year}-${String(month).padStart(2,'0')}-${String(due).padStart(2,'0')}`;
+  return dueDate>=today&&dueDate<=end;
+ });
+}
 function renderDashboard(){
- const month=monthISO(),current=accounts.filter(a=>a.month===month),total=current.reduce((s,a)=>s+a.value,0),paid=current.filter(a=>a.status==='Pago'),open=current.filter(a=>a.status!=='Pago'),due=current.filter(a=>a.status!=='Pago'&&a.due>=new Date().getDate()&&a.due<=new Date().getDate()+7);
+ const month=monthISO(),current=accounts.filter(a=>a.month===month),total=current.reduce((s,a)=>s+a.value,0),paid=current.filter(a=>a.status==='Pago'),open=current.filter(a=>a.status!=='Pago'),due=getUpcomingAccounts();
  $('dash-total').textContent=money(total);$('dash-paid').textContent=money(paid.reduce((s,a)=>s+a.value,0));$('dash-open').textContent=money(open.reduce((s,a)=>s+a.value,0));
- $('dash-paid-count').textContent=`${paid.length} ${paid.length===1?'conta paga':'contas pagas'}`;$('dash-open-count').textContent=`${open.length} ${open.length===1?'conta pendente':'contas pendentes'}`;$('dash-due').textContent=due.length;
+ $('dash-paid-count').textContent=`${paid.length} ${paid.length===1?'conta Paga':'Contas Pagas'}`;$('dash-open-count').textContent=`${open.length} ${open.length===1?'Conta Pendente':'Contas Pendentes'}`;$('dash-due').textContent=due.length;
  const upcoming=tasks.filter(t=>!t.done).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).slice(0,4);
  $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(t=>`<div class="task-row"><input type="checkbox" onchange="toggleTask('${t.id}')"><span class="task-name">${escapeHTML(t.name)}</span><span class="date-pill">${t.date?fmtDate(t.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa pendente.</div>';
  const cats=['Fixa','Variável','Sazonal','Assinatura'];$('categorySummary').innerHTML=cats.map(c=>{const v=current.filter(a=>a.category===c).reduce((s,a)=>s+a.value,0),p=total?v/total*100:0;return `<div class="category-row"><span class="category-name">${c==='Fixa'?'Contas fixas':c==='Variável'?'Variáveis':c==='Sazonal'?'Sazonais':'Assinaturas'}</span><div class="bar"><span style="width:${p}%"></span></div><span class="category-value">${money(v)}</span></div>`}).join('');
@@ -1579,8 +1622,8 @@ function drawChart(){
   ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,x,boxY+boxHeight/2,boxWidth-6);
  };
  labels.forEach((label,index)=>{
-  valueLabel(paid[index],index,'#08a45b',-22);
-  valueLabel(open[index],index,'#f15b72',-42);
+  valueLabel(paid[index],index,'#08a45b',-42);
+  valueLabel(open[index],index,'#f15b72',-22);
  });
  ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillStyle='#8994a2';labels.forEach((label,index)=>ctx.fillText(label.label,left+(count===1?cw/2:cw*index/(count-1)),h-5));
  const filterName=dashAccountFilter||'Todas as contas';
