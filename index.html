@@ -182,6 +182,8 @@ tbody tr:last-child td{border-bottom:0}
 .task-subtask-input button{width:36px;border:0;border-radius:9px;background:#fff1f2;color:#d64d63;font-size:17px}
 .task-subtask-add{justify-self:start}
 .task-modal-delete{margin-right:auto}
+.task-reminder-toggle{width:34px;height:34px;padding:0;border:1px solid #e5e9ee;border-radius:10px;background:#fff;color:#8994a2;font-size:17px}
+.task-reminder-toggle[aria-pressed="true"]{border-color:#bfe8d0;background:#effaf3;color:#07834a}
 .calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
 .calendar-head strong{font-size:15px}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .calendar-grid div{text-align:center;padding:10px 3px;font-size:11px;border-radius:10px;min-height:38px}
@@ -205,7 +207,7 @@ tbody tr:last-child td{border-bottom:0}
 .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(20,30,42,.35);backdrop-filter:blur(5px);z-index:10;align-items:center;justify-content:center;padding:18px}
 .modal-backdrop.show{display:flex}
 .modal{background:#fff;width:min(500px,100%);border-radius:20px;padding:22px;box-shadow:0 20px 60px #17243a33;max-height:90vh;overflow:auto}
-.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}.modal-head h2{font-size:17px;margin:0}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}.modal-head h2{font-size:17px;margin:0}.modal-head-actions{display:flex;align-items:center;gap:8px}
 .close{border:0;background:#f3f5f7;width:30px;height:30px;border-radius:9px;color:#647184;font-size:18px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .field{display:grid;gap:6px}.field[hidden]{display:none!important}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#647184;font-weight:700}
@@ -545,13 +547,14 @@ tbody tr:last-child td{border-bottom:0}
 
 <div class="modal-backdrop" id="taskModal">
  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
-  <div class="modal-head"><h2 id="taskModalTitle">Nova Tarefa</h2><button class="close" type="button" onclick="closeModal('taskModal')" aria-label="Fechar">×</button></div>
+  <div class="modal-head"><h2 id="taskModalTitle">Nova Tarefa</h2><div class="modal-head-actions"><button class="task-reminder-toggle" id="taskReminderToggle" type="button" aria-label="Notificação ativada para esta tarefa" aria-pressed="true" title="Notificação ativada para esta tarefa">🔔</button><button class="close" type="button" onclick="closeModal('taskModal')" aria-label="Fechar">×</button></div></div>
   <form id="taskForm">
    <input type="hidden" id="taskId">
    <div class="form-grid">
     <div class="field full"><label for="taskName">Nome da Tarefa</label><input id="taskName" maxlength="160" required placeholder="Ex.: Organizar documentos"></div>
     <div class="field full"><label for="taskPriority">Prioridade</label><select id="taskPriority" required><option value="URGENTE">URGENTE</option><option value="OBRIGATÓRIO">OBRIGATÓRIO</option><option value="NEUTRO" selected>NEUTRO</option></select></div>
-    <div class="field full"><label for="taskMonth">Mês Ref.</label><input id="taskMonth" type="month" required></div>
+    <div class="field full"><label for="taskDate">Data para conclusão</label><input id="taskDate" type="date" required></div>
+    <p class="field-hint full">Com o sininho ativado, você recebe avisos 7, 3 e 1 dia antes, no dia e diariamente se a tarefa atrasar. Ative também os avisos no sininho do topo do app.</p>
     <label class="field checkbox-label full" id="taskRecurringField"><span>Recorrência mensal</span><input id="taskRecurring" type="checkbox"></label>
     <div class="field full task-recurring-fields" id="taskRecurringFields" hidden><div class="field"><label for="taskEndMonth">Mês final</label><input id="taskEndMonth" type="month"></div></div>
     <p class="field-hint full" id="taskRecurringHint" hidden>Será criada uma tarefa em cada mês, até o mês final.</p>
@@ -927,7 +930,7 @@ $('authForm').addEventListener('submit',async e=>{
  finally{$('authSubmit').disabled=false}
 });
 function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||'',recurrenceId:row.recurrence_id||null}}
-function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||row.task_date?.slice(0,7)||'',priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(row.priority)?row.priority:'NEUTRO',description:row.description||row.notes||'',notes:row.notes||'',done:Boolean(row.done),subtasks:Array.isArray(row.subtasks)?row.subtasks.filter(item=>item&&typeof item.name==='string').map(item=>({id:typeof item.id==='string'?item.id:crypto.randomUUID(),name:item.name,done:Boolean(item.done)})):[]}}
+function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||row.task_date?.slice(0,7)||'',notify:Boolean(row.notify),priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(row.priority)?row.priority:'NEUTRO',description:row.description||row.notes||'',notes:row.notes||'',done:Boolean(row.done),subtasks:Array.isArray(row.subtasks)?row.subtasks.filter(item=>item&&typeof item.name==='string').map(item=>({id:typeof item.id==='string'?item.id:crypto.randomUUID(),name:item.name,done:Boolean(item.done)})):[]}}
 function toLoan(row){return {id:row.id,loanId:row.loan_id,userId:row.user_id,name:row.name,contractTotal:Number(row.contract_total),installmentCount:Number(row.installment_count),installmentNumber:Number(row.installment_number),installmentValue:Number(row.installment_value),referenceMonth:row.reference_month,dueDate:row.due_date,paymentDate:row.payment_date||'',paymentValue:Number(row.payment_value||0)}}
 function setUserDisplay(user){
  const displayName=user.user_metadata?.display_name?.trim()||'';
@@ -1004,7 +1007,7 @@ async function importLegacyData(){
   localStorage.setItem(`mc_migrated_accounts_${currentUser.id}`,'true');
   if(pendingTasks.length){
    const {error}=await db.from('tasks').insert(pendingTasks.map(t=>({
-    name:t.name,task_date:t.date||null,month:t.month||t.date?.slice(0,7)||null,priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(t.priority)?t.priority:'NEUTRO',description:t.description||t.notes||null,done:Boolean(t.done),
+    name:t.name,task_date:t.date||null,month:t.month||t.date?.slice(0,7)||null,notify:Boolean(t.notify),priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(t.priority)?t.priority:'NEUTRO',description:t.description||t.notes||null,done:Boolean(t.done),
     ...(Array.isArray(t.subtasks)?{subtasks:t.subtasks}:{})
    })));
    if(error)throw error;
@@ -1104,21 +1107,28 @@ function updateAccountRecurrenceFields(isEditing=Boolean($('accountId').value)){
 }
 $('accountRecurring').addEventListener('change',()=>updateAccountRecurrenceFields());
 function openTaskModal(id=null){
- $('taskForm').reset();$('taskId').value='';$('taskMonth').value=monthISO();$('taskEndMonth').value=monthISO();$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';
+ $('taskForm').reset();$('taskId').value='';$('taskDate').value=todayISO();$('taskEndMonth').value=monthISO();$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';setTaskReminderEnabled(true);
  $('deleteTaskButton').hidden=!id;
  $('taskRecurringField').hidden=Boolean(id);$('taskRecurring').checked=false;$('taskRecurringFields').hidden=true;$('taskRecurringHint').hidden=true;$('taskEndMonth').required=false;
  $('taskHasSubtasks').checked=false;$('taskSubtasksField').hidden=true;renderTaskSubtaskInputs([]);
  if(id){
   const task=tasks.find(item=>item.id===id);if(!task)return;
-  $('taskId').value=task.id;$('taskName').value=task.name;$('taskPriority').value=task.priority;$('taskMonth').value=task.month||monthISO();$('taskDescription').value=task.description;
+  $('taskId').value=task.id;$('taskName').value=task.name;$('taskPriority').value=task.priority;$('taskDate').value=task.date||`${task.month||monthISO()}-01`;$('taskEndMonth').value=task.month||monthISO();$('taskDescription').value=task.description;setTaskReminderEnabled(task.notify);
   $('taskHasSubtasks').checked=task.subtasks.length>0;$('taskSubtasksField').hidden=!task.subtasks.length;renderTaskSubtaskInputs(task.subtasks);
  }
  $('taskModal').classList.add('show');
 }
+function setTaskReminderEnabled(enabled){
+ const button=$('taskReminderToggle');
+ button.setAttribute('aria-pressed',String(enabled));button.textContent=enabled?'🔔':'🔕';
+ button.setAttribute('aria-label',enabled?'Notificação ativada para esta tarefa':'Notificação desativada para esta tarefa');
+ button.title=enabled?'Notificação ativada para esta tarefa':'Notificação desativada para esta tarefa';
+}
+ $('taskReminderToggle').addEventListener('click',()=>setTaskReminderEnabled($('taskReminderToggle').getAttribute('aria-pressed')!=='true'));
 function updateTaskRecurringFields(){
  const recurring=$('taskRecurring').checked;
  $('taskRecurringFields').hidden=!recurring;$('taskRecurringHint').hidden=!recurring;$('taskEndMonth').required=recurring;
- if(recurring&&!$('taskEndMonth').value)$('taskEndMonth').value=$('taskMonth').value;
+ if(recurring&&!$('taskEndMonth').value)$('taskEndMonth').value=$('taskDate').value.slice(0,7);
 }
 function renderTaskSubtaskInputs(subtasks){
  $('taskSubtasksEditor').innerHTML=subtasks.map(subtask=>`<div class="task-subtask-input"><input type="text" maxlength="160" data-task-subtask-id="${escapeHTML(subtask.id)}" data-task-subtask-name value="${escapeHTML(subtask.name)}" placeholder="Nome da subtarefa"><button type="button" data-remove-task-subtask aria-label="Remover subtarefa">×</button></div>`).join('');
@@ -1138,7 +1148,7 @@ function addTaskSubtaskInput(name=''){
 function closeModal(id){$(id).classList.remove('show')}
 document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
  $('taskRecurring').addEventListener('change',updateTaskRecurringFields);
- $('taskMonth').addEventListener('change',()=>{if(!$('taskEndMonth').value||$('taskEndMonth').value<$('taskMonth').value)$('taskEndMonth').value=$('taskMonth').value});
+ $('taskDate').addEventListener('change',()=>{const month=$('taskDate').value.slice(0,7);if(!$('taskEndMonth').value||$('taskEndMonth').value<month)$('taskEndMonth').value=month});
  $('taskHasSubtasks').addEventListener('change',event=>{
   $('taskSubtasksField').hidden=!event.currentTarget.checked;
   if(event.currentTarget.checked&&!$('taskSubtasksEditor').children.length)addTaskSubtaskInput();
@@ -1457,7 +1467,7 @@ $('accountForm').addEventListener('submit',async e=>{
 });
 $('taskForm').addEventListener('submit',async e=>{
  e.preventDefault();
- const id=$('taskId').value,month=$('taskMonth').value,recurring=!id&&$('taskRecurring').checked;
+ const id=$('taskId').value,date=$('taskDate').value,month=date.slice(0,7),recurring=!id&&$('taskRecurring').checked,notify=$('taskReminderToggle').getAttribute('aria-pressed')==='true';
  const subtasks=$('taskHasSubtasks').checked?readTaskSubtasks():[];
  if($('taskHasSubtasks').checked&&!subtasks.length){toast('Adicione ao menos uma subtarefa ou desmarque essa opção.');return}
  try{
@@ -1465,12 +1475,12 @@ $('taskForm').addEventListener('submit',async e=>{
   if(id){
    const task=tasks.find(item=>item.id===id);if(!task)return;
    const {error}=await db.from('tasks').update({
-    name:$('taskName').value.trim(),month,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,subtasks,done:subtasks.length?subtasks.every(subtask=>subtask.done):task.done
+    name:$('taskName').value.trim(),task_date:date,month,notify,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,subtasks,done:subtasks.length?subtasks.every(subtask=>subtask.done):task.done
    }).eq('id',id);
    if(error)throw error;
   }else{
-   const payload=months.map(taskMonth=>({
-    name:$('taskName').value.trim(),task_date:null,month:taskMonth,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,done:false,
+   const payload=months.map((taskMonth,index)=>({
+    name:$('taskName').value.trim(),task_date:recurring?addMonthsToDate(date,index):date,month:taskMonth,notify,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,done:false,
     subtasks:subtasks.map(subtask=>({...subtask,id:crypto.randomUUID()}))
    }));
    const {error}=await db.from('tasks').insert(payload);
