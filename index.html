@@ -581,6 +581,7 @@ tbody tr:last-child td{border-bottom:0}
   <div class="modal-actions delete-account-actions">
    <button class="btn outline" id="cancelDeleteAccount" type="button">Cancelar</button>
    <button class="btn danger" id="deleteSingleAccount" type="button">Só Esta Conta</button>
+   <button class="btn danger" id="deleteRecurringFromAccount" type="button">Desta conta em diante</button>
    <button class="btn danger" id="deleteRecurringAccounts" type="button">Toda a Recorrência</button>
   </div>
  </section>
@@ -1565,6 +1566,7 @@ function openDeleteAccountModal(id){
   :'Deseja excluir esta conta?';
  $('deleteSingleAccount').hidden=false;
  $('deleteRecurringAccounts').hidden=!hasMultipleRecurringAccounts;
+ $('deleteRecurringFromAccount').hidden=!hasMultipleRecurringAccounts;
  $('deleteSingleAccount').textContent=hasMultipleRecurringAccounts?'Só Esta Conta':'Excluir Conta';
  $('deleteAccountModal').classList.add('show');
 }
@@ -1606,33 +1608,37 @@ function getAccountRecurrenceGroup(account){
  const group=matching.slice(first,last+1);
  return group.length>1&&group.every((item,index)=>index===0||monthIndex(item.month)-monthIndex(group[index-1].month)===1)?group:[account];
 }
-async function deleteAccount(id,deleteRecurrence=false){
+async function deleteAccount(id,deleteScope='single'){
  const account=accounts.find(item=>item.id===id);if(!account)return;
  try{
   let query=db.from('accounts').delete().eq('user_id',currentUser.id);
-  if(deleteRecurrence){
+  if(deleteScope!=='single'){
    if(account.recurrenceId){
     query=query.eq('recurrence_id',account.recurrenceId);
+    if(deleteScope==='from')query=query.gte('month',account.month);
    }else{
     const recurrenceGroup=getAccountRecurrenceGroup(account);
-    if(recurrenceGroup.length<2)throw new Error('Não encontrei outras parcelas mensais correspondentes para excluir.');
-    query=query.in('id',recurrenceGroup.map(item=>item.id));
+    const accountsToDelete=deleteScope==='from'?recurrenceGroup.filter(item=>item.month>=account.month):recurrenceGroup;
+    if(accountsToDelete.length<2&&deleteScope==='all')throw new Error('Não encontrei outras parcelas mensais correspondentes para excluir.');
+    query=query.in('id',accountsToDelete.map(item=>item.id));
    }
   }else query=query.eq('id',id);
   const {error}=await query;if(error)throw error;
   closeModal('deleteAccountModal');pendingDeleteAccountId=null;
-  await loadData(false);toast(deleteRecurrence?'Toda a recorrência foi excluída.':'Conta excluída.');
+  await loadData(false);toast(deleteScope==='all'?'Toda a recorrência foi excluída.':deleteScope==='from'?'Esta conta e as próximas da recorrência foram excluídas.':'Conta excluída.');
  }catch(error){reportError('Não foi possível excluir a conta',error)}
 }
-async function deletePendingAccount(deleteRecurrence){
+async function deletePendingAccount(deleteScope){
  if(!pendingDeleteAccountId)return;
  const id=pendingDeleteAccountId;
- $('deleteSingleAccount').disabled=true;$('deleteRecurringAccounts').disabled=true;
- try{await deleteAccount(id,deleteRecurrence)}
- finally{$('deleteSingleAccount').disabled=false;$('deleteRecurringAccounts').disabled=false}
+ const buttons=[$('deleteSingleAccount'),$('deleteRecurringFromAccount'),$('deleteRecurringAccounts')];
+ buttons.forEach(button=>button.disabled=true);
+ try{await deleteAccount(id,deleteScope)}
+ finally{buttons.forEach(button=>button.disabled=false)}
 }
-$('deleteSingleAccount').addEventListener('click',()=>void deletePendingAccount(false));
-$('deleteRecurringAccounts').addEventListener('click',()=>void deletePendingAccount(true));
+$('deleteSingleAccount').addEventListener('click',()=>void deletePendingAccount('single'));
+$('deleteRecurringFromAccount').addEventListener('click',()=>void deletePendingAccount('from'));
+$('deleteRecurringAccounts').addEventListener('click',()=>void deletePendingAccount('all'));
 $('cancelDeleteAccount').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
 $('closeDeleteAccountModal').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
 async function deleteTask(id){
