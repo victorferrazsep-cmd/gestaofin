@@ -1089,7 +1089,7 @@ async function openRegisteredUsers(){
   if(error)throw error;
   if(requestId!==registeredUsersRequestId||currentUser?.id!==requestingUserId||!isRegisteredUsersAdmin())return;
   if(!Array.isArray(data?.users))throw new Error('A resposta do serviço de usuários está em formato inválido.');
-  $('registeredUsersTable').innerHTML=data.users.map(user=>`<tr><td>${escapeHTML(user.email)}</td><td>${escapeHTML(formatUserDate(user.created_at))}</td><td>${escapeHTML(formatUserDate(user.last_sign_in_at))}</td></tr>`).join('');
+  $('registeredUsersTable').innerHTML=data.users.map(user=>`<tr><td>${escapeHTML(user.email)}</td><td>${escapeHTML(formatUserDate(user.created_at))}</td><td>${escapeHTML(formatUserDate(user.last_access_at??user.last_sign_in_at))}</td></tr>`).join('');
   $('registeredUsersStatus').hidden=data.users.length>0;
   $('registeredUsersStatus').textContent=data.users.length?'': 'Nenhuma conta com e-mail confirmado.';
  }catch(error){
@@ -1160,22 +1160,46 @@ async function handleAuthSession(event,session){
  if(passwordRecovery)return;
  const user=session?.user||null;
  if(!user){
+  lastAccessTrackedAt=0;
   currentUser=null;accounts=[];tasks=[];loans=[];loanLoadError=null;expandedLoanIds.clear();selectedLoanContractId=null;selectedLoanInstallmentId=null;
   setNotificationBadge(false);
   registeredUsersRequestId++;$('registeredUsersTable').replaceChildren();$('registeredUsersStatus').textContent='';$('registeredUsersStatus').hidden=true;showPage('inicio');
   $('appShell').classList.remove('ready');$('authGate').classList.add('show');$('userAvatar').textContent='MC';$('profileAvatarPreview').textContent='MC';$('pushNotificationsButton').hidden=true;closeModal('profileModal');
   return;
  }
- if(currentUser?.id===user.id)return;
+ if(currentUser?.id===user.id){
+  if(event==='TOKEN_REFRESHED'&&document.visibilityState==='visible')void trackCurrentUserAccess();
+  return;
+ }
+ lastAccessTrackedAt=0;
  setNotificationBadge(false);
  currentUser=user;registeredUsersRequestId++;$('registeredUsersTable').replaceChildren();$('registeredUsersStatus').textContent='';$('registeredUsersStatus').hidden=true;showPage('inicio');$('authGate').classList.remove('show');$('appShell').classList.add('ready');setUserDisplay(user);applyVisiblePages();
  try{await updatePushButton()}catch(error){reportError('Não foi possível verificar as notificações',error)}
  try{await refreshNotificationBadge()}catch(error){reportError('Não foi possível verificar notificações não lidas',error)}
+ void trackCurrentUserAccess();
  try{await loadProfilePhoto()}catch(error){reportError('Não foi possível carregar a foto do perfil',error)}
  showAuthFeedback('');
  try{await loadData()}catch(error){reportError('Não foi possível carregar os dados do Supabase',error)}
 }
 db.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{void handleAuthSession(event,session)},0)});
+let lastAccessTrackedAt=0;
+let accessTrackingRequest=null;
+function trackCurrentUserAccess(){
+ if(!currentUser||document.visibilityState!=='visible'||Date.now()-lastAccessTrackedAt<5*60*1000)return accessTrackingRequest?.promise||null;
+ const userId=currentUser.id;
+ if(accessTrackingRequest?.userId===userId)return accessTrackingRequest.promise;
+ lastAccessTrackedAt=Date.now();
+ const request=db.functions.invoke('track-user-access')
+  .then(({error})=>{
+   if(error)throw error;
+  })
+  .catch(error=>reportError('Não foi possível atualizar o último acesso',error))
+  .finally(()=>{if(accessTrackingRequest?.promise===request)accessTrackingRequest=null});
+ accessTrackingRequest={userId,promise:request};
+ return request;
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void trackCurrentUserAccess()});
+setInterval(()=>{if(document.visibilityState==='visible')void trackCurrentUserAccess()},60*1000);
 if(new URLSearchParams(window.location.hash.slice(1)).get('type')==='recovery')showPasswordRecovery();
 function showPage(name,dashboardFilter=null){
  if(name==='admin-users'&&!isRegisteredUsersAdmin()){showPage('inicio');return}
