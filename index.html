@@ -186,7 +186,10 @@ tbody tr:last-child td{border-bottom:0}
 .task-recurring-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .task-recurring-fields[hidden],.task-subtasks-field[hidden]{display:none}
 .task-subtasks-editor{display:grid;gap:7px}
-.task-subtask-input{display:flex;gap:7px}
+.task-subtask-input{display:flex;align-items:center;gap:7px}
+.task-subtask-drag{width:28px;min-width:28px;padding:7px 0;border:0;border-radius:8px;background:#f3f5f7;color:#718096;font-size:15px;line-height:1;cursor:grab;touch-action:none}
+.task-subtask-input.is-dragging .task-subtask-drag{cursor:grabbing}
+.task-subtask-input.is-dragging{opacity:.45}
 .task-subtask-input input{flex:1;min-width:0;border:1px solid #e5e9ee;border-radius:10px;padding:10px;background:#fff;color:var(--ink);font-size:12px}
 .task-subtask-input button{width:36px;border:0;border-radius:9px;background:#fff1f2;color:#d64d63;font-size:17px}
 .task-subtask-add{justify-self:start}
@@ -1259,7 +1262,7 @@ function updateTaskRecurringFields(){
  if(recurring&&!$('taskEndMonth').value)$('taskEndMonth').value=$('taskDate').value.slice(0,7);
 }
 function renderTaskSubtaskInputs(subtasks){
- $('taskSubtasksEditor').innerHTML=subtasks.map(subtask=>`<div class="task-subtask-input"><input type="text" maxlength="160" data-task-subtask-id="${escapeHTML(subtask.id)}" data-task-subtask-name value="${escapeHTML(subtask.name)}" placeholder="Nome da subtarefa"><button type="button" data-remove-task-subtask aria-label="Remover subtarefa">×</button></div>`).join('');
+ $('taskSubtasksEditor').innerHTML=subtasks.map(subtask=>`<div class="task-subtask-input"><button type="button" class="task-subtask-drag" data-drag-task-subtask aria-label="Mover subtarefa" title="Segure para arrastar">⋮⋮</button><input type="text" maxlength="160" data-task-subtask-id="${escapeHTML(subtask.id)}" data-task-subtask-name value="${escapeHTML(subtask.name)}" placeholder="Nome da subtarefa"><button type="button" data-remove-task-subtask aria-label="Remover subtarefa">×</button></div>`).join('');
 }
 function readTaskSubtasks(){
  const task=tasks.find(item=>item.id===$('taskId').value);
@@ -1270,7 +1273,7 @@ function readTaskSubtasks(){
 }
 function addTaskSubtaskInput(name=''){
  const wrapper=document.createElement('div');wrapper.className='task-subtask-input';
- wrapper.innerHTML=`<input type="text" maxlength="160" data-task-subtask-name placeholder="Nome da subtarefa"><button type="button" data-remove-task-subtask aria-label="Remover subtarefa">×</button>`;
+ wrapper.innerHTML=`<button type="button" class="task-subtask-drag" data-drag-task-subtask aria-label="Mover subtarefa" title="Segure para arrastar">⋮⋮</button><input type="text" maxlength="160" data-task-subtask-name placeholder="Nome da subtarefa"><button type="button" data-remove-task-subtask aria-label="Remover subtarefa">×</button>`;
  const input=wrapper.querySelector('input');input.value=name;$('taskSubtasksEditor').append(wrapper);input.focus();
 }
 function closeModal(id,force=false){
@@ -1337,6 +1340,56 @@ document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('clic
   const button=event.target.closest('[data-remove-task-subtask]');
   if(button)button.closest('.task-subtask-input').remove();
  });
+let taskSubtaskDrag=null;
+$('taskSubtasksEditor').addEventListener('pointerdown',event=>{
+ const handle=event.target.closest('[data-drag-task-subtask]');
+ if(taskSubtaskDrag||!handle||!event.isPrimary||(event.pointerType==='mouse'&&event.button!==0))return;
+ const row=handle.closest('.task-subtask-input');
+ if(!row)return;
+ taskSubtaskDrag={handle,row,pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,timer:null,active:false};
+ taskSubtaskDrag.timer=setTimeout(()=>{
+  if(!taskSubtaskDrag)return;
+  taskSubtaskDrag.active=true;
+  row.classList.add('is-dragging');
+ },180);
+});
+window.addEventListener('pointermove',event=>{
+ const drag=taskSubtaskDrag;
+ if(!drag||event.pointerId!==drag.pointerId)return;
+ if(!drag.active){
+  if(Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY)>8){
+   clearTimeout(drag.timer);taskSubtaskDrag=null;
+  }
+  return;
+ }
+ drag.x=event.clientX;drag.y=event.clientY;
+ event.preventDefault();
+ const editor=$('taskSubtasksEditor');
+ const target=[...editor.querySelectorAll('.task-subtask-input')].find(row=>{
+  if(row===drag.row)return false;
+  const bounds=row.getBoundingClientRect();
+  return event.clientY<bounds.top+bounds.height/2;
+ });
+ editor.insertBefore(drag.row,target||null);
+});
+function finishTaskSubtaskDrag(event){
+ const drag=taskSubtaskDrag;
+ if(!drag||(event&&event.pointerId!==drag.pointerId))return;
+ clearTimeout(drag.timer);
+ drag.row.classList.remove('is-dragging');
+ taskSubtaskDrag=null;
+}
+window.addEventListener('pointerup',finishTaskSubtaskDrag);
+window.addEventListener('pointercancel',finishTaskSubtaskDrag);
+$('taskSubtasksEditor').addEventListener('keydown',event=>{
+ const handle=event.target.closest('[data-drag-task-subtask]');
+ if(!handle||!['ArrowUp','ArrowDown'].includes(event.key))return;
+ const row=handle.closest('.task-subtask-input'),previous=row.previousElementSibling,next=row.nextElementSibling;
+ if(event.key==='ArrowUp'&&previous)$('taskSubtasksEditor').insertBefore(row,previous);
+ if(event.key==='ArrowDown'&&next)$('taskSubtasksEditor').insertBefore(next,row);
+ event.preventDefault();
+ handle.focus();
+});
 function accountMonthsInRange(start,end){
  if(!start||!end||start>end)throw new Error('O mês final precisa ser igual ou posterior ao mês inicial.');
  const [startYear,startMonth]=start.split('-').map(Number),[endYear,endMonth]=end.split('-').map(Number);
