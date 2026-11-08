@@ -49,8 +49,10 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .menu-panel button:hover{background:var(--green-soft);color:var(--green-dark)}
 .icon-btn{border:1px solid var(--line);background:#fff;border-radius:11px;width:40px;height:40px;color:#516074}
 .avatar{width:38px;height:38px;min-width:38px;min-height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--green);color:#fff;font-size:12px;font-weight:800}
-.profile-trigger{width:38px;height:38px;min-width:38px;flex:0 0 38px;padding:0;border:0;background:transparent;border-radius:50%;line-height:0;overflow:hidden}
+.profile-trigger{position:relative;width:38px;height:38px;min-width:38px;flex:0 0 38px;padding:0;border:0;background:transparent;border-radius:50%;line-height:0;overflow:visible}
 .profile-trigger:focus-visible{outline:3px solid #72d5a3;outline-offset:3px}
+.notification-dot{position:absolute;top:-2px;right:-2px;width:12px;height:12px;border:2px solid #fff;border-radius:50%;background:#e53945;z-index:1}
+.notification-dot[hidden]{display:none}
 .avatar img{display:block;width:38px;height:38px;max-width:none;flex:none;border-radius:50%;object-fit:cover}
 .profile-details{display:grid;gap:14px}
 .profile-date-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -79,6 +81,9 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .profile-section-options .checkbox-label{padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
 .profile-actions{display:flex;gap:8px;margin-top:8px}
 .profile-actions .btn{width:auto;min-width:0;flex:1;padding:10px 8px;line-height:1.25}
+.profile-users-button{width:100%;margin-top:8px}
+.registered-users-table{width:100%;min-width:560px}
+.registered-users-table td:first-child{overflow-wrap:anywhere}
 .page{display:none}.page.active{display:block}
 .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:17px}
 .card,.panel{background:#fff;border:1px solid #edf0f3;border-radius:var(--radius);box-shadow:var(--shadow)}
@@ -210,6 +215,7 @@ tbody tr:last-child td{border-bottom:0}
 .positive{color:var(--green)}.negative{color:var(--red)}
 .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(20,30,42,.35);backdrop-filter:blur(5px);z-index:10;align-items:center;justify-content:center;padding:18px}
 .modal-backdrop.show{display:flex}
+.task-discard-backdrop{z-index:20}
 .modal{background:#fff;width:min(500px,100%);border-radius:20px;padding:22px;box-shadow:0 20px 60px #17243a33;max-height:90vh;overflow:auto}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}.modal-head h2{font-size:17px;margin:0}.modal-head-actions{display:flex;align-items:center;gap:8px}
 .close{border:0;background:#f3f5f7;width:30px;height:30px;border-radius:9px;color:#647184;font-size:18px}
@@ -306,6 +312,8 @@ tbody tr:last-child td{border-bottom:0}
  .profile-actions{gap:6px}
  .profile-actions .btn{padding:9px 5px;font-size:10px}
  .profile-date-row{gap:8px}
+ #page-admin-users .section-toolbar{align-items:flex-start}
+ #page-admin-users .registered-users-table{min-width:520px}
 }
 @media(min-width:361px) and (max-width:700px){
  .dashboard-chart-head{gap:0}
@@ -405,7 +413,7 @@ tbody tr:last-child td{border-bottom:0}
   <main>
     <header class="topbar">
       <div class="hello"><div class="hello-heading"><img class="mobile-header-logo" src="./img/logo.png?v=3" alt=""><h1 id="greeting">Olá! 👋</h1></div><p>Acompanhe seus principais indicadores.</p></div>
-      <div class="top-actions"><button class="btn outline notify-button" id="pushNotificationsButton" type="button" aria-label="Ativar avisos" title="Ativar avisos" aria-pressed="false">🔔</button><button class="profile-trigger" id="profileTrigger" type="button" aria-label="Abrir meu perfil"><div class="avatar" id="userAvatar">MC</div></button></div>
+      <div class="top-actions"><button class="btn outline notify-button" id="pushNotificationsButton" type="button" aria-label="Ativar avisos" title="Ativar avisos" aria-pressed="false">🔔</button><button class="profile-trigger" id="profileTrigger" type="button" aria-label="Abrir meu perfil"><div class="avatar" id="userAvatar">MC</div><span class="notification-dot" id="notificationDot" aria-hidden="true" hidden></span></button></div>
     </header>
 
     <section class="page active" id="page-inicio">
@@ -467,6 +475,11 @@ tbody tr:last-child td{border-bottom:0}
       <div class="filters" id="reportPeriods"><button class="filter active" data-period="month">Mês</button><button class="filter" data-period="quarter">Trimestre</button><button class="filter" data-period="semester">Semestre</button><button class="filter" data-period="year">Ano</button></div>
       <div class="report-cards"><div class="card report-card"><small>Total previsto</small><strong id="report-total">R$ 0,00</strong><small>Contas cadastradas no período</small></div><div class="card report-card"><small>Total pago</small><strong class="positive" id="report-paid">R$ 0,00</strong><small>Contas marcadas como pagas</small></div><div class="card report-card"><small>Em aberto</small><strong class="negative" id="report-open">R$ 0,00</strong><small>Compromissos ainda não pagos</small></div></div>
       <div class="panel"><div class="panel-head"><h2>Comparativo por Mês</h2><span class="text-link" id="reportPeriodLabel">Mês</span></div><div class="table-wrap"><table id="reportComparisonTable"><thead><tr><th>Período</th><th>Pago</th><th>Em aberto</th><th>MOM</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
+    </section>
+    <section class="page" id="page-admin-users">
+      <div class="section-toolbar"><h2>Usuários cadastrados</h2><button class="btn outline" type="button" id="backFromRegisteredUsers">Voltar</button></div>
+      <p class="field-hint">Exibindo contas com e-mail confirmado.</p>
+      <div class="panel"><div class="table-wrap"><table class="registered-users-table"><thead><tr><th>E-mail</th><th>Data do cadastro</th><th>Último acesso</th></tr></thead><tbody id="registeredUsersTable"></tbody></table></div><p class="empty" id="registeredUsersStatus" role="status" aria-live="polite">Carregando usuários...</p></div>
     </section>
   </main>
 </div>
@@ -574,6 +587,13 @@ tbody tr:last-child td{border-bottom:0}
   </form>
  </section>
 </div>
+<div class="modal-backdrop task-discard-backdrop" id="taskDiscardModal">
+ <section class="modal" role="alertdialog" aria-modal="true" aria-labelledby="taskDiscardTitle" aria-describedby="taskDiscardDescription">
+  <div class="modal-head"><h2 id="taskDiscardTitle">Descartar tarefa?</h2></div>
+  <p id="taskDiscardDescription">As alterações que você digitou ainda não foram salvas. Deseja descartá-las?</p>
+  <div class="modal-actions"><button class="btn outline" id="continueTaskEditing" type="button">Continuar editando</button><button class="btn danger" id="confirmTaskDiscard" type="button">Descartar tarefa</button></div>
+ </section>
+</div>
 <div class="modal-backdrop" id="deleteAccountModal">
  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteAccountModalTitle" aria-describedby="deleteAccountModalDescription">
   <div class="modal-head"><h2 id="deleteAccountModalTitle">Excluir Conta</h2><button class="close" id="closeDeleteAccountModal" type="button" aria-label="Fechar">×</button></div>
@@ -631,6 +651,7 @@ tbody tr:last-child td{border-bottom:0}
      <div class="field"><label>Último acesso</label><p class="profile-value" id="profileLastSignIn"></p></div>
     </div>
    </div>
+   <button class="btn outline profile-users-button" id="openRegisteredUsersButton" type="button" hidden>Ver usuários cadastrados</button>
    <div class="profile-actions">
     <button class="btn" id="saveProfileButton" type="submit">Salvar Perfil</button>
     <button class="btn outline" id="resetPasswordButton" type="button">Redefinir Senha</button>
@@ -648,6 +669,7 @@ const SUPABASE_URL='https://bdmpudhhzngqkvoeagur.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_kii2XIRildxXIGMJ5qP3GA_9fAdmTmq';
 const VAPID_PUBLIC_KEY='BBRUgK-6ZKVX5aeKKkIrBvfSedRQGwZRoZOesz8WA1U9HmbwGJkiC-gT6nnrBIzVhoZMvzJUUA_DYUiYKONfb-Q';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const registeredUsersAdminEmail='victorferrazsep@gmail.com';
 const authRedirectUrl=window.location.href.split(/[?#]/)[0];
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const loanMoney=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0});
@@ -670,6 +692,7 @@ function formatBRDateInput(value){
 }
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
+let registeredUsersRequestId=0;
 const configurablePages=['contas','tarefas','calendario','emprestimos','relatorios'];
 const expandedLoanIds=new Set(),expandedTaskMonths=new Set();
 let accountFilter='Todas',accountMonthFilter=monthISO(),accountNameFilter='',accountDashboardFilter=null,taskFilter='Todas',taskMonthFilter='next6',dashPeriod='sixMonths',dashAccountFilter='',reportPeriod='month';
@@ -709,6 +732,42 @@ async function updatePushButton(){
  button.setAttribute('aria-pressed',String(active));
  button.classList.toggle('is-enabled',active);
 }
+function setNotificationBadge(hasUnread){
+ const unread=Boolean(hasUnread&&isRegisteredUsersAdmin());
+ $('notificationDot').hidden=!unread;
+ $('profileTrigger').setAttribute('aria-label',unread?'Abrir meu perfil. Há notificações não lidas.':'Abrir meu perfil');
+}
+async function sendServiceWorkerMessage(type){
+ if(!('serviceWorker'in navigator))return null;
+ const registration=await navigator.serviceWorker.getRegistration(new URL('.',document.baseURI).href);
+ const worker=registration?.active;
+ if(!worker)return null;
+ return new Promise((resolve,reject)=>{
+  const channel=new MessageChannel();
+  const timeout=setTimeout(()=>{channel.port1.close();reject(new Error('O serviço de notificações não respondeu.'))},5000);
+  channel.port1.onmessage=event=>{clearTimeout(timeout);channel.port1.close();resolve(event.data)};
+  worker.postMessage({type},[channel.port2]);
+ });
+}
+async function refreshNotificationBadge(){
+ if(!isRegisteredUsersAdmin()||$('pushNotificationsButton').dataset.active!=='true'){
+  setNotificationBadge(false);return;
+ }
+ const result=await sendServiceWorkerMessage('get-notification-state');
+ if(result?.type==='notification-state')setNotificationBadge(result.hasUnread);
+}
+async function markNotificationsRead(){
+ if(!isRegisteredUsersAdmin()||$('notificationDot').hidden)return;
+ setNotificationBadge(false);
+ const result=await sendServiceWorkerMessage('mark-notifications-read');
+ if(result?.type!=='notifications-read')throw new Error('Não foi possível marcar as notificações como lidas.');
+}
+if('serviceWorker'in navigator){
+ navigator.serviceWorker.addEventListener('message',event=>{
+  if(event.data?.type==='push-received')setNotificationBadge(true);
+  if(event.data?.type==='notifications-read')setNotificationBadge(false);
+ });
+}
 function getPushSupportMessage(){
  if(!window.isSecureContext)return 'As notificações precisam ser ativadas pelo site HTTPS.';
  const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -741,6 +800,7 @@ $('pushNotificationsButton').addEventListener('click',async()=>{
    toast('Avisos ativados neste dispositivo.');
   }
   await updatePushButton();
+  if(button.dataset.active==='true')await refreshNotificationBadge();
  }catch(error){reportError('Não foi possível configurar as notificações',error)}
  finally{button.disabled=false}
 });
@@ -991,6 +1051,10 @@ async function loadProfilePhoto(){
 }
 async function openProfileModal(){
  if(!currentUser)return;
+ if(isRegisteredUsersAdmin()){
+  try{await markNotificationsRead()}catch(error){reportError('Não foi possível atualizar o aviso de notificações',error)}
+ }
+ $('openRegisteredUsersButton').hidden=!isRegisteredUsersAdmin();
  $('profileName').value=currentUser.user_metadata?.display_name||'';
  const visiblePages=new Set(getVisiblePages());
  document.querySelectorAll('[data-visible-section]').forEach(input=>{input.checked=visiblePages.has(input.dataset.visibleSection)});
@@ -1005,6 +1069,32 @@ async function openProfileModal(){
  $('profileAvatarPreview').textContent=initialsForUser(currentUser);
  $('profileModal').classList.add('show');
  try{await loadProfilePhoto()}catch(error){reportError('Não foi possível carregar a foto do perfil',error)}
+}
+function isRegisteredUsersAdmin(user=currentUser){
+ return user?.email?.trim().toLowerCase()===registeredUsersAdminEmail;
+}
+async function openRegisteredUsers(){
+ if(!isRegisteredUsersAdmin())return;
+ const requestId=++registeredUsersRequestId,requestingUserId=currentUser.id;
+ closeModal('profileModal',true);
+ showPage('admin-users');
+ $('registeredUsersTable').replaceChildren();
+ $('registeredUsersStatus').hidden=false;
+ $('registeredUsersStatus').textContent='Carregando usuários...';
+ try{
+  const {data,error}=await db.functions.invoke('list-registered-users');
+  if(error)throw error;
+  if(requestId!==registeredUsersRequestId||currentUser?.id!==requestingUserId||!isRegisteredUsersAdmin())return;
+  if(!Array.isArray(data?.users))throw new Error('A resposta do serviço de usuários está em formato inválido.');
+  $('registeredUsersTable').innerHTML=data.users.map(user=>`<tr><td>${escapeHTML(user.email)}</td><td>${escapeHTML(formatUserDate(user.created_at))}</td><td>${escapeHTML(formatUserDate(user.last_sign_in_at))}</td></tr>`).join('');
+  $('registeredUsersStatus').hidden=data.users.length>0;
+  $('registeredUsersStatus').textContent=data.users.length?'': 'Nenhuma conta com e-mail confirmado.';
+ }catch(error){
+  if(requestId!==registeredUsersRequestId||currentUser?.id!==requestingUserId||!isRegisteredUsersAdmin())return;
+  $('registeredUsersStatus').hidden=false;
+  $('registeredUsersStatus').textContent='Não foi possível carregar a lista de usuários.';
+  reportError('Não foi possível carregar usuários cadastrados',error);
+ }
 }
 function updateReportYears(){
  const selected=Number($('reportYear').value)||new Date().getFullYear();
@@ -1068,12 +1158,16 @@ async function handleAuthSession(event,session){
  const user=session?.user||null;
  if(!user){
   currentUser=null;accounts=[];tasks=[];loans=[];loanLoadError=null;expandedLoanIds.clear();selectedLoanContractId=null;selectedLoanInstallmentId=null;
+  setNotificationBadge(false);
+  registeredUsersRequestId++;$('registeredUsersTable').replaceChildren();$('registeredUsersStatus').textContent='';$('registeredUsersStatus').hidden=true;showPage('inicio');
   $('appShell').classList.remove('ready');$('authGate').classList.add('show');$('userAvatar').textContent='MC';$('profileAvatarPreview').textContent='MC';$('pushNotificationsButton').hidden=true;closeModal('profileModal');
   return;
  }
  if(currentUser?.id===user.id)return;
- currentUser=user;$('authGate').classList.remove('show');$('appShell').classList.add('ready');setUserDisplay(user);applyVisiblePages();
+ setNotificationBadge(false);
+ currentUser=user;registeredUsersRequestId++;$('registeredUsersTable').replaceChildren();$('registeredUsersStatus').textContent='';$('registeredUsersStatus').hidden=true;showPage('inicio');$('authGate').classList.remove('show');$('appShell').classList.add('ready');setUserDisplay(user);applyVisiblePages();
  try{await updatePushButton()}catch(error){reportError('Não foi possível verificar as notificações',error)}
+ try{await refreshNotificationBadge()}catch(error){reportError('Não foi possível verificar notificações não lidas',error)}
  try{await loadProfilePhoto()}catch(error){reportError('Não foi possível carregar a foto do perfil',error)}
  showAuthFeedback('');
  try{await loadData()}catch(error){reportError('Não foi possível carregar os dados do Supabase',error)}
@@ -1081,6 +1175,7 @@ async function handleAuthSession(event,session){
 db.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{void handleAuthSession(event,session)},0)});
 if(new URLSearchParams(window.location.hash.slice(1)).get('type')==='recovery')showPasswordRecovery();
 function showPage(name,dashboardFilter=null){
+ if(name==='admin-users'&&!isRegisteredUsersAdmin()){showPage('inicio');return}
  if(configurablePages.includes(name)&&!getVisiblePages().includes(name))name='inicio';
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
  document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
@@ -1116,12 +1211,15 @@ function showPage(name,dashboardFilter=null){
  window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+$('openRegisteredUsersButton').addEventListener('click',openRegisteredUsers);
+$('backFromRegisteredUsers').addEventListener('click',()=>showPage('inicio'));
 function openAccountModal(id=null){
  $('accountForm').reset();$('accountId').value='';$('accountStartMonth').value=monthISO();$('accountEndMonth').value=monthISO();$('accountMonth').value=monthISO();$('accountModalTitle').textContent=id?'Editar Conta':'Nova Conta';
  $('accountRecurringField').hidden=Boolean(id);$('accountRecurring').checked=false;
  updateAccountRecurrenceFields(Boolean(id));
  $('accountStatusField').hidden=!id;$('accountPaidDateField').hidden=!id;
  if(id){const a=accounts.find(x=>x.id===id);if(!a)return;$('accountId').value=a.id;$('accountName').value=a.name;$('accountCategory').value=a.category;$('accountDue').value=a.due;$('accountValue').value=a.value;$('accountMonth').value=a.month;$('accountStatus').value=a.status;$('accountPaidDate').value=a.paidDate||'';$('accountNotes').value=a.notes||''}
+ captureModalFormState('accountModal');
  $('accountModal').classList.add('show');
 }
 function updateAccountRecurrenceFields(isEditing=Boolean($('accountId').value)){
@@ -1145,6 +1243,7 @@ function openTaskModal(id=null){
   $('taskId').value=task.id;$('taskName').value=task.name;$('taskPriority').value=task.priority;$('taskDate').value=task.date||`${task.month||monthISO()}-01`;$('taskEndMonth').value=task.month||monthISO();$('taskDescription').value=task.description;setTaskReminderEnabled(task.notify);
   $('taskHasSubtasks').checked=task.subtasks.length>0;$('taskSubtasksField').hidden=!task.subtasks.length;renderTaskSubtaskInputs(task.subtasks);
  }
+ captureModalFormState('taskModal');
  $('taskModal').classList.add('show');
 }
 function setTaskReminderEnabled(enabled){
@@ -1174,8 +1273,59 @@ function addTaskSubtaskInput(name=''){
  wrapper.innerHTML=`<input type="text" maxlength="160" data-task-subtask-name placeholder="Nome da subtarefa"><button type="button" data-remove-task-subtask aria-label="Remover subtarefa">×</button>`;
  const input=wrapper.querySelector('input');input.value=name;$('taskSubtasksEditor').append(wrapper);input.focus();
 }
-function closeModal(id){$(id).classList.remove('show')}
-document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
+function closeModal(id,force=false){
+  if(!force&&shouldConfirmModalDiscard(id)){
+   pendingDiscardModalId=id;
+   const label=protectedModalForms[id].label;
+   $('taskDiscardTitle').textContent=`Descartar ${label}?`;
+   $('taskDiscardDescription').textContent='Os dados digitados ainda não foram salvos. Deseja descartá-los?';
+   $('confirmTaskDiscard').textContent=`Descartar ${label.toLowerCase()}`;
+   $('taskDiscardModal').classList.add('show');
+   return;
+  }
+  $(id).classList.remove('show');
+ }
+ const protectedModalForms={
+  taskModal:{formId:'taskForm',idField:'taskId',label:'tarefa'},
+  accountModal:{formId:'accountForm',idField:'accountId',label:'conta'},
+  loanModal:{formId:'loanForm',label:'empréstimo'},
+  loanContractModal:{formId:'loanContractForm',idField:'loanContractId',label:'contrato'},
+  loanInstallmentModal:{formId:'loanInstallmentForm',idField:'loanInstallmentId',label:'parcela'}
+ };
+ const modalFormInitialStates={};
+ let pendingDiscardModalId='';
+ function getModalFormState(formId){
+  return JSON.stringify({
+   fields:[...$(formId).querySelectorAll('input,select,textarea')].map(field=>({
+    value:field.value,checked:field.type==='checkbox'?field.checked:null
+   })),
+   notify:formId==='taskForm'?$('taskReminderToggle').getAttribute('aria-pressed'):null
+  });
+ }
+ function captureModalFormState(modalId){
+  const form=protectedModalForms[modalId];
+  modalFormInitialStates[modalId]=getModalFormState(form.formId);
+ }
+ function shouldConfirmModalDiscard(modalId){
+  const form=protectedModalForms[modalId];
+  if(!form)return false;
+  if(!form.idField||!$(form.idField).value)return true;
+  return getModalFormState(form.formId)!==modalFormInitialStates[modalId];
+ }
+  $('continueTaskEditing').addEventListener('click',()=>{
+   $('taskDiscardModal').classList.remove('show');pendingDiscardModalId='';
+  });
+ $('confirmTaskDiscard').addEventListener('click',()=>{
+   const modalId=pendingDiscardModalId;
+   $('taskDiscardModal').classList.remove('show');
+   pendingDiscardModalId='';
+   if(modalId)closeModal(modalId,true);
+  });
+document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{
+ if(e.target!==m)return;
+ if(m.id==='taskDiscardModal'){m.classList.remove('show');pendingDiscardModalId=''}
+ else closeModal(m.id);
+}));
  $('taskRecurring').addEventListener('change',updateTaskRecurringFields);
  $('taskDate').addEventListener('change',()=>{const month=$('taskDate').value.slice(0,7);if(!$('taskEndMonth').value||$('taskEndMonth').value<month)$('taskEndMonth').value=month});
  $('taskHasSubtasks').addEventListener('change',event=>{
@@ -1343,6 +1493,7 @@ $('loansTable').addEventListener('keydown',event=>{
 });
 function openLoanModal(){
  $('loanForm').reset();$('loanReferenceMonth').value=monthISO();$('loanFirstDueDate').value=todayISO();
+ captureModalFormState('loanModal');
  $('loanModal').classList.add('show');
 }
 function openLoanContractModal(loanId){
@@ -1351,6 +1502,7 @@ function openLoanContractModal(loanId){
  $('loanContractId').value=loanId;
  $('loanContractName').value=loan.name;
  $('loanContractTotal').value=loan.contractTotal.toFixed(2);
+ captureModalFormState('loanContractModal');
  $('loanContractModal').classList.add('show');
 }
 function openLoanInstallmentModal(id){
@@ -1366,6 +1518,7 @@ function openLoanInstallmentModal(id){
  $('loanPaymentDate').value=formatISODateForInput(loan.paymentDate);
  $('loanPaymentValue').value=loan.paymentValue?loan.paymentValue.toFixed(2):'';
  updateLoanStatusPreview();
+ captureModalFormState('loanInstallmentModal');
  $('loanInstallmentModal').classList.add('show');
 }
 function updateLoanStatusPreview(){
@@ -1386,7 +1539,7 @@ $('loanForm').addEventListener('submit',async event=>{
  try{
   const payload=buildLoanInstallments({loanId:crypto.randomUUID(),userId:currentUser.id,name,contractTotal,installmentCount,referenceMonth,firstDueDate});
   const {error}=await db.from('loans').insert(payload);if(error)throw error;
-  closeModal('loanModal');await loadData(false);toast(`${installmentCount} parcela(s) criada(s) com sucesso.`);
+  closeModal('loanModal',true);await loadData(false);toast(`${installmentCount} parcela(s) criada(s) com sucesso.`);
  }catch(error){
   if(error.code==='PGRST205'||error.message?.includes("Could not find the table 'public.loans'"))reportError('Tabela loans não encontrada. Execute supabase/loans.sql no Supabase e recarregue o app',error);
   else reportError('Não foi possível criar o empréstimo',error);
@@ -1413,7 +1566,7 @@ $('loanContractForm').addEventListener('submit',async event=>{
    }).eq('loan_id',selectedLoanContractId).eq('user_id',currentUser.id).lte('installment_number',remainderCount);
    if(remainderError)throw remainderError;
   }
-  closeModal('loanContractModal');selectedLoanContractId=null;
+  closeModal('loanContractModal',true);selectedLoanContractId=null;
   await loadData(false);toast('Contrato atualizado com sucesso.');
  }catch(error){reportError('Não foi possível atualizar o contrato',error)}
  finally{button.disabled=false}
@@ -1426,7 +1579,7 @@ $('deleteLoanContractButton').addEventListener('click',async()=>{
  try{
   const {error}=await db.from('loans').delete().eq('loan_id',selectedLoanContractId).eq('user_id',currentUser.id);
   if(error)throw error;
-  closeModal('loanContractModal');selectedLoanContractId=null;
+  closeModal('loanContractModal',true);selectedLoanContractId=null;
   await loadData(false);toast('Contrato e parcelas excluídos.');
  }catch(error){reportError('Não foi possível excluir o contrato',error)}
  finally{button.disabled=false}
@@ -1447,7 +1600,7 @@ $('loanInstallmentForm').addEventListener('submit',async event=>{
    payment_value:paymentValue
   }).eq('id',loan.id).eq('user_id',currentUser.id);
   if(error)throw error;
-  closeModal('loanInstallmentModal');selectedLoanInstallmentId=null;
+  closeModal('loanInstallmentModal',true);selectedLoanInstallmentId=null;
   await loadData(false);toast('Parcela atualizada com sucesso.');
  }catch(error){reportError('Não foi possível atualizar a parcela',error)}
  finally{button.disabled=false}
@@ -1464,7 +1617,7 @@ $('deleteLoanButton').addEventListener('click',async()=>{
  try{
   const {error}=await db.from('loans').delete().eq('loan_id',loan.loanId).eq('user_id',currentUser.id);
   if(error)throw error;
-  closeModal('loanInstallmentModal');selectedLoanInstallmentId=null;
+  closeModal('loanInstallmentModal',true);selectedLoanInstallmentId=null;
   await loadData(false);toast('Empréstimo excluído.');
  }catch(error){reportError('Não foi possível excluir o empréstimo',error)}
  finally{button.disabled=false}
@@ -1491,7 +1644,7 @@ $('accountForm').addEventListener('submit',async e=>{
    accountFilter='Todas';accountMonthFilter='all';accountNameFilter='';accountDashboardFilter=null;
    $('accountFilters').querySelectorAll('button[data-filter]').forEach(button=>button.classList.toggle('active',button.dataset.filter==='Todas'));
   }
-  closeModal('accountModal');await loadData(false);toast(successMessage);
+  closeModal('accountModal',true);await loadData(false);toast(successMessage);
  }catch(error){reportError('Não foi possível salvar a conta',error)}
 });
 $('taskForm').addEventListener('submit',async e=>{
@@ -1516,7 +1669,7 @@ $('taskForm').addEventListener('submit',async e=>{
    if(error)throw error;
   }
   months.forEach(taskMonth=>expandedTaskMonths.add(taskMonth));
-  closeModal('taskModal');await loadData(false);toast(months.length>1?`${months.length} tarefas criadas, uma por mês.`:'Tarefa salva com sucesso!');
+  closeModal('taskModal',true);await loadData(false);toast(months.length>1?`${months.length} tarefas criadas, uma por mês.`:'Tarefa salva com sucesso!');
  }catch(error){
   if(error instanceof Error&&error.message.includes('mês final'))toast(error.message);
   else reportError('Não foi possível salvar a tarefa',error);
@@ -1651,7 +1804,7 @@ async function deleteTask(id){
 $('deleteTaskButton').addEventListener('click',async()=>{
  const id=$('taskId').value;if(!id)return;
  const button=$('deleteTaskButton');button.disabled=true;
- try{if(await deleteTask(id))closeModal('taskModal')}
+ try{if(await deleteTask(id))closeModal('taskModal',true)}
  finally{button.disabled=false}
 });
 $('accountFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;accountDashboardFilter=null;accountFilter=b.dataset.filter;$('accountFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderAccounts()});
