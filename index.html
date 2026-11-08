@@ -1063,7 +1063,7 @@ async function openProfileModal(){
  document.querySelectorAll('[data-visible-section]').forEach(input=>{input.checked=visiblePages.has(input.dataset.visibleSection)});
  $('profileEmail').textContent=currentUser.email||'Não disponível';
  $('profileCreatedAt').textContent=formatUserDate(currentUser.created_at);
- $('profileLastSignIn').textContent=formatUserDate(currentUser.last_sign_in_at);
+ $('profileLastSignIn').textContent=formatUserDate(currentUser.last_access_at||currentUser.last_sign_in_at);
  $('profilePhoto').value='';
  $('photoCropper').hidden=true;$('saveProfileButton').disabled=false;profileCropBlob=null;cropImage=null;
  $('photoCropImage').removeAttribute('src');
@@ -1071,6 +1071,10 @@ async function openProfileModal(){
  if(profilePreviewObjectUrl){URL.revokeObjectURL(profilePreviewObjectUrl);profilePreviewObjectUrl=null}
  $('profileAvatarPreview').textContent=initialsForUser(currentUser);
  $('profileModal').classList.add('show');
+ const lastAccessAt=await trackCurrentUserAccess(true);
+ if(lastAccessAt&&currentUser){
+  $('profileLastSignIn').textContent=formatUserDate(lastAccessAt);
+ }
  try{await loadProfilePhoto()}catch(error){reportError('Não foi possível carregar a foto do perfil',error)}
 }
 function isRegisteredUsersAdmin(user=currentUser){
@@ -1184,16 +1188,24 @@ async function handleAuthSession(event,session){
 db.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{void handleAuthSession(event,session)},0)});
 let lastAccessTrackedAt=0;
 let accessTrackingRequest=null;
-function trackCurrentUserAccess(){
- if(!currentUser||document.visibilityState!=='visible'||Date.now()-lastAccessTrackedAt<5*60*1000)return accessTrackingRequest?.promise||null;
+function trackCurrentUserAccess(force=false){
+ if(!currentUser||document.visibilityState!=='visible')return Promise.resolve(null);
  const userId=currentUser.id;
  if(accessTrackingRequest?.userId===userId)return accessTrackingRequest.promise;
+ if(!force&&Date.now()-lastAccessTrackedAt<5*60*1000)return Promise.resolve(currentUser.last_access_at||null);
  lastAccessTrackedAt=Date.now();
  const request=db.functions.invoke('track-user-access')
-  .then(({error})=>{
+  .then(({data,error})=>{
    if(error)throw error;
+   const lastAccessAt=typeof data?.last_access_at==='string'?data.last_access_at:new Date().toISOString();
+   if(currentUser?.id===userId)currentUser.last_access_at=lastAccessAt;
+   return lastAccessAt;
   })
-  .catch(error=>reportError('Não foi possível atualizar o último acesso',error))
+  .catch(error=>{
+   lastAccessTrackedAt=0;
+   reportError('Não foi possível atualizar o último acesso',error);
+   return null;
+  })
   .finally(()=>{if(accessTrackingRequest?.promise===request)accessTrackingRequest=null});
  accessTrackingRequest={userId,promise:request};
  return request;
