@@ -214,7 +214,7 @@ tbody tr:last-child td{border-bottom:0}
 .task-description{margin:7px 0 0;color:#586579;font-size:11px;line-height:1.5;white-space:pre-wrap}
 .task-subtasks{display:grid;gap:5px;margin-top:9px}
 .task-subtask{display:flex;align-items:center;gap:7px;color:#586579;font-size:11px}
-.task-subtask-switch{width:32px}
+.task-subtask-switch{width:32px;margin-left:4px}
 .task-subtask-switch .switch-track{transform:scale(.76);transform-origin:left center}
 .task-subtask.done span{text-decoration:line-through;color:#9aa3af}
 .task-recurring-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -411,6 +411,9 @@ tbody tr:last-child td{border-bottom:0}
  #page-emprestimos .loan-status{padding:4px 5px;font-size:10px;white-space:normal}
  #page-emprestimos .loan-date-full{display:none}
  #page-emprestimos .loan-date-compact{display:inline}
+}
+@media(max-width:600px){
+ #page-tarefas .task-description{text-align:center}
 }
 </style>
 </head>
