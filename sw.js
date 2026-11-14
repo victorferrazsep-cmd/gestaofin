@@ -1,14 +1,53 @@
 const APP_URL = new URL('./', self.location).href;
 const ICON_URL = new URL('./icon.svg?v=4', self.location).href;
 const NOTIFICATION_DB = 'fffinance-notifications';
+const NOTIFICATION_HISTORY_KEY = 'history';
+const NOTIFICATION_HISTORY_DAYS = 2;
 
 function openNotificationDatabase() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(NOTIFICATION_DB, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore('state', { keyPath: 'key' });
+    const request = indexedDB.open(NOTIFICATION_DB, 2);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains('state')) {
+        request.result.createObjectStore('state', { keyPath: 'key' });
+      }
+    };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
+}
+
+async function getNotificationHistory() {
+  const database = await openNotificationDatabase();
+  try {
+    return await new Promise((resolve, reject) => {
+      const request = database.transaction('state', 'readonly').objectStore('state').get(NOTIFICATION_HISTORY_KEY);
+      request.onsuccess = () => {
+        const cutoff = Date.now() - NOTIFICATION_HISTORY_DAYS * 86_400_000;
+        const history = Array.isArray(request.result?.value) ? request.result.value : [];
+        resolve(history.filter(item => Number(item.timestamp) >= cutoff));
+      };
+      request.onerror = () => reject(request.error);
+    });
+  } finally {
+    database.close();
+  }
+}
+
+async function addNotificationToHistory(notification) {
+  const cutoff = Date.now() - NOTIFICATION_HISTORY_DAYS * 86_400_000;
+  const history = (await getNotificationHistory())
+    .filter(item => Number(item.timestamp) >= cutoff)
+    .filter(item => item.tag !== notification.tag || item.timestamp !== notification.timestamp);
+  history.unshift(notification);
+  const database = await openNotificationDatabase();
+  await new Promise((resolve, reject) => {
+    const transaction = database.transaction('state', 'readwrite');
+    transaction.objectStore('state').put({ key: NOTIFICATION_HISTORY_KEY, value: history.slice(0, 50) });
+    transaction.oncomplete = resolve;
+    transaction.onerror = () => reject(transaction.error);
+    transaction.onabort = () => reject(transaction.error);
+  }).finally(() => database.close());
 }
 
 async function setUnreadNotifications(value) {
@@ -66,6 +105,13 @@ self.addEventListener('push', event => {
       data: { url: payload.url || APP_URL }
     });
     try {
+      await addNotificationToHistory({
+        title: payload.title || 'FFinance',
+        body: payload.body || 'Você tem uma conta pendente.',
+        timestamp: Date.now(),
+        tag: payload.tag || 'account-reminder',
+        url: payload.url || APP_URL
+      });
       await setUnreadNotifications(true);
       await notifyClients({ type: 'push-received' });
     } catch (error) {
@@ -79,11 +125,11 @@ self.addEventListener('message', event => {
   if (!replyPort) return;
 
   if (event.data?.type === 'get-notification-state') {
-    event.waitUntil(hasUnreadNotifications()
-      .then(hasUnread => replyPort.postMessage({ type: 'notification-state', hasUnread }))
+    event.waitUntil(Promise.all([hasUnreadNotifications(), getNotificationHistory()])
+      .then(([hasUnread, notifications]) => replyPort.postMessage({ type: 'notification-state', hasUnread, notifications }))
       .catch(error => {
         console.error('Could not read notification state.', error);
-        replyPort.postMessage({ type: 'notification-state', hasUnread: false });
+        replyPort.postMessage({ type: 'notification-state', hasUnread: false, notifications: [] });
       }));
   } else if (event.data?.type === 'mark-notifications-read') {
     event.waitUntil(setUnreadNotifications(false)

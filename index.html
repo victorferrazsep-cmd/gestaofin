@@ -51,8 +51,20 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .avatar{width:38px;height:38px;min-width:38px;min-height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--green);color:#fff;font-size:12px;font-weight:800}
 .profile-trigger{position:relative;width:38px;height:38px;min-width:38px;flex:0 0 38px;padding:0;border:0;background:transparent;border-radius:50%;line-height:0;overflow:visible}
 .profile-trigger:focus-visible{outline:3px solid #72d5a3;outline-offset:3px}
-.notification-dot{position:absolute;top:-2px;right:-2px;width:12px;height:12px;border:2px solid #fff;border-radius:50%;background:#e53945;z-index:1}
+.notification-wrap{position:relative}
+.notification-dot{position:absolute;top:-3px;right:-3px;width:12px;height:12px;border:2px solid #fff;border-radius:50%;background:#e53945;z-index:1}
 .notification-dot[hidden]{display:none}
+.notification-panel{position:absolute;right:0;top:calc(100% + 8px);z-index:9;width:min(340px,calc(100vw - 28px));padding:12px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px #17203324}
+.notification-panel[hidden]{display:none}
+.notification-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 9px;border-bottom:1px solid var(--line)}
+.notification-panel-head strong{font-size:12px}
+.notification-panel-head button{border:0;background:transparent;color:var(--green-dark);font-size:10px;font-weight:700}
+.notification-history{display:grid;gap:7px;max-height:300px;overflow:auto;padding-top:8px}
+.notification-item{padding:9px;border-radius:9px;background:#f8fafb}
+.notification-item strong{display:block;color:var(--ink);font-size:11px}
+.notification-item p{margin:4px 0 0;color:#586579;font-size:10px;line-height:1.4}
+.notification-item time{display:block;margin-top:5px;color:var(--muted);font-size:9px}
+.notification-empty{padding:14px 5px;color:var(--muted);font-size:11px;text-align:center}
 .avatar img{display:block;width:38px;height:38px;max-width:none;flex:none;border-radius:50%;object-fit:cover}
 .profile-details{display:grid;gap:14px}
 .profile-date-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -79,8 +91,18 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .profile-value{margin:0;padding:11px;border:1px solid var(--line);border-radius:10px;background:#f8fafb;font-size:13px;overflow-wrap:anywhere}
 .profile-section-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}
 .profile-section-options .checkbox-label{padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.profile-visible-sections{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.profile-visible-sections summary{padding:11px 12px;color:#566276;font-size:12px;font-weight:700;cursor:pointer;list-style:none}
+.profile-visible-sections summary::-webkit-details-marker{display:none}
+.profile-visible-sections summary::after{content:"▸";float:right;color:var(--muted)}
+.profile-visible-sections[open] summary::after{content:"▾"}
+.profile-visible-sections .profile-section-options{padding:0 10px 10px}
+.profile-section-options .switch-field{font-size:10px}
+.profile-section-options .switch-track{width:34px;height:20px}
+.profile-section-options .switch-track::after{width:14px;height:14px}
+.profile-section-options .switch-field input:checked+.switch-track::after{transform:translateX(14px)}
 .profile-actions{display:flex;gap:8px;margin-top:8px}
-.profile-actions .btn{width:auto;min-width:0;flex:1;padding:10px 8px;line-height:1.25}
+.profile-actions .btn{width:auto;min-width:0;flex:1;padding:10px 8px;font-size:12px;line-height:1.25}
 .profile-users-button{width:100%;margin-top:8px}
 .registered-users-table{width:100%;min-width:560px}
 .registered-users-table td:first-child{overflow-wrap:anywhere}
@@ -148,6 +170,14 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .field .checkbox-label input{width:16px;height:16px;margin:0;padding:0;accent-color:var(--green)}
 .field.checkbox-label{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
 .field.checkbox-label input{width:16px;height:16px;margin:0;padding:0;accent-color:var(--green)}
+.switch-field{gap:12px}
+.switch-control{position:relative;display:inline-flex;align-items:center;width:42px;height:24px;flex:none;cursor:pointer}
+.switch-field input,.switch-control input{position:absolute;width:1px;height:1px;margin:-1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}
+.switch-track{position:relative;display:block;width:42px;height:24px;flex:none;border-radius:999px;background:#d7dee5;transition:background .15s}
+.switch-track::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #17203333;transition:transform .15s}
+.switch-field input:checked+.switch-track,.switch-control input:checked+.switch-track{background:var(--green)}
+.switch-field input:checked+.switch-track::after,.switch-control input:checked+.switch-track::after{transform:translateX(18px)}
+.switch-field input:focus-visible+.switch-track,.switch-control input:focus-visible+.switch-track{outline:3px solid #72d5a3;outline-offset:2px}
 .filter.active{background:var(--green-soft);border-color:#c9efdc;color:var(--green-dark);font-weight:700}
 .table-wrap{overflow:auto}
 table{width:100%;border-collapse:collapse;min-width:620px}
@@ -164,9 +194,11 @@ tbody tr:last-child td{border-bottom:0}
 .task-month-header span:first-child{min-width:0}
 .task-month-header span:last-child{font-size:11px;color:#758292}
 .task-month-items[hidden]{display:none}
-.task-card{display:flex;align-items:flex-start;gap:10px;margin-top:8px;padding:10px;border:0;border-radius:10px;background:#f8fafb}
-.task-card>input{accent-color:var(--green);width:18px;height:18px;margin-top:8px;flex:none}
-.task-card .task-info{flex:1;min-width:0}
+.task-card{margin-top:8px;padding:10px;border:0;border-radius:10px;background:#f8fafb}
+.task-card-switch{margin-top:5px}
+.task-title-row{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:2px;border-radius:10px;background:#f2f3f5}
+.task-title-row .task-title-button{flex:1}
+.task-card .task-info{min-width:0}
 .task-title-button{display:block;width:100%;padding:8px 10px;border:0;border-radius:8px;background:#f2f3f5;color:var(--ink);text-align:left;font-size:12px;font-weight:700;cursor:pointer}
 .task-title-button:hover,.task-title-button:focus-visible{background:#e9ebee;outline:none}
 .task-title-content{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
@@ -175,15 +207,17 @@ tbody tr:last-child td{border-bottom:0}
 .task-priority.urgent{background:#fff0f1;color:#d64d63}
 .task-priority.mandatory{background:#fff6e7;color:#a86b0b}
 .task-priority.neutral{background:#edf1f4;color:#657184}
-.task-card.done .task-title-button{color:#7d8794;text-decoration:line-through}
+.task-card.done .task-title-row{background:var(--green-soft);border-radius:10px;padding:2px}
+.task-card.done .task-title-button{background:transparent;color:#7d8794;text-decoration:line-through}
 .task-info small{display:block;color:var(--muted);font-size:10px;margin-top:6px;line-height:1.45}
 .task-card.done strong{text-decoration:line-through;color:#9aa3af}
 .task-description{margin:7px 0 0;color:#586579;font-size:11px;line-height:1.5;white-space:pre-wrap}
 .task-subtasks{display:grid;gap:5px;margin-top:9px}
 .task-subtask{display:flex;align-items:center;gap:7px;color:#586579;font-size:11px}
-.task-subtask input{width:15px;height:15px;flex:none}
+.task-subtask-switch{width:32px}
+.task-subtask-switch .switch-track{transform:scale(.76);transform-origin:left center}
 .task-subtask.done span{text-decoration:line-through;color:#9aa3af}
-.task-recurring-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.task-recurring-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .task-recurring-fields[hidden],.task-subtasks-field[hidden]{display:none}
 .task-subtasks-editor{display:grid;gap:7px}
 .task-subtask-input{display:flex;align-items:center;gap:7px}
@@ -416,7 +450,7 @@ tbody tr:last-child td{border-bottom:0}
   <main>
     <header class="topbar">
       <div class="hello"><div class="hello-heading"><img class="mobile-header-logo" src="./img/logo.png?v=3" alt=""><h1 id="greeting">Olá! 👋</h1></div><p>Acompanhe seus principais indicadores.</p></div>
-      <div class="top-actions"><button class="btn outline notify-button" id="pushNotificationsButton" type="button" aria-label="Ativar avisos" title="Ativar avisos" aria-pressed="false">🔔</button><button class="profile-trigger" id="profileTrigger" type="button" aria-label="Abrir meu perfil"><div class="avatar" id="userAvatar">MC</div><span class="notification-dot" id="notificationDot" aria-hidden="true" hidden></span></button></div>
+      <div class="top-actions"><div class="notification-wrap"><button class="btn outline notify-button" id="pushNotificationsButton" type="button" aria-label="Abrir notificações" title="Abrir notificações" aria-pressed="false"><span id="notificationIcon" aria-hidden="true">🔔</span><span class="notification-dot" id="notificationDot" aria-hidden="true" hidden></span></button><div class="notification-panel" id="notificationPanel" hidden><div class="notification-panel-head"><strong>Notificações recentes</strong><button id="notificationPermissionButton" type="button">Ativar avisos</button></div><div class="notification-history" id="notificationHistory"></div></div></div><button class="profile-trigger" id="profileTrigger" type="button" aria-label="Abrir meu perfil"><div class="avatar" id="userAvatar">MC</div></button></div>
     </header>
 
     <section class="page active" id="page-inicio">
@@ -551,7 +585,7 @@ tbody tr:last-child td{border-bottom:0}
     <div class="field"><label for="accountCategory">Tipo</label><select id="accountCategory"><option>Fixa</option><option>Variável</option><option>Sazonal</option><option>Assinatura</option></select></div>
     <div class="field"><label for="accountDue">Dia do vencimento</label><input id="accountDue" type="number" min="1" max="31" required placeholder="Ex.: 10"></div>
     <div class="field"><label for="accountValue">Valor previsto (R$)</label><input id="accountValue" type="number" min="0" step="0.01" placeholder="0,00"></div>
-    <div class="field full" id="accountRecurringField"><label class="checkbox-label" for="accountRecurring"><input id="accountRecurring" type="checkbox"> Recorrente</label></div>
+    <div class="field full" id="accountRecurringField"><label class="checkbox-label switch-field" for="accountRecurring"><span>Recorrente</span><input id="accountRecurring" type="checkbox"><span class="switch-track" aria-hidden="true"></span></label></div>
     <div class="field" id="accountStartMonthField" hidden><label for="accountStartMonth">Mês inicial</label><input id="accountStartMonth" type="month"></div>
     <div class="field" id="accountEndMonthField" hidden><label for="accountEndMonth">Mês final (inclusivo)</label><input id="accountEndMonth" type="month"></div>
     <p class="field-hint full" id="accountRangeHint" hidden>Será criada uma conta por mês, com este valor inicial. Depois, você pode ajustar o valor e o pagamento de cada mês separadamente.</p>
@@ -575,10 +609,15 @@ tbody tr:last-child td{border-bottom:0}
     <div class="field full"><label for="taskPriority">Prioridade</label><select id="taskPriority" required><option value="URGENTE">URGENTE</option><option value="OBRIGATÓRIO">OBRIGATÓRIO</option><option value="NEUTRO" selected>NEUTRO</option></select></div>
     <div class="field full"><label for="taskDate">Data para conclusão</label><input id="taskDate" type="date" required></div>
     <p class="field-hint full">Com o sininho ativado, você recebe avisos 7, 3 e 1 dia antes, no dia e diariamente se a tarefa atrasar. Ative também os avisos no sininho do topo do app.</p>
-    <label class="field checkbox-label full" id="taskRecurringField"><span>Recorrência mensal</span><input id="taskRecurring" type="checkbox"></label>
-    <div class="field full task-recurring-fields" id="taskRecurringFields" hidden><div class="field"><label for="taskEndMonth">Mês final</label><input id="taskEndMonth" type="month"></div></div>
-    <p class="field-hint full" id="taskRecurringHint" hidden>Será criada uma tarefa em cada mês, até o mês final.</p>
-    <label class="field checkbox-label full"><span>Adicionar subtarefas</span><input id="taskHasSubtasks" type="checkbox"></label>
+    <label class="field checkbox-label switch-field full" id="taskRecurringField"><span>Recorrência</span><input id="taskRecurring" type="checkbox"><span class="switch-track" aria-hidden="true"></span></label>
+    <div class="field full task-recurring-fields" id="taskRecurringFields" hidden>
+     <div class="field"><label for="taskRecurrenceType">Periodicidade</label><select id="taskRecurrenceType"><option value="monthly">Mensal</option><option value="weekly">Semanal</option></select></div>
+     <div class="field" id="taskEndMonthField"><label for="taskEndMonth">Mês final</label><input id="taskEndMonth" type="month"></div>
+     <div class="field" id="taskWeekdayField" hidden><label for="taskWeekday">Dia da semana</label><select id="taskWeekday"><option value="0">Domingo</option><option value="1">Segunda-feira</option><option value="2">Terça-feira</option><option value="3">Quarta-feira</option><option value="4">Quinta-feira</option><option value="5">Sexta-feira</option><option value="6">Sábado</option></select></div>
+     <div class="field" id="taskEndDateField" hidden><label for="taskEndDate">Data final</label><input id="taskEndDate" type="date"></div>
+    </div>
+    <p class="field-hint full" id="taskRecurringHint" hidden>Será criada uma tarefa mensal até o mês final.</p>
+    <label class="field checkbox-label switch-field full"><span>Adicionar subtarefas</span><input id="taskHasSubtasks" type="checkbox"><span class="switch-track" aria-hidden="true"></span></label>
     <div class="field full task-subtasks-field" id="taskSubtasksField" hidden>
      <label>Subtarefas</label>
      <div class="task-subtasks-editor" id="taskSubtasksEditor"></div>
@@ -642,13 +681,16 @@ tbody tr:last-child td{border-bottom:0}
      <div class="photo-crop-actions"><button class="btn outline" id="cancelPhotoCrop" type="button">Cancelar</button><button class="btn" id="applyPhotoCrop" type="button">Usar Foto</button></div>
     </div>
     <div class="field"><label>E-mail</label><p class="profile-value" id="profileEmail"></p></div>
-    <div class="field"><label>Abas exibidas no app</label><div class="profile-section-options">
-     <label class="field checkbox-label"><span>Contas</span><input type="checkbox" data-visible-section="contas" checked></label>
-     <label class="field checkbox-label"><span>Tarefas</span><input type="checkbox" data-visible-section="tarefas" checked></label>
-     <label class="field checkbox-label"><span>Agenda</span><input type="checkbox" data-visible-section="calendario" checked></label>
-     <label class="field checkbox-label"><span>Empréstimos</span><input type="checkbox" data-visible-section="emprestimos" checked></label>
-     <label class="field checkbox-label"><span>Relatórios</span><input type="checkbox" data-visible-section="relatorios" checked></label>
-    </div></div>
+    <details class="profile-visible-sections">
+     <summary>Abas exibidas no app</summary>
+     <div class="profile-section-options">
+     <label class="field checkbox-label switch-field"><span>Contas</span><input type="checkbox" data-visible-section="contas" checked><span class="switch-track" aria-hidden="true"></span></label>
+     <label class="field checkbox-label switch-field"><span>Tarefas</span><input type="checkbox" data-visible-section="tarefas" checked><span class="switch-track" aria-hidden="true"></span></label>
+     <label class="field checkbox-label switch-field"><span>Agenda</span><input type="checkbox" data-visible-section="calendario" checked><span class="switch-track" aria-hidden="true"></span></label>
+     <label class="field checkbox-label switch-field"><span>Empréstimos</span><input type="checkbox" data-visible-section="emprestimos" checked><span class="switch-track" aria-hidden="true"></span></label>
+     <label class="field checkbox-label switch-field"><span>Relatórios</span><input type="checkbox" data-visible-section="relatorios" checked><span class="switch-track" aria-hidden="true"></span></label>
+    </div>
+    </details>
     <div class="profile-date-row">
      <div class="field"><label>Cadastrado desde</label><p class="profile-value" id="profileCreatedAt"></p></div>
      <div class="field"><label>Último acesso</label><p class="profile-value" id="profileLastSignIn"></p></div>
@@ -717,9 +759,10 @@ async function updatePushButton(){
  button.classList.remove('is-enabled');
  button.dataset.active='false';
  button.setAttribute('aria-pressed','false');
- button.textContent='🔔';
- button.setAttribute('aria-label','Ativar avisos');
- button.title='Ativar avisos';
+ $('notificationIcon').textContent='🔔';
+ $('notificationPermissionButton').textContent='Ativar avisos';
+ button.setAttribute('aria-label','Abrir notificações');
+ button.title='Abrir notificações';
  if(!currentUser)return;
  if(getPushSupportMessage())return;
  const registration=await navigator.serviceWorker.getRegistration(new URL('.',document.baseURI).pathname);
@@ -728,17 +771,16 @@ async function updatePushButton(){
  const {data,error}=await db.from('push_subscriptions').select('endpoint').eq('user_id',currentUser.id).eq('endpoint',subscription.endpoint).maybeSingle();
  if(error)throw error;
  const active=Boolean(data);
- button.textContent=active?'🔔 ✓':'🔔';
- button.setAttribute('aria-label',active?'Avisos ativados':'Ativar avisos');
- button.title=active?'Avisos ativados':'Ativar avisos';
+ $('notificationIcon').textContent=active?'🔔 ✓':'🔔';
+ $('notificationPermissionButton').textContent=active?'Desativar avisos':'Ativar avisos';
  button.dataset.active=String(active);
  button.setAttribute('aria-pressed',String(active));
  button.classList.toggle('is-enabled',active);
 }
 function setNotificationBadge(hasUnread){
- const unread=Boolean(hasUnread&&isRegisteredUsersAdmin());
+ const unread=Boolean(hasUnread);
  $('notificationDot').hidden=!unread;
- $('profileTrigger').setAttribute('aria-label',unread?'Abrir meu perfil. Há notificações não lidas.':'Abrir meu perfil');
+ $('pushNotificationsButton').setAttribute('aria-label',unread?'Abrir notificações. Há notificações não lidas.':'Abrir notificações');
 }
 async function sendServiceWorkerMessage(type){
  if(!('serviceWorker'in navigator))return null;
@@ -753,17 +795,38 @@ async function sendServiceWorkerMessage(type){
  });
 }
 async function refreshNotificationBadge(){
- if(!isRegisteredUsersAdmin()||$('pushNotificationsButton').dataset.active!=='true'){
+ if(!currentUser||$('pushNotificationsButton').dataset.active!=='true'){
   setNotificationBadge(false);return;
  }
  const result=await sendServiceWorkerMessage('get-notification-state');
- if(result?.type==='notification-state')setNotificationBadge(result.hasUnread);
+ if(result?.type==='notification-state'){
+  setNotificationBadge(result.hasUnread);
+  renderNotificationHistory(result.notifications||[]);
+ }
 }
 async function markNotificationsRead(){
- if(!isRegisteredUsersAdmin()||$('notificationDot').hidden)return;
+ if($('notificationDot').hidden)return;
  setNotificationBadge(false);
  const result=await sendServiceWorkerMessage('mark-notifications-read');
  if(result?.type!=='notifications-read')throw new Error('Não foi possível marcar as notificações como lidas.');
+}
+function formatNotificationTime(value){
+ const date=new Date(value);
+ return Number.isNaN(date.getTime())?'':date.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+}
+function renderNotificationHistory(notifications){
+ const history=$('notificationHistory');
+ history.innerHTML=notifications.length?notifications.map(notification=>`<article class="notification-item"><strong>${escapeHTML(notification.title||'FFinance')}</strong><p>${escapeHTML(notification.body||'')}</p><time>${escapeHTML(formatNotificationTime(notification.timestamp))}</time></article>`).join(''):'<div class="notification-empty">Nenhuma notificação nos últimos 2 dias.</div>';
+}
+async function openNotificationPanel(){
+ const panel=$('notificationPanel');
+ if(!panel.hidden){panel.hidden=true;return}
+ panel.hidden=false;
+ const result=await sendServiceWorkerMessage('get-notification-state');
+ if(result?.type==='notification-state'){
+  renderNotificationHistory(result.notifications||[]);
+  try{await markNotificationsRead()}catch(error){reportError('Não foi possível atualizar o histórico de notificações',error)}
+ }
 }
 if('serviceWorker'in navigator){
  navigator.serviceWorker.addEventListener('message',event=>{
@@ -779,7 +842,7 @@ function getPushSupportMessage(){
  if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))return 'Este navegador não oferece notificações push. Atualize o Safari ou instale o app na Tela de Início.';
  return '';
 }
-$('pushNotificationsButton').addEventListener('click',async()=>{
+async function togglePushNotifications(){
  const button=$('pushNotificationsButton');
  if(!currentUser)return;
  const supportMessage=getPushSupportMessage();
@@ -806,7 +869,10 @@ $('pushNotificationsButton').addEventListener('click',async()=>{
   if(button.dataset.active==='true')await refreshNotificationBadge();
  }catch(error){reportError('Não foi possível configurar as notificações',error)}
  finally{button.disabled=false}
-});
+}
+$('pushNotificationsButton').addEventListener('click',()=>void openNotificationPanel());
+$('notificationPermissionButton').addEventListener('click',()=>void togglePushNotifications());
+$('notificationPanel').addEventListener('click',event=>event.stopPropagation());
 $('profileTrigger').addEventListener('click',openProfileModal);
 $('profileSignOutButton').addEventListener('click',async()=>{
  const {error}=await db.auth.signOut();
@@ -1054,9 +1120,6 @@ async function loadProfilePhoto(){
 }
 async function openProfileModal(){
  if(!currentUser)return;
- if(isRegisteredUsersAdmin()){
-  try{await markNotificationsRead()}catch(error){reportError('Não foi possível atualizar o aviso de notificações',error)}
- }
  $('openRegisteredUsersButton').hidden=!isRegisteredUsersAdmin();
  $('profileName').value=currentUser.user_metadata?.display_name||'';
  const visiblePages=new Set(getVisiblePages());
@@ -1273,9 +1336,9 @@ function updateAccountRecurrenceFields(isEditing=Boolean($('accountId').value)){
 }
 $('accountRecurring').addEventListener('change',()=>updateAccountRecurrenceFields());
 function openTaskModal(id=null){
- $('taskForm').reset();$('taskId').value='';$('taskDate').value=todayISO();$('taskEndMonth').value=monthISO();$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';setTaskReminderEnabled(true);
+ $('taskForm').reset();$('taskId').value='';$('taskDate').value=todayISO();$('taskEndMonth').value=monthISO();$('taskEndDate').value=todayISO();$('taskWeekday').value=String(parseDate(todayISO()).getDay());$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';setTaskReminderEnabled(true);
  $('deleteTaskButton').hidden=!id;
- $('taskRecurringField').hidden=Boolean(id);$('taskRecurring').checked=false;$('taskRecurringFields').hidden=true;$('taskRecurringHint').hidden=true;$('taskEndMonth').required=false;
+ $('taskRecurringField').hidden=Boolean(id);$('taskRecurring').checked=false;$('taskRecurrenceType').value='monthly';$('taskRecurringFields').hidden=true;$('taskRecurringHint').hidden=true;$('taskEndMonth').required=false;$('taskEndDate').required=false;updateTaskRecurringFields();
  $('taskHasSubtasks').checked=false;$('taskSubtasksField').hidden=true;renderTaskSubtaskInputs([]);
  if(id){
   const task=tasks.find(item=>item.id===id);if(!task)return;
@@ -1294,8 +1357,12 @@ function setTaskReminderEnabled(enabled){
  $('taskReminderToggle').addEventListener('click',()=>setTaskReminderEnabled($('taskReminderToggle').getAttribute('aria-pressed')!=='true'));
 function updateTaskRecurringFields(){
  const recurring=$('taskRecurring').checked;
- $('taskRecurringFields').hidden=!recurring;$('taskRecurringHint').hidden=!recurring;$('taskEndMonth').required=recurring;
- if(recurring&&!$('taskEndMonth').value)$('taskEndMonth').value=$('taskDate').value.slice(0,7);
+ const weekly=$('taskRecurrenceType').value==='weekly';
+ $('taskRecurringFields').hidden=!recurring;$('taskRecurringHint').hidden=!recurring;$('taskEndMonthField').hidden=!recurring||weekly;$('taskWeekdayField').hidden=!recurring||!weekly;$('taskEndDateField').hidden=!recurring||!weekly;
+ $('taskEndMonth').required=recurring&&!weekly;$('taskEndDate').required=recurring&&weekly;
+ $('taskRecurringHint').textContent=weekly?'Será criada uma tarefa a cada 7 dias, até a data final.':'Será criada uma tarefa mensal até o mês final.';
+ if(recurring&&weekly&&!$('taskEndDate').value)$('taskEndDate').value=$('taskDate').value;
+ if(recurring&&!weekly&&!$('taskEndMonth').value)$('taskEndMonth').value=$('taskDate').value.slice(0,7);
 }
 function renderTaskSubtaskInputs(subtasks){
  $('taskSubtasksEditor').innerHTML=subtasks.map(subtask=>`<div class="task-subtask-input"><button type="button" class="task-subtask-drag" data-drag-task-subtask aria-label="Mover subtarefa" title="Segure para arrastar">⋮⋮</button><input type="text" maxlength="160" data-task-subtask-id="${escapeHTML(subtask.id)}" data-task-subtask-name value="${escapeHTML(subtask.name)}" placeholder="Nome da subtarefa"><button type="button" data-remove-task-subtask aria-label="Remover subtarefa">×</button></div>`).join('');
@@ -1366,7 +1433,9 @@ document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('clic
  else closeModal(m.id);
 }));
  $('taskRecurring').addEventListener('change',updateTaskRecurringFields);
- $('taskDate').addEventListener('change',()=>{const month=$('taskDate').value.slice(0,7);if(!$('taskEndMonth').value||$('taskEndMonth').value<month)$('taskEndMonth').value=month});
+  $('taskRecurrenceType').addEventListener('change',updateTaskRecurringFields);
+  $('taskDate').addEventListener('change',()=>{const date=$('taskDate').value,month=date.slice(0,7);if(!$('taskEndMonth').value||$('taskEndMonth').value<month)$('taskEndMonth').value=month;if(!$('taskEndDate').value||$('taskEndDate').value<date)$('taskEndDate').value=date;$('taskWeekday').value=String(parseDate(date).getDay())});
+  $('taskWeekday').addEventListener('change',()=>{if(!$('taskRecurring').checked||$('taskRecurrenceType').value!=='weekly')return;const firstDate=nextWeekdayOnOrAfter($('taskDate').value,Number($('taskWeekday').value));if(!$('taskEndDate').value||$('taskEndDate').value<firstDate)$('taskEndDate').value=firstDate});
  $('taskHasSubtasks').addEventListener('change',event=>{
   $('taskSubtasksField').hidden=!event.currentTarget.checked;
   if(event.currentTarget.checked&&!$('taskSubtasksEditor').children.length)addTaskSubtaskInput();
@@ -1440,6 +1509,25 @@ function addMonthsToDate(date,offset){
  const targetYear=Math.floor(monthIndex/12),targetMonth=monthIndex%12+1;
  const lastDay=new Date(Date.UTC(targetYear,targetMonth,0)).getUTCDate();
  return `${targetYear}-${String(targetMonth).padStart(2,'0')}-${String(Math.min(day,lastDay)).padStart(2,'0')}`;
+}
+function addDaysToDate(date,offset){
+ const result=new Date(`${date}T12:00:00`);result.setDate(result.getDate()+offset);
+ return `${result.getFullYear()}-${String(result.getMonth()+1).padStart(2,'0')}-${String(result.getDate()).padStart(2,'0')}`;
+}
+function nextWeekdayOnOrAfter(date,weekday){
+ const current=parseDate(date),daysUntil=(weekday-current.getDay()+7)%7;
+ return addDaysToDate(date,daysUntil);
+}
+function taskDatesInRange(start,end,stepDays){
+ if(!start||!end||start>end)throw new Error('A data final precisa ser igual ou posterior à data inicial.');
+ const dates=[];
+ for(let date=start;date<=end;date=addDaysToDate(date,stepDays))dates.push(date);
+ return dates;
+}
+function taskWeeklyDatesInRange(start,end,weekday){
+ const first=nextWeekdayOnOrAfter(start,weekday);
+ if(first>end)throw new Error('A data final precisa incluir ao menos uma ocorrência do dia selecionado.');
+ return taskDatesInRange(first,end,7);
 }
 function addMonthsToReference(month,offset){
  const [year,monthNumber]=month.split('-').map(Number),monthIndex=year*12+monthNumber-1+offset;
@@ -1738,11 +1826,12 @@ $('accountForm').addEventListener('submit',async e=>{
 });
 $('taskForm').addEventListener('submit',async e=>{
  e.preventDefault();
- const id=$('taskId').value,date=$('taskDate').value,month=date.slice(0,7),recurring=!id&&$('taskRecurring').checked,notify=$('taskReminderToggle').getAttribute('aria-pressed')==='true';
+ const id=$('taskId').value,date=$('taskDate').value,month=date.slice(0,7),recurring=!id&&$('taskRecurring').checked,weekly=$('taskRecurrenceType').value==='weekly',notify=$('taskReminderToggle').getAttribute('aria-pressed')==='true';
  const subtasks=$('taskHasSubtasks').checked?readTaskSubtasks():[];
  if($('taskHasSubtasks').checked&&!subtasks.length){toast('Adicione ao menos uma subtarefa ou desmarque essa opção.');return}
  try{
-  const months=recurring?accountMonthsInRange(month,$('taskEndMonth').value):[month];
+  const dates=recurring?(weekly?taskWeeklyDatesInRange(date,$('taskEndDate').value,Number($('taskWeekday').value)):accountMonthsInRange(month,$('taskEndMonth').value).map((taskMonth,index)=>addMonthsToDate(date,index))):[date];
+  const occurrences=dates.map(taskDate=>({date:taskDate,month:taskDate.slice(0,7)}));
   if(id){
    const task=tasks.find(item=>item.id===id);if(!task)return;
    const {error}=await db.from('tasks').update({
@@ -1750,17 +1839,17 @@ $('taskForm').addEventListener('submit',async e=>{
    }).eq('id',id);
    if(error)throw error;
   }else{
-   const payload=months.map((taskMonth,index)=>({
-    name:$('taskName').value.trim(),task_date:recurring?addMonthsToDate(date,index):date,month:taskMonth,notify,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,done:false,
+   const payload=occurrences.map(occurrence=>({
+    name:$('taskName').value.trim(),task_date:occurrence.date,month:occurrence.month,notify,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,done:false,
     subtasks:subtasks.map(subtask=>({...subtask,id:crypto.randomUUID()}))
    }));
    const {error}=await db.from('tasks').insert(payload);
    if(error)throw error;
   }
-  months.forEach(taskMonth=>expandedTaskMonths.add(taskMonth));
-  closeModal('taskModal',true);await loadData(false);toast(months.length>1?`${months.length} tarefas criadas, uma por mês.`:'Tarefa salva com sucesso!');
+  occurrences.forEach(occurrence=>expandedTaskMonths.add(occurrence.month));
+  closeModal('taskModal',true);await loadData(false);toast(occurrences.length>1?`${occurrences.length} tarefas criadas, uma por ${weekly?'semana':'mês'}.`:'Tarefa salva com sucesso!');
  }catch(error){
-  if(error instanceof Error&&error.message.includes('mês final'))toast(error.message);
+  if(error instanceof Error&&(error.message.includes('mês final')||error.message.includes('data final')||error.message.includes('dia selecionado')))toast(error.message);
   else reportError('Não foi possível salvar a tarefa',error);
  }
 });
@@ -1925,13 +2014,16 @@ $('accountMonthMenu').addEventListener('click',event=>{
 });
 document.addEventListener('click',event=>{
  if(event.target.closest('.account-month-picker'))return;
+ if(event.target.closest('.notification-wrap'))return;
  $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
  $('taskMonthMenu').hidden=true;$('taskMonthFilter').setAttribute('aria-expanded','false');
+ $('notificationPanel').hidden=true;
 });
 document.addEventListener('keydown',event=>{
  if(event.key!=='Escape')return;
  if(!$('accountMonthMenu').hidden){$('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');$('accountMonthFilter').focus()}
  else if(!$('taskMonthMenu').hidden){$('taskMonthMenu').hidden=true;$('taskMonthFilter').setAttribute('aria-expanded','false');$('taskMonthFilter').focus()}
+ else if(!$('notificationPanel').hidden){$('notificationPanel').hidden=true;$('pushNotificationsButton').focus()}
 });
 $('taskMonthFilter').addEventListener('click',()=>{
  const menu=$('taskMonthMenu'),isOpen=!menu.hidden;
@@ -2091,14 +2183,14 @@ function renderTasks(){
  $('tasksList').innerHTML=orderedMonths.length?orderedMonths.map(month=>{
   const title=formatTaskMonthLabel(month),monthItems=allTasks.filter(task=>task.month===month),completedCount=monthItems.filter(task=>task.done).length,totalCount=monthItems.length;
   const priorityOrder={'URGENTE':0,'OBRIGATÓRIO':1,'NEUTRO':2};
-  const monthTasks=groups.get(month).sort((a,b)=>priorityOrder[a.priority]-priorityOrder[b.priority]||a.name.localeCompare(b.name,'pt-BR'));
+  const monthTasks=groups.get(month).sort((a,b)=>Number(a.done)-Number(b.done)||priorityOrder[a.priority]-priorityOrder[b.priority]||a.name.localeCompare(b.name,'pt-BR'));
   const isExpanded=expandedTaskMonths.has(month);
   return `<section class="task-month-panel"><button class="task-month-header" type="button" data-task-month="${escapeHTML(month)}" aria-expanded="${isExpanded}"><span>${escapeHTML(title)} - ${completedCount}/${totalCount} Tarefas</span><span aria-hidden="true">${isExpanded?'▾':'▸'}</span></button><div class="task-month-items"${isExpanded?'':' hidden'}>${monthTasks.map(task=>{
    const details=task.subtasks.length?`${task.subtasks.filter(subtask=>subtask.done).length}/${task.subtasks.length} subtarefas concluídas`:'';
-   const subtasks=task.subtasks.length?`<div class="task-subtasks">${task.subtasks.map(subtask=>`<label class="task-subtask ${subtask.done?'done':''}"><input type="checkbox" ${subtask.done?'checked':''} onchange="toggleSubtask('${task.id}','${subtask.id}')"><span>${escapeHTML(subtask.name)}</span></label>`).join('')}</div>`:'';
+   const subtasks=task.subtasks.length?`<div class="task-subtasks">${task.subtasks.map(subtask=>`<label class="task-subtask ${subtask.done?'done':''}"><span class="switch-control task-subtask-switch"><input type="checkbox" ${subtask.done?'checked':''} onchange="toggleSubtask('${task.id}','${subtask.id}')"><span class="switch-track" aria-hidden="true"></span></span><span>${escapeHTML(subtask.name)}</span></label>`).join('')}</div>`:'';
    const priorityClass=task.priority==='URGENTE'?'urgent':task.priority==='OBRIGATÓRIO'?'mandatory':'neutral';
    const titleClick=task.loanInstallmentId?`openLoanInstallmentModal('${task.loanInstallmentId}')`:`openTaskModal('${task.id}')`;
-   return `<article class="task-card ${task.done?'done':''}"><input type="checkbox" aria-label="Concluir ${escapeHTML(task.name)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><div class="task-info"><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${escapeHTML(task.name)}</span><span class="task-priority ${priorityClass}">${task.priority}</span></span></button>${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
+   return `<article class="task-card ${task.done?'done':''}"><div class="task-title-row"><span class="switch-control task-card-switch"><input type="checkbox" aria-label="Concluir ${escapeHTML(task.name)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><span class="switch-track" aria-hidden="true"></span></span><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${escapeHTML(task.name)}</span><span class="task-priority ${priorityClass}">${task.priority}</span></span></button></div><div class="task-info">${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
   }).join('')}</div></section>`;
  }).join(''):'<div class="empty">Nenhuma tarefa por aqui. Adicione seu primeiro planejamento!</div>';
 }
@@ -2195,11 +2287,44 @@ function renderReports(){
  $('reportTable').innerHTML=rows.map(r=>{const i=Number(r.key.slice(5))-1,prev=i>0?allMonths[i-1]:0,pct=prev?((r.total-prev)/prev*100):null;return `<tr><td><strong>${r.label}</strong></td><td class="positive">${money(r.paid)}</td><td class="negative">${money(r.open)}</td><td>${pct===null?'—':`<span class="${pct>0?'negative':'positive'}">${pct>0?'+':''}${pct.toFixed(1).replace('.',',')}%</span>`}</td></tr>`}).join('');
 }
 function renderAll(){renderAccounts();renderLoans();renderTasks();renderDashboard();renderCalendar();renderReports();drawChart()}
+const titleCaseExceptions=new Set(['de','da','do','para','por','pra','no','na','em']);
+const titleCaseSelector='h1,h2,h3,h4,label,button,th,option,.panel-head a,.text-link,.metric small';
+function titleCasePt(value){
+ return value.replace(/\b[\p{L}][\p{L}'-]*/gu,(word,index)=>{
+  const lower=word.toLocaleLowerCase('pt-BR');
+  if(index>0&&titleCaseExceptions.has(lower))return lower;
+  if(word.length>1&&word===word.toLocaleUpperCase('pt-BR'))return word;
+  return word.charAt(0).toLocaleUpperCase('pt-BR')+word.slice(1).toLocaleLowerCase('pt-BR');
+ });
+}
+function formatTitleElement(element){
+ const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);
+ const textNodes=[];
+ while(walker.nextNode())textNodes.push(walker.currentNode);
+ textNodes.forEach(node=>{
+  const formatted=titleCasePt(node.nodeValue);
+  if(formatted!==node.nodeValue)node.nodeValue=formatted;
+ });
+}
+function formatAppTitles(root=document){
+ const elements=root.matches?.(titleCaseSelector)?[root]:[];
+ elements.push(...root.querySelectorAll(titleCaseSelector));
+ elements.forEach(formatTitleElement);
+}
 function initializeApp(){
  $('greeting').textContent='Olá! 👋';
  updateReportYears();$('reportYear').addEventListener('change',renderReports);
 }
 initializeApp();
+formatAppTitles();
+new MutationObserver(mutations=>mutations.forEach(mutation=>{
+ if(mutation.type==='characterData'){
+  const element=mutation.target.parentElement?.closest(titleCaseSelector);
+  if(element)formatTitleElement(element);
+ }else mutation.addedNodes.forEach(node=>{
+  if(node.nodeType===Node.ELEMENT_NODE)formatAppTitles(node);
+ });
+})).observe(document.body,{childList:true,subtree:true,characterData:true});
 window.addEventListener('resize',()=>drawChart());
 </script>
 </body>
