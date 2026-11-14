@@ -209,7 +209,7 @@ tbody tr:last-child td{border-bottom:0}
 .task-priority.neutral{background:#edf1f4;color:#657184}
 .task-card.done .task-title-row{background:var(--green-soft);border-radius:10px;padding:2px}
 .task-card.done .task-title-button{background:transparent;color:#7d8794;text-decoration:line-through}
-.task-info small{display:block;color:var(--muted);font-size:10px;margin:6px 0 0 64px;line-height:1.45}
+.task-info small{display:block;color:var(--muted);font-size:10px;margin:6px 0 0 12px;line-height:1.45}
 .task-card.done strong{text-decoration:line-through;color:#9aa3af}
 .task-description{margin:7px 0 0;color:#586579;font-size:11px;line-height:1.5;white-space:pre-wrap}
 .task-subtasks{display:grid;gap:5px;margin-top:9px}
@@ -2195,7 +2195,7 @@ function renderTasks(){
    const subtasks=task.subtasks.length?`<div class="task-subtasks">${task.subtasks.map(subtask=>`<label class="task-subtask ${subtask.done?'done':''}"><span class="switch-control task-subtask-switch"><input type="checkbox" ${subtask.done?'checked':''} onchange="toggleSubtask('${task.id}','${subtask.id}')"><span class="switch-track" aria-hidden="true"></span></span><span>${escapeHTML(subtask.name)}</span></label>`).join('')}</div>`:'';
    const priorityClass=task.priority==='URGENTE'?'urgent':task.priority==='OBRIGATÓRIO'?'mandatory':'neutral';
    const titleClick=task.loanInstallmentId?`openLoanInstallmentModal('${task.loanInstallmentId}')`:`openTaskModal('${task.id}')`;
-   return `<article class="task-card ${task.done?'done':''}"><div class="task-title-row"><span class="switch-control task-card-switch"><input type="checkbox" aria-label="Concluir ${escapeHTML(task.name)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><span class="switch-track" aria-hidden="true"></span></span><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${escapeHTML(task.name)}</span><span class="task-priority ${priorityClass}">${task.priority}</span></span></button></div><div class="task-info">${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
+   return `<article class="task-card ${task.done?'done':''}"><div class="task-title-row"><label class="switch-control task-card-switch"><input type="checkbox" aria-label="Concluir ${escapeHTML(task.name)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><span class="switch-track" aria-hidden="true"></span></label><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${escapeHTML(task.name)}</span><span class="task-priority ${priorityClass}">${task.priority}</span></span></button></div><div class="task-info">${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
   }).join('')}</div></section>`;
  }).join(''):'<div class="empty">Nenhuma tarefa por aqui. Adicione seu primeiro planejamento!</div>';
 }
@@ -2222,8 +2222,8 @@ function renderDashboard(){
  $('dash-total').textContent=money(total);$('dash-paid').textContent=money(paid.reduce((s,a)=>s+a.value,0));$('dash-open').textContent=money(open.reduce((s,a)=>s+a.value,0));
  $('dash-paid-count').textContent=`${paid.length} ${paid.length===1?'conta Paga':'Contas Pagas'}`;$('dash-open-count').textContent=`${open.length} ${open.length===1?'Conta Pendente':'Contas Pendentes'}`;$('dash-due').textContent=due.length;
  const priorityOrder={'URGENTE':0,'OBRIGATÓRIO':1};
- const upcoming=getTaskItems().filter(task=>!task.done&&priorityOrder[task.priority]!==undefined)
-  .sort((a,b)=>priorityOrder[a.priority]-priorityOrder[b.priority]||(a.date||'9999').localeCompare(b.date||'9999')).slice(0,4);
+ const upcoming=getTaskItems().filter(task=>task.month===month&&!task.done&&priorityOrder[task.priority]!==undefined)
+  .sort((a,b)=>priorityOrder[a.priority]-priorityOrder[b.priority]||(a.date||'9999').localeCompare(b.date||'9999'));
  $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(task=>`<div class="task-row"><span class="task-name">${escapeHTML(task.name)}</span><span class="task-priority ${task.priority==='URGENTE'?'urgent':'mandatory'}">${task.priority}</span><span class="date-pill">${task.date?fmtDate(task.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa urgente ou obrigatória pendente.</div>';
  const cats=['Fixa','Variável','Sazonal','Assinatura'];$('categorySummary').innerHTML=cats.map(c=>{const v=current.filter(a=>a.category===c).reduce((s,a)=>s+a.value,0),p=total?v/total*100:0;return `<div class="category-row"><span class="category-name">${c==='Fixa'?'Contas fixas':c==='Variável'?'Variáveis':c==='Sazonal'?'Sazonais':'Assinaturas'}</span><div class="bar"><span style="width:${p}%"></span></div><span class="category-value">${money(v)}</span></div>`}).join('');
 }
@@ -2292,7 +2292,7 @@ function renderReports(){
  $('reportTable').innerHTML=rows.map(r=>{const i=Number(r.key.slice(5))-1,prev=i>0?allMonths[i-1]:0,pct=prev?((r.total-prev)/prev*100):null;return `<tr><td><strong>${r.label}</strong></td><td class="positive">${money(r.paid)}</td><td class="negative">${money(r.open)}</td><td>${pct===null?'—':`<span class="${pct>0?'negative':'positive'}">${pct>0?'+':''}${pct.toFixed(1).replace('.',',')}%</span>`}</td></tr>`}).join('');
 }
 function renderAll(){renderAccounts();renderLoans();renderTasks();renderDashboard();renderCalendar();renderReports();drawChart()}
-const titleCaseExceptions=new Set(['de','da','do','para','por','pra','no','na','em']);
+const titleCaseExceptions=new Set(['e','a','o','de','da','do','para','por','pra','no','na','em']);
 const titleCaseSelector='h1,h2,h3,h4,label,button,th,option,.panel-head a,.text-link,.metric small';
 function titleCasePt(value){
  return value.replace(/\b[\p{L}][\p{L}'-]*/gu,(word,index)=>{
