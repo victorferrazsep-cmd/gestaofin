@@ -234,8 +234,13 @@ tbody tr:last-child td{border-bottom:0}
 .calendar-head strong{font-size:15px}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .calendar-grid div{text-align:center;padding:10px 3px;font-size:11px;border-radius:10px;min-height:38px}
 .calendar-grid .weekday{color:#8b96a5;font-weight:700;min-height:25px}
-.calendar-grid .day{background:#f8fafb}.calendar-grid .today{background:var(--green);color:white;font-weight:800}
-.calendar-grid .has-event{position:relative}.calendar-grid .has-event:after{content:"";width:4px;height:4px;background:var(--green);border-radius:50%;position:absolute;bottom:4px;left:calc(50% - 2px)}
+.calendar-grid .day{width:100%;min-height:38px;padding:10px 3px;border:0;border-radius:10px;background:#f8fafb;color:var(--ink);font-size:11px;text-align:center;cursor:pointer}
+.calendar-grid .day:hover,.calendar-grid .day:focus-visible{background:#e8f8f0;outline:2px solid #72d5a3;outline-offset:1px}
+.calendar-grid .today{background:var(--green);color:white;font-weight:800}
+.calendar-grid .today:hover,.calendar-grid .today:focus-visible{background:var(--green-dark)}
+.calendar-grid .calendar-dots{display:flex;justify-content:center;gap:3px;min-height:0;padding:0;line-height:8px}
+.calendar-grid .calendar-dot{display:block;width:5px;height:5px;min-height:0;padding:0;border-radius:50%;background:var(--green)}
+.calendar-grid .calendar-dot.pending{background:var(--red)}
 .report-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:15px}
 .report-card{padding:17px}.report-card small{color:var(--muted);font-size:10px}.report-card strong{display:block;font-size:19px;margin:7px 0}
 #reportComparisonTable{width:100%;min-width:0;table-layout:fixed}
@@ -244,6 +249,7 @@ tbody tr:last-child td{border-bottom:0}
 #reportComparisonTable th:first-child,#reportComparisonTable td:first-child{width:18%}
 #reportComparisonTable th:last-child,#reportComparisonTable td:last-child{width:18%}
 .calendar-event-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.calendar-month-modal-events{display:grid;gap:10px}
 .calendar-event-card{min-width:0}
 .calendar-event-card .panel-head{margin-bottom:8px}
 .calendar-event-card .task-row{gap:7px}
@@ -261,6 +267,7 @@ tbody tr:last-child td{border-bottom:0}
 .field input,.field select,.field textarea{width:100%;border:1px solid #e5e9ee;border-radius:10px;padding:11px;background:#fff;color:var(--ink);outline:none;font-size:12px}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:#72d5a3;box-shadow:0 0 0 3px #08a45b12}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+#taskModal .modal-actions{position:sticky;bottom:-1px;padding-top:12px;background:#fff;z-index:1}
 .delete-account-actions{flex-wrap:wrap}
 .btn.danger:hover{background:#ffe1e6}
 .account-row{cursor:pointer}
@@ -323,6 +330,7 @@ tbody tr:last-child td{border-bottom:0}
 .notify-button.is-enabled:hover{background:var(--green-dark);border-color:var(--green-dark);color:#fff}
 @media(max-width:1050px){.app{grid-template-columns:205px 1fr}.cards{grid-template-columns:repeat(2,1fr)}main{padding:24px 20px}.grid-main{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){
+ input:not([type="checkbox"]):not([type="hidden"]),textarea{font-size:16px!important}
  #appShell.ready{display:block}.app{display:block}.sidebar{display:none}main{padding:calc(20px + env(safe-area-inset-top)) 14px calc(88px + env(safe-area-inset-bottom))}
  .topbar{margin-bottom:18px;align-items:flex-start}.hello{display:grid;grid-template-columns:30px minmax(0,1fr);grid-template-rows:auto auto;column-gap:7px;align-items:center}.hello-heading{display:contents}.mobile-header-logo{display:block;grid-column:1;grid-row:1/3;align-self:center;width:30px;height:30px;flex:0 0 30px;border-radius:9px;object-fit:cover}.hello h1{grid-column:2;grid-row:1;font-size:21px}.hello p{grid-column:2;grid-row:2;font-size:11px;margin-left:0}
  .top-actions{gap:7px;flex-wrap:wrap;justify-content:flex-end}.user-email{display:none}.avatar{width:34px;height:34px;min-width:34px;min-height:34px;flex-basis:34px}.profile-trigger{width:34px;height:34px;min-width:34px;flex-basis:34px}.avatar img{width:34px;height:34px}
@@ -506,6 +514,16 @@ tbody tr:last-child td{border-bottom:0}
         <div class="panel calendar-event-card"><div class="panel-head"><h2>Contas do mês</h2></div><div id="calendarAccountEvents"></div></div>
       </div>
     </section>
+<div class="modal-backdrop" id="calendarMonthModal">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="calendarMonthModalTitle">
+  <div class="modal-head"><h2 id="calendarMonthModalTitle">Compromissos do mês</h2><button class="close" id="closeCalendarMonthModal" type="button" aria-label="Fechar">×</button></div>
+  <p id="calendarMonthModalDescription"></p>
+  <div class="calendar-month-modal-events">
+   <div class="panel calendar-event-card"><div class="panel-head"><h2>Tarefas do mês</h2></div><div id="calendarMonthTaskEvents"></div></div>
+   <div class="panel calendar-event-card"><div class="panel-head"><h2>Contas do mês</h2></div><div id="calendarMonthAccountEvents"></div></div>
+  </div>
+ </section>
+</div>
 
     <section class="page" id="page-emprestimos">
       <div class="section-toolbar"><h2>Controle de Empréstimos</h2><div class="toolbar-actions"><button class="btn" type="button" onclick="openLoanModal()">+ Contrato</button></div></div>
@@ -628,6 +646,7 @@ tbody tr:last-child td{border-bottom:0}
      <div class="task-subtasks-editor" id="taskSubtasksEditor"></div>
      <button class="btn secondary task-subtask-add" id="addTaskSubtask" type="button">＋ Adicionar subtarefa</button>
     </div>
+    <label class="field checkbox-label switch-field full"><span>Mostrar data no título</span><input id="taskShowDateInTitle" type="checkbox"><span class="switch-track" aria-hidden="true"></span></label>
     <div class="field full"><label for="taskDescription">Descrição (opcional)</label><textarea id="taskDescription" rows="3" placeholder="Detalhes para orientar a tarefa..."></textarea></div>
    </div>
    <div class="modal-actions"><button class="btn danger task-modal-delete" id="deleteTaskButton" type="button" hidden>Excluir tarefa</button><button type="button" class="btn outline" onclick="closeModal('taskModal')">Cancelar</button><button class="btn" type="submit">Salvar Tarefa</button></div>
@@ -639,6 +658,18 @@ tbody tr:last-child td{border-bottom:0}
   <div class="modal-head"><h2 id="taskDiscardTitle">Descartar tarefa?</h2></div>
   <p id="taskDiscardDescription">As alterações que você digitou ainda não foram salvas. Deseja descartá-las?</p>
   <div class="modal-actions"><button class="btn outline" id="continueTaskEditing" type="button">Continuar editando</button><button class="btn danger" id="confirmTaskDiscard" type="button">Descartar tarefa</button></div>
+ </section>
+</div>
+<div class="modal-backdrop" id="deleteTaskModal">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteTaskModalTitle" aria-describedby="deleteTaskModalDescription">
+  <div class="modal-head"><h2 id="deleteTaskModalTitle">Excluir Tarefa</h2><button class="close" id="closeDeleteTaskModal" type="button" aria-label="Fechar">×</button></div>
+  <p id="deleteTaskModalDescription">Deseja excluir esta tarefa?</p>
+  <div class="modal-actions delete-account-actions">
+   <button class="btn outline" id="cancelDeleteTask" type="button">Cancelar</button>
+   <button class="btn danger" id="deleteSingleTask" type="button">Só Esta Tarefa</button>
+   <button class="btn danger" id="deleteRecurringFromTask" type="button">Desta tarefa em diante</button>
+   <button class="btn danger" id="deleteRecurringTasks" type="button">Toda a Recorrência</button>
+  </div>
  </section>
 </div>
 <div class="modal-backdrop" id="deleteAccountModal">
@@ -1078,7 +1109,7 @@ $('authForm').addEventListener('submit',async e=>{
  finally{$('authSubmit').disabled=false}
 });
 function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||'',recurrenceId:row.recurrence_id||null}}
-function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||row.task_date?.slice(0,7)||'',notify:Boolean(row.notify),priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(row.priority)?row.priority:'NEUTRO',description:row.description||row.notes||'',notes:row.notes||'',done:Boolean(row.done),subtasks:Array.isArray(row.subtasks)?row.subtasks.filter(item=>item&&typeof item.name==='string').map(item=>({id:typeof item.id==='string'?item.id:crypto.randomUUID(),name:item.name,done:Boolean(item.done)})):[]}}
+function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||row.task_date?.slice(0,7)||'',notify:Boolean(row.notify),showDateInTitle:Boolean(row.show_date_in_title),recurrenceId:row.recurrence_id||null,priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(row.priority)?row.priority:'NEUTRO',description:row.description||row.notes||'',notes:row.notes||'',done:Boolean(row.done),subtasks:Array.isArray(row.subtasks)?row.subtasks.filter(item=>item&&typeof item.name==='string').map(item=>({id:typeof item.id==='string'?item.id:crypto.randomUUID(),name:item.name,done:Boolean(item.done)})):[]}}
 function toLoan(row){return {id:row.id,loanId:row.loan_id,userId:row.user_id,name:row.name,contractTotal:Number(row.contract_total),installmentCount:Number(row.installment_count),installmentNumber:Number(row.installment_number),installmentValue:Number(row.installment_value),referenceMonth:row.reference_month,dueDate:row.due_date,paymentDate:row.payment_date||'',paymentValue:Number(row.payment_value||0)}}
 function setUserDisplay(user){
  const displayName=user.user_metadata?.display_name?.trim()||'';
@@ -1200,7 +1231,7 @@ async function importLegacyData(){
   localStorage.setItem(`mc_migrated_accounts_${currentUser.id}`,'true');
   if(pendingTasks.length){
    const {error}=await db.from('tasks').insert(pendingTasks.map(t=>({
-    name:t.name,task_date:t.date||null,month:t.month||t.date?.slice(0,7)||null,notify:Boolean(t.notify),priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(t.priority)?t.priority:'NEUTRO',description:t.description||t.notes||null,done:Boolean(t.done),
+    name:t.name,task_date:t.date||null,month:t.month||t.date?.slice(0,7)||null,notify:Boolean(t.notify),show_date_in_title:Boolean(t.showDateInTitle),recurrence_id:t.recurrenceId||null,priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(t.priority)?t.priority:'NEUTRO',description:t.description||t.notes||null,done:Boolean(t.done),
     ...(Array.isArray(t.subtasks)?{subtasks:t.subtasks}:{})
    })));
    if(error)throw error;
@@ -1344,10 +1375,10 @@ function openTaskModal(id=null){
  $('taskForm').reset();$('taskId').value='';$('taskDate').value=todayISO();$('taskEndMonth').value=monthISO();$('taskEndDate').value=todayISO();$('taskWeekday').value=String(parseDate(todayISO()).getDay());$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';setTaskReminderEnabled(true);
  $('deleteTaskButton').hidden=!id;
  $('taskRecurringField').hidden=Boolean(id);$('taskRecurring').checked=false;$('taskRecurrenceType').value='monthly';$('taskRecurringFields').hidden=true;$('taskRecurringHint').hidden=true;$('taskEndMonth').required=false;$('taskEndDate').required=false;updateTaskRecurringFields();
- $('taskHasSubtasks').checked=false;$('taskSubtasksField').hidden=true;renderTaskSubtaskInputs([]);
+ $('taskHasSubtasks').checked=false;$('taskSubtasksField').hidden=true;$('taskShowDateInTitle').checked=false;renderTaskSubtaskInputs([]);
  if(id){
   const task=tasks.find(item=>item.id===id);if(!task)return;
-  $('taskId').value=task.id;$('taskName').value=task.name;$('taskPriority').value=task.priority;$('taskDate').value=task.date||`${task.month||monthISO()}-01`;$('taskEndMonth').value=task.month||monthISO();$('taskDescription').value=task.description;setTaskReminderEnabled(task.notify);
+  $('taskId').value=task.id;$('taskName').value=sentenceCase(task.name);$('taskPriority').value=task.priority;$('taskDate').value=task.date||`${task.month||monthISO()}-01`;$('taskEndMonth').value=task.month||monthISO();$('taskDescription').value=task.description;$('taskShowDateInTitle').checked=task.showDateInTitle;setTaskReminderEnabled(task.notify);
   $('taskHasSubtasks').checked=task.subtasks.length>0;$('taskSubtasksField').hidden=!task.subtasks.length;renderTaskSubtaskInputs(task.subtasks);
  }
  captureModalFormState('taskModal');
@@ -1375,7 +1406,7 @@ function renderTaskSubtaskInputs(subtasks){
 function readTaskSubtasks(){
  const task=tasks.find(item=>item.id===$('taskId').value);
  return [...$('taskSubtasksEditor').querySelectorAll('[data-task-subtask-name]')].map(input=>{
-  const name=input.value.trim(),id=input.dataset.taskSubtaskId||crypto.randomUUID(),previous=task?.subtasks.find(subtask=>subtask.id===id);
+  const name=sentenceCase(input.value),id=input.dataset.taskSubtaskId||crypto.randomUUID(),previous=task?.subtasks.find(subtask=>subtask.id===id);
   return name?{id,name,done:previous?.done||false}:null;
  }).filter(Boolean);
 }
@@ -1831,7 +1862,7 @@ $('accountForm').addEventListener('submit',async e=>{
 });
 $('taskForm').addEventListener('submit',async e=>{
  e.preventDefault();
- const id=$('taskId').value,date=$('taskDate').value,month=date.slice(0,7),recurring=!id&&$('taskRecurring').checked,weekly=$('taskRecurrenceType').value==='weekly',notify=$('taskReminderToggle').getAttribute('aria-pressed')==='true';
+ const id=$('taskId').value,date=$('taskDate').value,month=date.slice(0,7),recurring=!id&&$('taskRecurring').checked,weekly=$('taskRecurrenceType').value==='weekly',notify=$('taskReminderToggle').getAttribute('aria-pressed')==='true',showDateInTitle=$('taskShowDateInTitle').checked,recurrenceId=recurring?crypto.randomUUID():null,taskName=sentenceCase($('taskName').value);
  const subtasks=$('taskHasSubtasks').checked?readTaskSubtasks():[];
  if($('taskHasSubtasks').checked&&!subtasks.length){toast('Adicione ao menos uma subtarefa ou desmarque essa opção.');return}
  try{
@@ -1840,12 +1871,12 @@ $('taskForm').addEventListener('submit',async e=>{
   if(id){
    const task=tasks.find(item=>item.id===id);if(!task)return;
    const {error}=await db.from('tasks').update({
-    name:$('taskName').value.trim(),task_date:date,month,notify,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,subtasks,done:subtasks.length?subtasks.every(subtask=>subtask.done):task.done
+    name:taskName,task_date:date,month,notify,show_date_in_title:showDateInTitle,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,subtasks,done:subtasks.length?subtasks.every(subtask=>subtask.done):task.done
    }).eq('id',id);
    if(error)throw error;
   }else{
    const payload=occurrences.map(occurrence=>({
-    name:$('taskName').value.trim(),task_date:occurrence.date,month:occurrence.month,notify,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,done:false,
+    name:taskName,task_date:occurrence.date,month:occurrence.month,notify,show_date_in_title:showDateInTitle,recurrence_id:recurrenceId,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,done:false,
     subtasks:subtasks.map(subtask=>({...subtask,id:crypto.randomUUID()}))
    }));
    const {error}=await db.from('tasks').insert(payload);
@@ -1977,19 +2008,61 @@ $('deleteRecurringFromAccount').addEventListener('click',()=>void deletePendingA
 $('deleteRecurringAccounts').addEventListener('click',()=>void deletePendingAccount('all'));
 $('cancelDeleteAccount').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
 $('closeDeleteAccountModal').addEventListener('click',()=>{closeModal('deleteAccountModal');pendingDeleteAccountId=null});
-async function deleteTask(id){
- if(!confirm('Excluir esta tarefa?'))return false;
+let pendingDeleteTaskId=null;
+function getTaskRecurrenceGroup(task){
+ if(task.recurrenceId)return tasks.filter(item=>item.recurrenceId===task.recurrenceId);
+ const signature=item=>[
+  item.name.trim().toLocaleLowerCase('pt-BR'),item.priority,item.description.trim(),
+  item.notify,item.showDateInTitle
+ ].join('|');
+ const matching=tasks.filter(item=>!item.recurrenceId&&signature(item)===signature(task)&&item.date).sort((a,b)=>a.date.localeCompare(b.date));
+ return matching.length>1?matching:[task];
+}
+function openDeleteTaskModal(id){
+ const task=tasks.find(item=>item.id===id);if(!task)return;
+ pendingDeleteTaskId=id;
+ const recurrenceGroup=getTaskRecurrenceGroup(task),hasMultipleRecurringTasks=recurrenceGroup.length>1;
+ $('deleteTaskModalDescription').textContent=hasMultipleRecurringTasks
+  ?`“${task.name}” faz parte de uma sequência com ${recurrenceGroup.length} tarefas. Escolha o que deseja excluir.`
+  :'Deseja excluir esta tarefa?';
+ $('deleteSingleTask').hidden=false;
+ $('deleteRecurringTasks').hidden=!hasMultipleRecurringTasks;
+ $('deleteRecurringFromTask').hidden=!hasMultipleRecurringTasks;
+ closeModal('taskModal',true);
+ $('deleteTaskModal').classList.add('show');
+}
+async function deleteTask(id,deleteScope='single'){
+ const task=tasks.find(item=>item.id===id);if(!task)return false;
  try{
-  const {error}=await db.from('tasks').delete().eq('id',id);if(error)throw error;
-  await loadData(false);toast('Tarefa excluída.');return true;
+  let query=db.from('tasks').delete();
+  const recurrenceGroup=getTaskRecurrenceGroup(task);
+  if(deleteScope==='single')query=query.eq('id',id);
+  else if(task.recurrenceId){
+   query=query.eq('recurrence_id',task.recurrenceId);
+   if(deleteScope==='from')query=query.gte('task_date',task.date);
+  }else{
+   const tasksToDelete=deleteScope==='from'?recurrenceGroup.filter(item=>item.date>=task.date):recurrenceGroup;
+   query=query.in('id',tasksToDelete.map(item=>item.id));
+  }
+  const {error}=await query;if(error)throw error;
+  closeModal('deleteTaskModal',true);pendingDeleteTaskId=null;
+  await loadData(false);toast(deleteScope==='all'?'Toda a recorrência foi excluída.':deleteScope==='from'?'Esta tarefa e as próximas da recorrência foram excluídas.':'Tarefa excluída.');return true;
  }catch(error){reportError('Não foi possível excluir a tarefa',error);return false}
 }
-$('deleteTaskButton').addEventListener('click',async()=>{
- const id=$('taskId').value;if(!id)return;
- const button=$('deleteTaskButton');button.disabled=true;
- try{if(await deleteTask(id))closeModal('taskModal',true)}
- finally{button.disabled=false}
-});
+async function deletePendingTask(deleteScope){
+ if(!pendingDeleteTaskId)return;
+ const id=pendingDeleteTaskId;
+ const buttons=[$('deleteSingleTask'),$('deleteRecurringFromTask'),$('deleteRecurringTasks')];
+ buttons.forEach(button=>button.disabled=true);
+ try{await deleteTask(id,deleteScope)}
+ finally{buttons.forEach(button=>button.disabled=false)}
+}
+$('deleteTaskButton').addEventListener('click',()=>openDeleteTaskModal($('taskId').value));
+$('deleteSingleTask').addEventListener('click',()=>void deletePendingTask('single'));
+$('deleteRecurringFromTask').addEventListener('click',()=>void deletePendingTask('from'));
+$('deleteRecurringTasks').addEventListener('click',()=>void deletePendingTask('all'));
+$('cancelDeleteTask').addEventListener('click',()=>{closeModal('deleteTaskModal');pendingDeleteTaskId=null});
+$('closeDeleteTaskModal').addEventListener('click',()=>{closeModal('deleteTaskModal');pendingDeleteTaskId=null});
 $('accountFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;accountDashboardFilter=null;accountFilter=b.dataset.filter;$('accountFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderAccounts()});
 $('accountNameFilter').addEventListener('change',e=>{accountDashboardFilter=null;accountNameFilter=e.currentTarget.value;e.currentTarget.classList.toggle('is-placeholder',!accountNameFilter);renderAccounts()});
 $('clearAccountDashboardFilter').addEventListener('click',()=>{
@@ -2167,6 +2240,12 @@ function renderTaskMonthOptions(){
  }).join('');
  $('taskMonthMenu').innerHTML=`<button type="button" class="all-months" data-task-month-value="next6" aria-pressed="${taskMonthFilter==='next6'}">Mês atual + 5</button><button type="button" class="all-months" data-task-month-value="all" aria-pressed="${taskMonthFilter==='all'}">Todos os meses</button>${yearOptions}`;
 }
+function formatTaskTitle(task){
+ const name=sentenceCase(task.name);
+ if(!task.showDateInTitle||!task.date)return name;
+ const date=parseDate(task.date);
+ return Number.isNaN(date.getTime())?name:`${name} ${date.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`;
+}
 function renderTasks(){
  const allTasks=getTaskItems();
  let list=allTasks.filter(task=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!task.done:task.done));
@@ -2191,11 +2270,11 @@ function renderTasks(){
   const monthTasks=groups.get(month).sort((a,b)=>Number(a.done)-Number(b.done)||priorityOrder[a.priority]-priorityOrder[b.priority]||a.name.localeCompare(b.name,'pt-BR'));
   const isExpanded=expandedTaskMonths.has(month);
   return `<section class="task-month-panel"><button class="task-month-header" type="button" data-task-month="${escapeHTML(month)}" aria-expanded="${isExpanded}"><span>${escapeHTML(title)} - ${completedCount}/${totalCount} Tarefas</span><span aria-hidden="true">${isExpanded?'▾':'▸'}</span></button><div class="task-month-items"${isExpanded?'':' hidden'}>${monthTasks.map(task=>{
-   const details=task.subtasks.length?`${task.subtasks.filter(subtask=>subtask.done).length}/${task.subtasks.length} Subtarefas Concluídas`:'';
-   const subtasks=task.subtasks.length?`<div class="task-subtasks">${task.subtasks.map(subtask=>`<label class="task-subtask ${subtask.done?'done':''}"><span class="switch-control task-subtask-switch"><input type="checkbox" ${subtask.done?'checked':''} onchange="toggleSubtask('${task.id}','${subtask.id}')"><span class="switch-track" aria-hidden="true"></span></span><span>${escapeHTML(subtask.name)}</span></label>`).join('')}</div>`:'';
+   const taskTitle=formatTaskTitle(task),details=task.subtasks.length?`${task.subtasks.filter(subtask=>subtask.done).length}/${task.subtasks.length} Subtarefas Concluídas`:'';
+   const subtasks=task.subtasks.length?`<div class="task-subtasks">${task.subtasks.map(subtask=>`<label class="task-subtask ${subtask.done?'done':''}"><span class="switch-control task-subtask-switch"><input type="checkbox" ${subtask.done?'checked':''} onchange="toggleSubtask('${task.id}','${subtask.id}')"><span class="switch-track" aria-hidden="true"></span></span><span>${escapeHTML(sentenceCase(subtask.name))}</span></label>`).join('')}</div>`:'';
    const priorityClass=task.priority==='URGENTE'?'urgent':task.priority==='OBRIGATÓRIO'?'mandatory':'neutral';
    const titleClick=task.loanInstallmentId?`openLoanInstallmentModal('${task.loanInstallmentId}')`:`openTaskModal('${task.id}')`;
-   return `<article class="task-card ${task.done?'done':''}"><div class="task-title-row"><label class="switch-control task-card-switch"><input type="checkbox" aria-label="Concluir ${escapeHTML(task.name)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><span class="switch-track" aria-hidden="true"></span></label><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${escapeHTML(task.name)}</span><span class="task-priority ${priorityClass}">${task.priority}</span></span></button></div><div class="task-info">${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
+   return `<article class="task-card ${task.done?'done':''}"><div class="task-title-row"><label class="switch-control task-card-switch"><input type="checkbox" aria-label="Concluir ${escapeHTML(taskTitle)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><span class="switch-track" aria-hidden="true"></span></label><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${escapeHTML(taskTitle)}</span><span class="task-priority ${priorityClass}">${task.priority}</span></span></button></div><div class="task-info">${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
   }).join('')}</div></section>`;
  }).join(''):'<div class="empty">Nenhuma tarefa por aqui. Adicione seu primeiro planejamento!</div>';
 }
@@ -2224,7 +2303,7 @@ function renderDashboard(){
  const priorityOrder={'URGENTE':0,'OBRIGATÓRIO':1};
  const upcoming=getTaskItems().filter(task=>task.month===month&&!task.done&&priorityOrder[task.priority]!==undefined)
   .sort((a,b)=>priorityOrder[a.priority]-priorityOrder[b.priority]||(a.date||'9999').localeCompare(b.date||'9999'));
- $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(task=>`<div class="task-row"><span class="task-name">${escapeHTML(task.name)}</span><span class="task-priority ${task.priority==='URGENTE'?'urgent':'mandatory'}">${task.priority}</span><span class="date-pill">${task.date?fmtDate(task.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa urgente ou obrigatória pendente.</div>';
+ $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(task=>`<div class="task-row"><span class="task-name">${escapeHTML(formatTaskTitle(task))}</span><span class="task-priority ${task.priority==='URGENTE'?'urgent':'mandatory'}">${task.priority}</span><span class="date-pill">${task.date?fmtDate(task.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa urgente ou obrigatória pendente.</div>';
  const cats=['Fixa','Variável','Sazonal','Assinatura'];$('categorySummary').innerHTML=cats.map(c=>{const v=current.filter(a=>a.category===c).reduce((s,a)=>s+a.value,0),p=total?v/total*100:0;return `<div class="category-row"><span class="category-name">${c==='Fixa'?'Contas fixas':c==='Variável'?'Variáveis':c==='Sazonal'?'Sazonais':'Assinaturas'}</span><div class="bar"><span style="width:${p}%"></span></div><span class="category-value">${money(v)}</span></div>`}).join('');
 }
 function renderDashboardAccountOptions(){
@@ -2269,19 +2348,41 @@ function renderCalendar(){
  $('calendarTitle').textContent=calendarDate.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
  const cells=['D','S','T','Q','Q','S','S'].map(x=>`<div class="weekday">${x}</div>`);for(let i=0;i<first;i++)cells.push('<div></div>');
  const monthKey=`${y}-${String(m+1).padStart(2,'0')}`,taskItems=getTaskItems();
- for(let d=1;d<=days;d++){const iso=`${monthKey}-${String(d).padStart(2,'0')}`,isToday=iso===todayISO(),has=taskItems.some(task=>task.date===iso||task.month===monthKey)||accounts.some(a=>a.due===d&&a.month===monthKey);cells.push(`<div class="day ${isToday?'today':''} ${has?'has-event':''}">${d}</div>`)}
+ for(let d=1;d<=days;d++){const iso=`${monthKey}-${String(d).padStart(2,'0')}`,isToday=iso===todayISO(),pendingTasks=taskItems.filter(task=>task.date===iso&&!task.done).length,completedTasks=taskItems.filter(task=>task.date===iso&&task.done).length,pendingAccounts=accounts.filter(account=>account.month===monthKey&&Number(account.due)===d&&account.status!=='Pago').length,paidAccounts=accounts.filter(account=>account.month===monthKey&&Number(account.due)===d&&account.status==='Pago').length,pendingCount=pendingTasks+pendingAccounts,totalCount=pendingCount+completedTasks+paidAccounts,dots=Math.min(totalCount,3),pendingDots=Math.min(pendingCount,dots),completedDots=dots-pendingDots,dotMarkup=`${'<span class="calendar-dot pending"></span>'.repeat(pendingDots)}${'<span class="calendar-dot"></span>'.repeat(completedDots)}`;cells.push(`<button class="day ${isToday?'today':''}" type="button" data-calendar-date="${iso}" aria-label="Ver ${totalCount} compromisso${totalCount===1?'':'s'} de ${fmtDate(iso)}">${d}${dots?`<span class="calendar-dots" aria-hidden="true">${dotMarkup}</span>`:''}</button>`)}
  $('calendarGrid').innerHTML=cells.join('');
  const taskEvents=taskItems.filter(task=>task.month===monthKey)
-  .map(task=>({sortDate:task.date||`${monthKey}-01`,dateLabel:task.date?task.date.slice(8,10):'Mês',name:task.name,done:task.done}))
+  .map(task=>({sortDate:task.date||`${monthKey}-01`,dateLabel:task.date?task.date.slice(8,10):'Mês',name:formatTaskTitle(task),done:task.done}))
   .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
  const accountEvents=accounts.filter(account=>account.month===monthKey)
   .map(account=>({sortDate:`${monthKey}-${String(account.due).padStart(2,'0')}`,dateLabel:String(account.due).padStart(2,'0'),name:account.name,done:account.status==='Pago'}))
   .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
- const renderCalendarEvents=(items,emptyMessage)=>items.length?items.map(item=>`<div class="task-row"><span class="date-pill">${escapeHTML(item.dateLabel)}</span><span class="task-name">${escapeHTML(item.name)}</span><span class="status ${item.done?'paid':'pending'}">${item.done?'Concluído':'Pendente'}</span></div>`).join(''):`<div class="empty">${emptyMessage}</div>`;
  $('calendarTaskEvents').innerHTML=renderCalendarEvents(taskEvents,'Nenhuma tarefa cadastrada para este mês.');
  $('calendarAccountEvents').innerHTML=renderCalendarEvents(accountEvents,'Nenhuma conta cadastrada para este mês.');
 }
+function renderCalendarEvents(items,emptyMessage){
+ return items.length?items.map(item=>`<div class="task-row"><span class="date-pill">${escapeHTML(item.dateLabel)}</span><span class="task-name">${escapeHTML(item.name)}</span><span class="status ${item.done?'paid':'pending'}">${item.done?'Concluído':'Pendente'}</span></div>`).join(''):`<div class="empty">${emptyMessage}</div>`;
+}
+function openCalendarMonthModal(selectedDate){
+ const monthKey=selectedDate.slice(0,7),taskItems=getTaskItems();
+ const selectedDay=Number(selectedDate.slice(8,10));
+ const taskEvents=taskItems.filter(task=>task.date===selectedDate)
+  .map(task=>({sortDate:task.date,dateLabel:task.date.slice(8,10),name:formatTaskTitle(task),done:task.done}))
+  .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
+ const accountEvents=accounts.filter(account=>account.month===monthKey&&Number(account.due)===selectedDay)
+  .map(account=>({sortDate:`${monthKey}-${String(account.due).padStart(2,'0')}`,dateLabel:String(account.due).padStart(2,'0'),name:account.name,done:account.status==='Pago'}))
+  .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
+ $('calendarMonthModalTitle').textContent=`Compromissos de ${fmtDate(selectedDate)}`;
+ $('calendarMonthModalDescription').textContent='Confira as tarefas e contas previstas para este dia.';
+ $('calendarMonthTaskEvents').innerHTML=renderCalendarEvents(taskEvents,'Nenhuma tarefa cadastrada para este dia.');
+ $('calendarMonthAccountEvents').innerHTML=renderCalendarEvents(accountEvents,'Nenhuma conta cadastrada para este dia.');
+ $('calendarMonthModal').classList.add('show');
+}
 function changeMonth(n){calendarDate.setMonth(calendarDate.getMonth()+n);renderCalendar()}
+$('calendarGrid').addEventListener('click',event=>{
+ const day=event.target.closest('[data-calendar-date]');
+ if(day)openCalendarMonthModal(day.dataset.calendarDate);
+});
+$('closeCalendarMonthModal').addEventListener('click',()=>closeModal('calendarMonthModal',true));
 function renderReports(){
  const year=Number($('reportYear').value||new Date().getFullYear()),now=new Date(),month=now.getMonth();
  let indexes=Array.from({length:12},(_,i)=>i),label='Ano';
@@ -2293,7 +2394,13 @@ function renderReports(){
 }
 function renderAll(){renderAccounts();renderLoans();renderTasks();renderDashboard();renderCalendar();renderReports();drawChart()}
 const titleCaseExceptions=new Set(['e','a','o','de','da','do','para','por','pra','no','na','em']);
-const titleCaseSelector='h1,h2,h3,h4,label,button,th,option,.panel-head a,.text-link,.metric small';
+const titleCaseSelector='h1,h2,h3,h4,label:not(.task-subtask),button,th,option,.panel-head a,.text-link,.metric small';
+function sentenceCase(value){
+ const text=String(value??'').trim(),firstWordMatch=/^\S+/.exec(text);
+ if(!firstWordMatch)return text;
+ const firstWord=[...firstWordMatch[0].toLocaleLowerCase('pt-BR')],firstLetter=firstWord.shift();
+ return firstLetter.toLocaleUpperCase('pt-BR')+firstWord.join('')+text.slice(firstWordMatch[0].length);
+}
 function titleCasePt(value){
  return value.replace(/\b[\p{L}][\p{L}'-]*/gu,(word,index)=>{
   const lower=word.toLocaleLowerCase('pt-BR');
