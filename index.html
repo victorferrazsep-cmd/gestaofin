@@ -151,6 +151,12 @@ main{padding:28px 30px 50px;min-width:0;max-width:1600px;width:100%;margin:auto}
 .section-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .section-toolbar h2{font-size:18px;margin:0}.toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
 .filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.task-legacy-filter-wrap{position:relative;display:flex}
+.task-legacy-filter-wrap[hidden]{display:none!important}
+.task-legacy-filter{border:1px solid var(--line);background:#fff;color:#687589;border-radius:20px;padding:7px 12px;font-size:11px}
+.task-legacy-filter.active{background:var(--red-soft);border-color:#f7cbd2;color:#c84559;font-weight:700}
+.task-legacy-count{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 5px;border:2px solid #fff;border-radius:999px;background:#e53945;color:#fff;font-size:9px;font-weight:800;line-height:14px;text-align:center}
+.task-legacy-count[hidden]{display:none}
 .account-dashboard-filter{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-4px 0 14px;padding:9px 12px;border:1px solid #d6efdf;border-radius:10px;background:#f2fbf6;color:var(--green-dark);font-size:11px}
 .account-dashboard-filter[hidden]{display:none}
 .account-dashboard-filter button{border:0;background:transparent;color:var(--green-dark);font-size:11px;font-weight:700;text-decoration:underline}
@@ -499,7 +505,7 @@ tbody tr:last-child td{border-bottom:0}
 
     <section class="page" id="page-tarefas">
       <div class="section-toolbar"><h2>Minhas Tarefas</h2><div class="toolbar-actions"><button class="btn" onclick="openTaskModal()">＋ Nova Tarefa</button></div></div>
-      <div class="filters" id="taskFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Pendentes">Pendentes</button><button class="filter" data-filter="Concluídas">Concluídas</button><div class="account-month-picker task-month-picker"><button type="button" class="filter" id="taskMonthFilter" aria-label="Filtrar tarefas por mês" aria-expanded="false" aria-controls="taskMonthMenu">6 meses</button><div class="account-month-menu task-month-menu" id="taskMonthMenu" aria-label="Meses das tarefas" hidden></div></div></div>
+      <div class="filters" id="taskFilters"><button class="filter active" data-filter="Todas">Todas</button><button class="filter" data-filter="Pendentes">Pendentes</button><button class="filter" data-filter="Concluídas">Concluídas</button><div class="account-month-picker task-month-picker"><button type="button" class="filter" id="taskMonthFilter" aria-label="Filtrar tarefas por mês" aria-expanded="false" aria-controls="taskMonthMenu">6M</button><div class="account-month-menu task-month-menu" id="taskMonthMenu" aria-label="Meses das tarefas" hidden></div></div>      <div class="task-legacy-filter-wrap" id="taskLegacyFilterWrap"><button type="button" class="task-legacy-filter" id="taskLegacyFilter" aria-pressed="false">Legado</button><span class="task-legacy-count" id="taskLegacyCount" hidden>0</span></div></div>
       <div class="panel" id="tasksList"></div>
     </section>
 
@@ -2126,6 +2132,14 @@ $('taskMonthMenu').addEventListener('click',event=>{
  $('taskMonthMenu').hidden=true;$('taskMonthFilter').setAttribute('aria-expanded','false');
  renderTaskMonthOptions();renderTasks();
 });
+$('taskLegacyFilter').addEventListener('click',()=>{
+ taskMonthFilter=taskMonthFilter==='legacy'?'next6':'legacy';
+ expandedTaskMonths.clear();
+ if(taskMonthFilter==='legacy')expandedTaskMonthYear=null;
+ else expandedTaskMonths.add(monthISO());
+ $('taskMonthMenu').hidden=true;$('taskMonthFilter').setAttribute('aria-expanded','false');
+ renderTaskMonthOptions();renderTasks();
+});
 $('taskFilters').addEventListener('click',e=>{
  const button=e.target.closest('button[data-filter]');if(!button)return;
  taskFilter=button.dataset.filter;
@@ -2223,11 +2237,25 @@ function formatTaskMonthLabel(month){
  const name=new Date(year,monthNumber-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace(/\./g,'').toLocaleUpperCase('pt-BR');
  return `${name} ${year}`;
 }
+function getOverduePendingTaskCount(){
+ const currentMonth=monthISO();
+ return getTaskItems().filter(task=>!task.done&&task.month&&task.month<currentMonth).length;
+}
+function renderTaskLegacyFilter(){
+ const count=getOverduePendingTaskCount();
+ const badge=$('taskLegacyCount'),button=$('taskLegacyFilter');
+ if(count===0&&taskMonthFilter==='legacy')taskMonthFilter='next6';
+ $('taskLegacyFilterWrap').hidden=count===0;
+ badge.textContent=String(count);
+ badge.hidden=count===0;
+ button.classList.toggle('active',taskMonthFilter==='legacy');
+ button.setAttribute('aria-pressed',String(taskMonthFilter==='legacy'));
+}
 function renderTaskMonthOptions(){
  const validMonths=getTaskItems().map(task=>task.month).filter(month=>/^\d{4}-(0[1-9]|1[0-2])$/.test(month));
  const defaultMonths=getTaskDefaultMonths(),years=new Set([...defaultMonths,...validMonths].map(month=>month.slice(0,4)));
- if(taskMonthFilter!=='next6'&&taskMonthFilter!=='all'&&!/^\d{4}-(0[1-9]|1[0-2])$/.test(taskMonthFilter))taskMonthFilter='next6';
- $('taskMonthFilter').textContent=taskMonthFilter==='next6'?'6 meses':taskMonthFilter==='all'?'Todos os meses':formatTaskMonthLabel(taskMonthFilter);
+ if(taskMonthFilter!=='next6'&&taskMonthFilter!=='all'&&taskMonthFilter!=='legacy'&&!/^\d{4}-(0[1-9]|1[0-2])$/.test(taskMonthFilter))taskMonthFilter='next6';
+ $('taskMonthFilter').textContent=taskMonthFilter==='next6'?'6M':taskMonthFilter==='all'?'Todos os meses':taskMonthFilter==='legacy'?'6M':formatTaskMonthLabel(taskMonthFilter);
  const yearOptions=[...years].sort((a,b)=>Number(b)-Number(a)).map(yearKey=>{
   const year=Number(yearKey),expanded=expandedTaskMonthYear===yearKey;
   const options=Array.from({length:12},(_,index)=>12-index).map(monthNumber=>{
@@ -2238,7 +2266,8 @@ function renderTaskMonthOptions(){
   }).join('');
   return `<div class="month-year-group"><button type="button" class="month-year" data-task-month-year="${yearKey}" aria-expanded="${expanded}">${year}<span aria-hidden="true">${expanded?'▾':'▸'}</span></button>${expanded?`<div class="month-options">${options}</div>`:''}</div>`;
  }).join('');
- $('taskMonthMenu').innerHTML=`<button type="button" class="all-months" data-task-month-value="next6" aria-pressed="${taskMonthFilter==='next6'}">Mês atual + 5</button><button type="button" class="all-months" data-task-month-value="all" aria-pressed="${taskMonthFilter==='all'}">Todos os meses</button>${yearOptions}`;
+ $('taskMonthMenu').innerHTML=`<button type="button" class="all-months" data-task-month-value="next6" aria-pressed="${taskMonthFilter==='next6'}">6M</button><button type="button" class="all-months" data-task-month-value="all" aria-pressed="${taskMonthFilter==='all'}">Todos os meses</button>${yearOptions}`;
+ renderTaskLegacyFilter();
 }
 function formatTaskTitle(task){
  const name=sentenceCase(task.name);
@@ -2250,7 +2279,13 @@ function renderTasks(){
  const allTasks=getTaskItems();
  let list=allTasks.filter(task=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!task.done:task.done));
  const defaultMonths=getTaskDefaultMonths();
- if(taskMonthFilter==='next6')list=list.filter(task=>defaultMonths.includes(task.month));
+ const currentMonth=monthISO();
+ if(taskMonthFilter==='next6'){
+  list=list.filter(task=>defaultMonths.includes(task.month));
+ }
+ else if(taskMonthFilter==='legacy'){
+  list=list.filter(task=>!task.done&&task.month&&task.month<currentMonth);
+ }
  else if(taskMonthFilter!=='all')list=list.filter(task=>task.month===taskMonthFilter);
  const groups=new Map();
  list.forEach(task=>{
@@ -2259,7 +2294,7 @@ function renderTasks(){
   groups.get(month).push(task);
  });
  const displayedMonths=taskFilter==='Todas'
-  ?taskMonthFilter==='next6'?defaultMonths:taskMonthFilter==='all'?[...new Set([...groups.keys(),...allTasks.map(task=>task.month).filter(month=>/^\d{4}-(0[1-9]|1[0-2])$/.test(month))])]:[taskMonthFilter]
+  ?taskMonthFilter==='next6'?defaultMonths:taskMonthFilter==='legacy'?[...groups.keys()].sort((a,b)=>a.localeCompare(b)):taskMonthFilter==='all'?[...new Set([...groups.keys(),...allTasks.map(task=>task.month).filter(month=>/^\d{4}-(0[1-9]|1[0-2])$/.test(month))])]:[taskMonthFilter]
   :[...groups.keys()];
  if(taskMonthFilter==='all'&&groups.has(''))displayedMonths.push('');
  if(taskFilter==='Todas')displayedMonths.forEach(month=>{if(!groups.has(month))groups.set(month,[])});
@@ -2277,6 +2312,7 @@ function renderTasks(){
    return `<article class="task-card ${task.done?'done':''}"><div class="task-title-row"><label class="switch-control task-card-switch"><input type="checkbox" aria-label="Concluir ${escapeHTML(taskTitle)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><span class="switch-track" aria-hidden="true"></span></label><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${escapeHTML(taskTitle)}</span><span class="task-priority ${priorityClass}">${task.priority}</span></span></button></div><div class="task-info">${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
   }).join('')}</div></section>`;
  }).join(''):'<div class="empty">Nenhuma tarefa por aqui. Adicione seu primeiro planejamento!</div>';
+ renderTaskLegacyFilter();
 }
 $('tasksList').addEventListener('click',event=>{
  const monthButton=event.target.closest('[data-task-month]');if(!monthButton)return;
