@@ -209,6 +209,9 @@ tbody tr:last-child td{border-bottom:0}
 .task-title-button:hover,.task-title-button:focus-visible{background:#e9ebee;outline:none}
 .task-title-content{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
 .task-title-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shared-task-title{display:inline-flex;align-items:center;gap:5px;max-width:100%;vertical-align:middle}
+.shared-task-title-icon{flex:none;display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:12px;transform:translateY(-1px)}
+.shared-task-title-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .task-priority{flex:none;padding:3px 7px;border-radius:12px;font-size:9px;font-weight:800;letter-spacing:.25px}
 .task-priority.urgent{background:#fff0f1;color:#d64d63}
 .task-priority.mandatory{background:#fff6e7;color:#a86b0b}
@@ -216,6 +219,7 @@ tbody tr:last-child td{border-bottom:0}
 .task-card.done .task-title-row{background:var(--green-soft);border-radius:10px;padding:2px}
 .task-card.done .task-title-button{background:transparent;color:#7d8794;text-decoration:line-through}
 .task-info small{display:block;color:var(--muted);font-size:10px;margin:6px 0 0 12px;line-height:1.45}
+.task-shared-with{color:var(--green-dark)!important;font-weight:700}
 .task-card.done strong{text-decoration:line-through;color:#9aa3af}
 .task-description{margin:7px 0 0;color:#586579;font-size:11px;line-height:1.5;white-space:pre-wrap}
 .task-subtasks{display:grid;gap:5px;margin-top:9px}
@@ -265,8 +269,31 @@ tbody tr:last-child td{border-bottom:0}
 .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(20,30,42,.35);backdrop-filter:blur(5px);z-index:10;align-items:center;justify-content:center;padding:18px}
 .modal-backdrop.show{display:flex}
 .task-discard-backdrop{z-index:20}
+.task-contact-confirm-backdrop{z-index:25}
 .modal{background:#fff;width:min(500px,100%);border-radius:20px;padding:22px;box-shadow:0 20px 60px #17243a33;max-height:90vh;overflow:auto}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}.modal-head h2{font-size:17px;margin:0}.modal-head-actions{display:flex;align-items:center;gap:8px}
+.task-participant-wrap{position:relative}
+.task-participant-button{position:relative;display:grid;place-items:center;width:34px;height:34px;padding:0;border:1px solid #e5e9ee;border-radius:10px;background:#fff;color:#657184;font-size:17px}
+.task-participant-person{line-height:1}
+.task-participant-plus{position:absolute;top:3px;right:3px;font-size:12px;font-weight:700;line-height:1}
+.task-participant-button[aria-pressed="true"]{border-color:#bfe8d0;background:#effaf3;color:#07834a}
+.task-participant-popover{position:absolute;top:calc(100% + 9px);right:0;z-index:12;width:min(300px,calc(100vw - 54px));padding:13px;border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:0 12px 30px #17203324}
+.task-participant-popover[hidden]{display:none}
+.task-participant-popover label{display:block;margin-bottom:8px;color:#566276;font-size:11px;font-weight:700}
+.task-participant-popover input{width:100%;border:1px solid #e5e9ee;border-radius:9px;padding:10px;background:#fff;color:var(--ink);font-size:12px}
+.task-participant-popover input:focus{border-color:#72d5a3;outline:none;box-shadow:0 0 0 3px #08a45b12}
+.task-participant-selected{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding:8px 9px;border:1px solid #d9f0e2;border-radius:9px;background:#f2fbf6}
+.task-participant-selected[hidden]{display:none}
+.task-participant-selected-name{min-width:0;color:var(--ink);font-size:11px;font-weight:700}
+.task-participant-selected-email{display:block;margin-top:2px;color:var(--muted);font-size:10px;font-weight:400;overflow-wrap:anywhere}
+.task-participant-remove{flex:none;width:24px;height:24px;border:0;border-radius:7px;background:#fff;color:#c84559;font-size:17px;line-height:1}
+.task-participant-contacts{display:grid;gap:4px;max-height:132px;overflow:auto;margin-top:8px}
+.task-participant-contacts button{padding:8px;border:0;border-radius:8px;background:#f8fafb;color:var(--ink);text-align:left;font-size:11px}
+.task-participant-contacts button:hover{background:var(--green-soft)}
+.task-participant-status{margin:8px 0 0;color:var(--muted);font-size:10px;line-height:1.4}
+.task-participant-status.error{color:#c84559}
+.task-participant-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:10px}
+.task-participant-actions button{padding:8px 10px;font-size:10px}
 .close{border:0;background:#f3f5f7;width:30px;height:30px;border-radius:9px;color:#647184;font-size:18px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .field{display:grid;gap:6px}.field[hidden]{display:none!important}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#647184;font-weight:700}
@@ -630,7 +657,7 @@ tbody tr:last-child td{border-bottom:0}
 
 <div class="modal-backdrop" id="taskModal">
  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
-  <div class="modal-head"><h2 id="taskModalTitle">Nova Tarefa</h2><div class="modal-head-actions"><button class="task-reminder-toggle" id="taskReminderToggle" type="button" aria-label="Notificação ativada para esta tarefa" aria-pressed="true" title="Notificação ativada para esta tarefa">🔔</button><button class="close" type="button" onclick="closeModal('taskModal')" aria-label="Fechar">×</button></div></div>
+  <div class="modal-head"><h2 id="taskModalTitle">Nova Tarefa</h2><div class="modal-head-actions"><div class="task-participant-wrap"><button class="task-participant-button" id="taskParticipantButton" type="button" aria-label="Incluir participante nesta tarefa" aria-expanded="false" aria-pressed="false" title="Incluir participante nesta tarefa"><span class="task-participant-person" aria-hidden="true">👤</span><span class="task-participant-plus" aria-hidden="true">+</span></button><div class="task-participant-popover" id="taskParticipantPopover" hidden><label for="taskParticipantEmail">Incluir participante nesta tarefa:</label><input id="taskParticipantEmail" type="email" autocomplete="email" placeholder="nome@exemplo.com"><div class="task-participant-selected" id="taskParticipantSelected" hidden></div><div class="task-participant-contacts" id="taskParticipantContacts"></div><p class="task-participant-status" id="taskParticipantStatus" aria-live="polite"></p><div class="task-participant-actions"><button class="btn outline" id="taskParticipantCancel" type="button">Cancelar</button><button class="btn" id="taskParticipantApply" type="button">Incluir</button></div></div></div><button class="task-reminder-toggle" id="taskReminderToggle" type="button" aria-label="Notificação ativada para esta tarefa" aria-pressed="true" title="Notificação ativada para esta tarefa">🔔</button><button class="close" type="button" onclick="closeModal('taskModal')" aria-label="Fechar">×</button></div></div>
   <form id="taskForm">
    <input type="hidden" id="taskId">
    <div class="form-grid">
@@ -664,6 +691,13 @@ tbody tr:last-child td{border-bottom:0}
   <div class="modal-head"><h2 id="taskDiscardTitle">Descartar tarefa?</h2></div>
   <p id="taskDiscardDescription">As alterações que você digitou ainda não foram salvas. Deseja descartá-las?</p>
   <div class="modal-actions"><button class="btn outline" id="continueTaskEditing" type="button">Continuar editando</button><button class="btn danger" id="confirmTaskDiscard" type="button">Descartar tarefa</button></div>
+ </section>
+</div>
+<div class="modal-backdrop task-contact-confirm-backdrop" id="taskContactConfirmModal">
+ <section class="modal" role="alertdialog" aria-modal="true" aria-labelledby="taskContactConfirmTitle" aria-describedby="taskContactConfirmMessage">
+  <div class="modal-head"><h2 id="taskContactConfirmTitle">Salvar participante?</h2></div>
+  <p id="taskContactConfirmMessage"></p>
+  <div class="modal-actions"><button class="btn outline" id="taskContactConfirmNo" type="button">Não, obrigado</button><button class="btn" id="taskContactConfirmYes" type="button">Sim, guardar</button></div>
  </section>
 </div>
 <div class="modal-backdrop" id="deleteTaskModal">
@@ -779,6 +813,7 @@ function formatBRDateInput(value){
 }
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let accounts=[],tasks=[],loans=[],loanLoadError=null,currentUser=null,authMode='signin',passwordRecovery=false,pendingDeleteAccountId=null,selectedAccountActionId=null,selectedLoanInstallmentId=null,selectedLoanContractId=null;
+let sharedTaskNotifications=[],savedTaskContacts=[],selectedTaskParticipant=null,taskContactPromptResolver=null;
 let registeredUsersRequestId=0;
 const configurablePages=['contas','tarefas','calendario','emprestimos','relatorios'];
 const expandedLoanIds=new Set(),expandedTaskMonths=new Set();
@@ -837,20 +872,31 @@ async function sendServiceWorkerMessage(type){
  });
 }
 async function refreshNotificationBadge(){
- if(!currentUser||$('pushNotificationsButton').dataset.active!=='true'){
-  setNotificationBadge(false);return;
+ if(!currentUser){setNotificationBadge(false);return}
+ await loadSharedTaskNotifications();
+ if($('pushNotificationsButton').dataset.active!=='true'){
+  setNotificationBadge(sharedTaskNotifications.some(notification=>!notification.read_at));return;
  }
+ setNotificationBadge(sharedTaskNotifications.some(notification=>!notification.read_at));
  const result=await sendServiceWorkerMessage('get-notification-state');
  if(result?.type==='notification-state'){
-  setNotificationBadge(result.hasUnread);
+  setNotificationBadge(result.hasUnread||sharedTaskNotifications.some(notification=>!notification.read_at));
   renderNotificationHistory(result.notifications||[]);
  }
 }
-async function markNotificationsRead(){
- if($('notificationDot').hidden)return;
+async function markNotificationsRead(markLocalNotifications=$('notificationDot').hidden===false){
+ const unread=sharedTaskNotifications.filter(notification=>!notification.read_at);
+ if(unread.length){
+  const {error}=await db.from('task_share_notifications').update({read_at:new Date().toISOString()}).in('id',unread.map(notification=>notification.id));
+  if(error)throw error;
+  const readAt=new Date().toISOString();
+  sharedTaskNotifications=sharedTaskNotifications.map(notification=>notification.read_at?notification:{...notification,read_at:readAt});
+ }
+ if(markLocalNotifications){
+  const result=await sendServiceWorkerMessage('mark-notifications-read');
+  if(result?.type!=='notifications-read')throw new Error('Não foi possível marcar as notificações como lidas.');
+ }
  setNotificationBadge(false);
- const result=await sendServiceWorkerMessage('mark-notifications-read');
- if(result?.type!=='notifications-read')throw new Error('Não foi possível marcar as notificações como lidas.');
 }
 function formatNotificationTime(value){
  const date=new Date(value);
@@ -858,17 +904,28 @@ function formatNotificationTime(value){
 }
 function renderNotificationHistory(notifications){
  const history=$('notificationHistory');
- history.innerHTML=notifications.length?notifications.map(notification=>`<article class="notification-item"><strong>${escapeHTML(notification.title||'FFinance')}</strong><p>${escapeHTML(notification.body||'')}</p><time>${escapeHTML(formatNotificationTime(notification.timestamp))}</time></article>`).join(''):'<div class="notification-empty">Nenhuma notificação nos últimos 2 dias.</div>';
+ const merged=[...sharedTaskNotifications.map(notification=>({
+  title:notification.title,body:notification.body,timestamp:notification.created_at,tag:notification.tag
+ })),...notifications];
+ const unique=[...new Map(merged.map(notification=>[notification.tag||`${notification.title}-${notification.timestamp}`,notification])).values()];
+ history.innerHTML=unique.length?unique.map(notification=>`<article class="notification-item"><strong>${escapeHTML(notification.title||'FFinance')}</strong><p>${escapeHTML(notification.body||'')}</p><time>${escapeHTML(formatNotificationTime(notification.timestamp))}</time></article>`).join(''):'<div class="notification-empty">Nenhuma notificação nos últimos 2 dias.</div>';
+}
+async function loadSharedTaskNotifications(){
+ if(!currentUser)return;
+ const {data,error}=await db.from('task_share_notifications').select('id,title,body,tag,created_at,read_at').eq('recipient_id',currentUser.id).order('created_at',{ascending:false}).limit(50);
+ if(error)throw error;
+ sharedTaskNotifications=data||[];
 }
 async function openNotificationPanel(){
  const panel=$('notificationPanel');
  if(!panel.hidden){panel.hidden=true;return}
  panel.hidden=false;
- const result=await sendServiceWorkerMessage('get-notification-state');
- if(result?.type==='notification-state'){
-  renderNotificationHistory(result.notifications||[]);
-  try{await markNotificationsRead()}catch(error){reportError('Não foi possível atualizar o histórico de notificações',error)}
- }
+ try{
+  const result=await sendServiceWorkerMessage('get-notification-state');
+  await loadSharedTaskNotifications();
+  renderNotificationHistory(result?.type==='notification-state'?result.notifications||[]:[]);
+  await markNotificationsRead(result?.type==='notification-state'&&result.hasUnread);
+ }catch(error){reportError('Não foi possível atualizar o histórico de notificações',error)}
 }
 if('serviceWorker'in navigator){
  navigator.serviceWorker.addEventListener('message',event=>{
@@ -1115,7 +1172,7 @@ $('authForm').addEventListener('submit',async e=>{
  finally{$('authSubmit').disabled=false}
 });
 function toAccount(row){return {id:row.id,name:row.name,category:row.category,due:Number(row.due),value:Number(row.value),month:row.month,status:row.status,paidDate:row.paid_date||'',notes:row.notes||'',recurrenceId:row.recurrence_id||null}}
-function toTask(row){return {id:row.id,name:row.name,date:row.task_date||'',month:row.month||row.task_date?.slice(0,7)||'',notify:Boolean(row.notify),showDateInTitle:Boolean(row.show_date_in_title),recurrenceId:row.recurrence_id||null,priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(row.priority)?row.priority:'NEUTRO',description:row.description||row.notes||'',notes:row.notes||'',done:Boolean(row.done),subtasks:Array.isArray(row.subtasks)?row.subtasks.filter(item=>item&&typeof item.name==='string').map(item=>({id:typeof item.id==='string'?item.id:crypto.randomUUID(),name:item.name,done:Boolean(item.done)})):[]}}
+function toTask(row,participants=[]){return {id:row.id,userId:row.user_id,name:row.name,date:row.task_date||'',month:row.month||row.task_date?.slice(0,7)||'',notify:Boolean(row.notify),showDateInTitle:Boolean(row.show_date_in_title),recurrenceId:row.recurrence_id||null,priority:['URGENTE','OBRIGATÓRIO','NEUTRO'].includes(row.priority)?row.priority:'NEUTRO',description:row.description||row.notes||'',notes:row.notes||'',done:Boolean(row.done),shared:participants.length>0,participants,subtasks:Array.isArray(row.subtasks)?row.subtasks.filter(item=>item&&typeof item.name==='string').map(item=>({id:typeof item.id==='string'?item.id:crypto.randomUUID(),name:item.name,done:Boolean(item.done)})):[]}}
 function toLoan(row){return {id:row.id,loanId:row.loan_id,userId:row.user_id,name:row.name,contractTotal:Number(row.contract_total),installmentCount:Number(row.installment_count),installmentNumber:Number(row.installment_number),installmentValue:Number(row.installment_value),referenceMonth:row.reference_month,dueDate:row.due_date,paymentDate:row.payment_date||'',paymentValue:Number(row.payment_value||0)}}
 function setUserDisplay(user){
  const displayName=user.user_metadata?.display_name?.trim()||'';
@@ -1256,7 +1313,19 @@ async function loadData(checkMigration=true){
  ]);
  if(accountsResult.error)throw accountsResult.error;
  if(tasksResult.error)throw tasksResult.error;
- accounts=accountsResult.data.map(toAccount);tasks=tasksResult.data.map(toTask);
+ const taskIds=tasksResult.data.map(task=>task.id);
+ let participants=[];
+ if(taskIds.length){
+  const {data,error}=await db.from('task_participants').select('task_id,participant_user_id,email,display_name').in('task_id',taskIds);
+  if(error)throw error;
+  participants=data||[];
+ }
+ const participantsByTask=new Map();
+ participants.forEach(participant=>{
+  if(!participantsByTask.has(participant.task_id))participantsByTask.set(participant.task_id,[]);
+  participantsByTask.get(participant.task_id).push(participant);
+ });
+ accounts=accountsResult.data.map(toAccount);tasks=tasksResult.data.map(task=>toTask(task,participantsByTask.get(task.id)||[]));
  if(loansResult.error){loans=[];loanLoadError=loansResult.error.message}
  else{loans=loansResult.data.map(toLoan);loanLoadError=null}
  renderAccountMonthOptions();renderAccountNameOptions();renderDashboardAccountOptions();renderTaskMonthOptions();
@@ -1377,19 +1446,139 @@ function updateAccountRecurrenceFields(isEditing=Boolean($('accountId').value)){
  $('accountEndMonth').required=recurring;
 }
 $('accountRecurring').addEventListener('change',()=>updateAccountRecurrenceFields());
+function setTaskParticipantStatus(message,isError=false){
+ const status=$('taskParticipantStatus');
+ status.textContent=message;
+ status.classList.toggle('error',isError);
+}
+function setTaskParticipantPopover(open){
+ const button=$('taskParticipantButton'),popover=$('taskParticipantPopover');
+ popover.hidden=!open;
+ button.setAttribute('aria-expanded',String(open));
+ if(open)$('taskParticipantEmail').focus();
+}
+function askToSaveTaskParticipant(name){
+ return new Promise(resolve=>{
+  taskContactPromptResolver=resolve;
+  $('taskContactConfirmMessage').textContent=`Deseja guardar ${name} para tarefas futuras?`;
+  $('taskContactConfirmModal').classList.add('show');
+  $('taskContactConfirmNo').focus();
+ });
+}
+function resolveTaskContactPrompt(remember){
+ if(!taskContactPromptResolver)return;
+ const resolve=taskContactPromptResolver;
+ taskContactPromptResolver=null;
+ $('taskContactConfirmModal').classList.remove('show');
+ resolve(remember);
+}
+function renderSavedTaskContacts(){
+ const contacts=$('taskParticipantContacts');
+ contacts.innerHTML=savedTaskContacts.length?savedTaskContacts.map(contact=>`<button type="button" data-task-contact="${escapeHTML(contact.contact_user_id)}"><strong>${escapeHTML(contact.display_name)}</strong><br><span>${escapeHTML(contact.email)}</span></button>`).join(''):'';
+}
+function renderSelectedTaskParticipant(){
+ const selected=$('taskParticipantSelected');
+ selected.hidden=!selectedTaskParticipant;
+ selected.innerHTML=selectedTaskParticipant?`<span class="task-participant-selected-name">${escapeHTML(selectedTaskParticipant.display_name)}<span class="task-participant-selected-email">${escapeHTML(selectedTaskParticipant.email)}</span></span><button class="task-participant-remove" type="button" data-remove-task-participant aria-label="Remover participante" title="Remover participante">×</button>`:'';
+}
+async function invokeTaskSharing(body){
+ const {data,error}=await db.functions.invoke('manage-task-sharing',{body});
+ if(error){
+  if(error.context instanceof Response){
+   const response=await error.context.clone().json();
+   if(typeof response?.error==='string')throw new Error(response.error);
+  }
+  throw error;
+ }
+ return data;
+}
+async function loadSavedTaskContacts(){
+ const data=await invokeTaskSharing({action:'list_contacts'});
+ if(!Array.isArray(data?.contacts))throw new Error('A lista de participantes salvos está em formato inválido.');
+ savedTaskContacts=data.contacts;
+ renderSavedTaskContacts();
+}
+async function applyTaskParticipant(){
+ const button=$('taskParticipantApply'),email=$('taskParticipantEmail').value.trim().toLowerCase();
+ const savedContact=savedTaskContacts.find(contact=>contact.email.toLowerCase()===email);
+ button.disabled=true;setTaskParticipantStatus('Verificando cadastro...');
+ try{
+  let contact;
+  if(savedContact){
+   contact={user_id:savedContact.contact_user_id,email:savedContact.email,display_name:savedContact.display_name};
+  }else{
+   const data=await invokeTaskSharing({action:'validate_contact',email});
+   if(!data?.contact?.user_id||!data.contact.display_name)throw new Error('Não foi possível validar este participante.');
+   contact=data.contact;
+  }
+  selectedTaskParticipant=contact;
+  const participantButton=$('taskParticipantButton');
+  participantButton.setAttribute('aria-pressed','true');
+  participantButton.title=`Participante: ${contact.display_name}`;
+  renderSelectedTaskParticipant();
+  setTaskParticipantStatus(`${contact.display_name} será incluído ao salvar.`);
+ }catch(error){
+  selectedTaskParticipant=null;
+  $('taskParticipantButton').setAttribute('aria-pressed','false');
+  renderSelectedTaskParticipant();
+  setTaskParticipantStatus(error.message||'Não foi possível validar este e-mail.',true);
+ }finally{button.disabled=false}
+}
 function openTaskModal(id=null){
  $('taskForm').reset();$('taskId').value='';$('taskDate').value=todayISO();$('taskEndMonth').value=monthISO();$('taskEndDate').value=todayISO();$('taskWeekday').value=String(parseDate(todayISO()).getDay());$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';setTaskReminderEnabled(true);
+ selectedTaskParticipant=null;$('taskParticipantEmail').value='';$('taskParticipantButton').setAttribute('aria-pressed','false');$('taskParticipantButton').title='Incluir participante nesta tarefa';renderSelectedTaskParticipant();setTaskParticipantStatus('');setTaskParticipantPopover(false);
  $('deleteTaskButton').hidden=!id;
  $('taskRecurringField').hidden=Boolean(id);$('taskRecurring').checked=false;$('taskRecurrenceType').value='monthly';$('taskRecurringFields').hidden=true;$('taskRecurringHint').hidden=true;$('taskEndMonth').required=false;$('taskEndDate').required=false;updateTaskRecurringFields();
  $('taskHasSubtasks').checked=false;$('taskSubtasksField').hidden=true;$('taskShowDateInTitle').checked=false;renderTaskSubtaskInputs([]);
  if(id){
   const task=tasks.find(item=>item.id===id);if(!task)return;
+  $('deleteTaskButton').hidden=task.userId!==currentUser?.id;
+  $('taskParticipantButton').hidden=task.shared&&task.userId!==currentUser?.id;
+  if(task.userId===currentUser?.id&&task.participants.length){
+   const participant=task.participants[0];
+   selectedTaskParticipant={user_id:participant.participant_user_id,email:participant.email,display_name:participant.display_name};
+   $('taskParticipantEmail').value=participant.email;
+   $('taskParticipantButton').setAttribute('aria-pressed','true');
+   $('taskParticipantButton').title=`Participante: ${participant.display_name}`;
+   renderSelectedTaskParticipant();
+  }
   $('taskId').value=task.id;$('taskName').value=sentenceCase(task.name);$('taskPriority').value=task.priority;$('taskDate').value=task.date||`${task.month||monthISO()}-01`;$('taskEndMonth').value=task.month||monthISO();$('taskDescription').value=task.description;$('taskShowDateInTitle').checked=task.showDateInTitle;setTaskReminderEnabled(task.notify);
   $('taskHasSubtasks').checked=task.subtasks.length>0;$('taskSubtasksField').hidden=!task.subtasks.length;renderTaskSubtaskInputs(task.subtasks);
- }
+ }else $('taskParticipantButton').hidden=false;
+ void loadSavedTaskContacts().catch(error=>reportError('Não foi possível carregar participantes salvos',error));
  captureModalFormState('taskModal');
  $('taskModal').classList.add('show');
 }
+ $('taskParticipantButton').addEventListener('click',async()=>{
+  const shouldOpen=$('taskParticipantPopover').hidden;
+  if(shouldOpen){
+   setTaskParticipantPopover(true);
+   setTaskParticipantStatus('');
+   try{await loadSavedTaskContacts()}catch(error){reportError('Não foi possível carregar participantes salvos',error)}
+  }else setTaskParticipantPopover(false);
+ });
+ $('taskParticipantApply').addEventListener('click',()=>void applyTaskParticipant());
+ $('taskParticipantEmail').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();void applyTaskParticipant()}});
+ $('taskParticipantEmail').addEventListener('input',()=>{
+  if(selectedTaskParticipant&&$('taskParticipantEmail').value.trim().toLowerCase()!==selectedTaskParticipant.email.toLowerCase()){
+   selectedTaskParticipant=null;$('taskParticipantButton').setAttribute('aria-pressed','false');
+   $('taskParticipantButton').title='Incluir participante nesta tarefa';renderSelectedTaskParticipant();setTaskParticipantStatus('');
+  }
+ });
+ $('taskParticipantSelected').addEventListener('click',event=>{
+  if(!event.target.closest('[data-remove-task-participant]'))return;
+  selectedTaskParticipant=null;$('taskParticipantEmail').value='';$('taskParticipantButton').setAttribute('aria-pressed','false');
+  $('taskParticipantButton').title='Incluir participante nesta tarefa';renderSelectedTaskParticipant();setTaskParticipantStatus('');
+ });
+ $('taskParticipantCancel').addEventListener('click',()=>setTaskParticipantPopover(false));
+ $('taskParticipantContacts').addEventListener('click',event=>{
+  const button=event.target.closest('[data-task-contact]');if(!button)return;
+  const contact=savedTaskContacts.find(item=>item.contact_user_id===button.dataset.taskContact);if(!contact)return;
+  $('taskParticipantEmail').value=contact.email;
+  void applyTaskParticipant();
+ });
+ $('taskContactConfirmNo').addEventListener('click',()=>resolveTaskContactPrompt(false));
+ $('taskContactConfirmYes').addEventListener('click',()=>resolveTaskContactPrompt(true));
 function setTaskReminderEnabled(enabled){
  const button=$('taskReminderToggle');
  button.setAttribute('aria-pressed',String(enabled));button.textContent=enabled?'🔔':'🔕';
@@ -1471,7 +1660,8 @@ function closeModal(id,force=false){
   });
 document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{
  if(e.target!==m)return;
- if(m.id==='taskDiscardModal'){m.classList.remove('show');pendingDiscardModalId=''}
+ if(m.id==='taskContactConfirmModal'){resolveTaskContactPrompt(false)}
+ else if(m.id==='taskDiscardModal'){m.classList.remove('show');pendingDiscardModalId=''}
  else closeModal(m.id);
 }));
  $('taskRecurring').addEventListener('change',updateTaskRecurringFields);
@@ -1871,28 +2061,52 @@ $('taskForm').addEventListener('submit',async e=>{
  const id=$('taskId').value,date=$('taskDate').value,month=date.slice(0,7),recurring=!id&&$('taskRecurring').checked,weekly=$('taskRecurrenceType').value==='weekly',notify=$('taskReminderToggle').getAttribute('aria-pressed')==='true',showDateInTitle=$('taskShowDateInTitle').checked,recurrenceId=recurring?crypto.randomUUID():null,taskName=sentenceCase($('taskName').value);
  const subtasks=$('taskHasSubtasks').checked?readTaskSubtasks():[];
  if($('taskHasSubtasks').checked&&!subtasks.length){toast('Adicione ao menos uma subtarefa ou desmarque essa opção.');return}
+ if($('taskParticipantEmail').value.trim()&&!selectedTaskParticipant){setTaskParticipantPopover(true);setTaskParticipantStatus('Valide o e-mail do participante antes de salvar.',true);return}
+ const submitButton=e.submitter; if(submitButton)submitButton.disabled=true;
+ let taskSaved=false;
  try{
   const dates=recurring?(weekly?taskWeeklyDatesInRange(date,$('taskEndDate').value,Number($('taskWeekday').value)):accountMonthsInRange(month,$('taskEndMonth').value).map((taskMonth,index)=>addMonthsToDate(date,index))):[date];
   const occurrences=dates.map(taskDate=>({date:taskDate,month:taskDate.slice(0,7)}));
+  const taskBeingEdited=id?tasks.find(task=>task.id===id):null;
+  let taskIds=[];
   if(id){
-   const task=tasks.find(item=>item.id===id);if(!task)return;
+   const task=taskBeingEdited;if(!task)return;
    const {error}=await db.from('tasks').update({
     name:taskName,task_date:date,month,notify,show_date_in_title:showDateInTitle,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,subtasks,done:subtasks.length?subtasks.every(subtask=>subtask.done):task.done
    }).eq('id',id);
    if(error)throw error;
+   taskIds=[id];
   }else{
    const payload=occurrences.map(occurrence=>({
     name:taskName,task_date:occurrence.date,month:occurrence.month,notify,show_date_in_title:showDateInTitle,recurrence_id:recurrenceId,priority:$('taskPriority').value,description:$('taskDescription').value.trim()||null,done:false,
     subtasks:subtasks.map(subtask=>({...subtask,id:crypto.randomUUID()}))
    }));
-   const {error}=await db.from('tasks').insert(payload);
+   const {data,error}=await db.from('tasks').insert(payload).select('id');
    if(error)throw error;
+   taskIds=(data||[]).map(task=>task.id);
+  }
+  taskSaved=true;
+  let shareMessage='';
+  const participantAlreadyAssigned=Boolean(taskBeingEdited&&selectedTaskParticipant&&taskBeingEdited.participants.some(participant=>participant.participant_user_id===selectedTaskParticipant.user_id));
+  if(selectedTaskParticipant&&!participantAlreadyAssigned){
+   const rememberContact=await askToSaveTaskParticipant(selectedTaskParticipant.display_name);
+   const data=await invokeTaskSharing({
+    action:'share_task',email:selectedTaskParticipant.email,task_ids:taskIds,remember_contact:rememberContact
+   });
+   if(!data?.ok)throw new Error('O participante não foi incluído nesta tarefa.');
+   shareMessage=!data.newly_shared?' O participante já tinha acesso à tarefa.':data.push_error?' Tarefa compartilhada; o aviso ficou salvo no app, mas não foi possível enviar o push.':data.push_sent?' Tarefa compartilhada e notificação enviada.':' Tarefa compartilhada; a notificação ficará disponível no app do participante.';
   }
   occurrences.forEach(occurrence=>expandedTaskMonths.add(occurrence.month));
-  closeModal('taskModal',true);await loadData(false);toast(occurrences.length>1?`${occurrences.length} tarefas criadas, uma por ${weekly?'semana':'mês'}.`:'Tarefa salva com sucesso!');
+  closeModal('taskModal',true);await loadData(false);toast(`${occurrences.length>1?`${occurrences.length} tarefas criadas, uma por ${weekly?'semana':'mês'}.`:'Tarefa salva com sucesso!'}${shareMessage}`);
  }catch(error){
   if(error instanceof Error&&(error.message.includes('mês final')||error.message.includes('data final')||error.message.includes('dia selecionado')))toast(error.message);
-  else reportError('Não foi possível salvar a tarefa',error);
+  else if(taskSaved){
+   closeModal('taskModal',true);
+   try{await loadData(false)}catch(loadError){reportError('A tarefa foi salva, mas a lista não pôde ser atualizada',loadError)}
+   reportError('A tarefa foi salva, mas não foi possível compartilhar',error);
+  }else reportError('Não foi possível salvar a tarefa',error);
+ }finally{
+  if(submitButton)submitButton.disabled=false;
  }
 });
 async function togglePaid(id){
@@ -2097,6 +2311,8 @@ $('accountMonthMenu').addEventListener('click',event=>{
  renderAccountMonthOptions();renderAccounts();
 });
 document.addEventListener('click',event=>{
+ if(event.target.closest('.task-participant-wrap'))return;
+ if(!$('taskParticipantPopover').hidden)setTaskParticipantPopover(false);
  if(event.target.closest('.account-month-picker'))return;
  if(event.target.closest('.notification-wrap'))return;
  $('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');
@@ -2105,7 +2321,9 @@ document.addEventListener('click',event=>{
 });
 document.addEventListener('keydown',event=>{
  if(event.key!=='Escape')return;
- if(!$('accountMonthMenu').hidden){$('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');$('accountMonthFilter').focus()}
+ if($('taskContactConfirmModal').classList.contains('show'))resolveTaskContactPrompt(false);
+ else if(!$('taskParticipantPopover').hidden){setTaskParticipantPopover(false);$('taskParticipantButton').focus()}
+ else if(!$('accountMonthMenu').hidden){$('accountMonthMenu').hidden=true;$('accountMonthFilter').setAttribute('aria-expanded','false');$('accountMonthFilter').focus()}
  else if(!$('taskMonthMenu').hidden){$('taskMonthMenu').hidden=true;$('taskMonthFilter').setAttribute('aria-expanded','false');$('taskMonthFilter').focus()}
  else if(!$('notificationPanel').hidden){$('notificationPanel').hidden=true;$('pushNotificationsButton').focus()}
 });
@@ -2275,6 +2493,10 @@ function formatTaskTitle(task){
  const date=parseDate(task.date);
  return Number.isNaN(date.getTime())?name:`${name} ${date.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`;
 }
+function renderTaskTitle(task){
+ const title=escapeHTML(formatTaskTitle(task));
+ return task.shared?`<span class="shared-task-title"><span class="shared-task-title-icon" aria-hidden="true">👥</span><span class="shared-task-title-label">${title}</span></span>`:title;
+}
 function renderTasks(){
  const allTasks=getTaskItems();
  let list=allTasks.filter(task=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!task.done:task.done));
@@ -2309,7 +2531,9 @@ function renderTasks(){
    const subtasks=task.subtasks.length?`<div class="task-subtasks">${task.subtasks.map(subtask=>`<label class="task-subtask ${subtask.done?'done':''}"><span class="switch-control task-subtask-switch"><input type="checkbox" ${subtask.done?'checked':''} onchange="toggleSubtask('${task.id}','${subtask.id}')"><span class="switch-track" aria-hidden="true"></span></span><span>${escapeHTML(sentenceCase(subtask.name))}</span></label>`).join('')}</div>`:'';
    const priorityClass=task.priority==='URGENTE'?'urgent':task.priority==='OBRIGATÓRIO'?'mandatory':'neutral';
    const titleClick=task.loanInstallmentId?`openLoanInstallmentModal('${task.loanInstallmentId}')`:`openTaskModal('${task.id}')`;
-   return `<article class="task-card ${task.done?'done':''}"><div class="task-title-row"><label class="switch-control task-card-switch"><input type="checkbox" aria-label="Concluir ${escapeHTML(taskTitle)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><span class="switch-track" aria-hidden="true"></span></label><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${escapeHTML(taskTitle)}</span><span class="task-priority ${priorityClass}">${task.priority}</span></span></button></div><div class="task-info">${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}</div></article>`;
+   const participants=Array.isArray(task.participants)?task.participants:[];
+   const sharedWith=participants.length?`<small class="task-shared-with">Tarefa compartilhada com ${participants.map(participant=>escapeHTML(participant.display_name)).join(', ')}</small>`:'';
+   return `<article class="task-card ${task.done?'done':''}"><div class="task-title-row"><label class="switch-control task-card-switch"><input type="checkbox" aria-label="Concluir ${task.shared?'tarefa compartilhada: ':''}${escapeHTML(taskTitle)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><span class="switch-track" aria-hidden="true"></span></label><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${renderTaskTitle(task)}</span><span class="task-priority ${priorityClass}">${task.priority}</span></span></button></div><div class="task-info">${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}${sharedWith}</div></article>`;
   }).join('')}</div></section>`;
  }).join(''):'<div class="empty">Nenhuma tarefa por aqui. Adicione seu primeiro planejamento!</div>';
  renderTaskLegacyFilter();
@@ -2339,7 +2563,7 @@ function renderDashboard(){
  const priorityOrder={'URGENTE':0,'OBRIGATÓRIO':1};
  const upcoming=getTaskItems().filter(task=>task.month===month&&!task.done&&priorityOrder[task.priority]!==undefined)
   .sort((a,b)=>priorityOrder[a.priority]-priorityOrder[b.priority]||(a.date||'9999').localeCompare(b.date||'9999'));
- $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(task=>`<div class="task-row"><span class="task-name">${escapeHTML(formatTaskTitle(task))}</span><span class="task-priority ${task.priority==='URGENTE'?'urgent':'mandatory'}">${task.priority}</span><span class="date-pill">${task.date?fmtDate(task.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa urgente ou obrigatória pendente.</div>';
+ $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(task=>`<div class="task-row"><span class="task-name">${renderTaskTitle(task)}</span><span class="task-priority ${task.priority==='URGENTE'?'urgent':'mandatory'}">${task.priority}</span><span class="date-pill">${task.date?fmtDate(task.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa urgente ou obrigatória pendente.</div>';
  const cats=['Fixa','Variável','Sazonal','Assinatura'];$('categorySummary').innerHTML=cats.map(c=>{const v=current.filter(a=>a.category===c).reduce((s,a)=>s+a.value,0),p=total?v/total*100:0;return `<div class="category-row"><span class="category-name">${c==='Fixa'?'Contas fixas':c==='Variável'?'Variáveis':c==='Sazonal'?'Sazonais':'Assinaturas'}</span><div class="bar"><span style="width:${p}%"></span></div><span class="category-value">${money(v)}</span></div>`}).join('');
 }
 function renderDashboardAccountOptions(){
@@ -2387,7 +2611,7 @@ function renderCalendar(){
  for(let d=1;d<=days;d++){const iso=`${monthKey}-${String(d).padStart(2,'0')}`,isToday=iso===todayISO(),pendingTasks=taskItems.filter(task=>task.date===iso&&!task.done).length,completedTasks=taskItems.filter(task=>task.date===iso&&task.done).length,pendingAccounts=accounts.filter(account=>account.month===monthKey&&Number(account.due)===d&&account.status!=='Pago').length,paidAccounts=accounts.filter(account=>account.month===monthKey&&Number(account.due)===d&&account.status==='Pago').length,pendingCount=pendingTasks+pendingAccounts,totalCount=pendingCount+completedTasks+paidAccounts,dots=Math.min(totalCount,3),pendingDots=Math.min(pendingCount,dots),completedDots=dots-pendingDots,dotMarkup=`${'<span class="calendar-dot pending"></span>'.repeat(pendingDots)}${'<span class="calendar-dot"></span>'.repeat(completedDots)}`;cells.push(`<button class="day ${isToday?'today':''}" type="button" data-calendar-date="${iso}" aria-label="Ver ${totalCount} compromisso${totalCount===1?'':'s'} de ${fmtDate(iso)}">${d}${dots?`<span class="calendar-dots" aria-hidden="true">${dotMarkup}</span>`:''}</button>`)}
  $('calendarGrid').innerHTML=cells.join('');
  const taskEvents=taskItems.filter(task=>task.month===monthKey)
-  .map(task=>({sortDate:task.date||`${monthKey}-01`,dateLabel:task.date?task.date.slice(8,10):'Mês',name:formatTaskTitle(task),done:task.done}))
+  .map(task=>({sortDate:task.date||`${monthKey}-01`,dateLabel:task.date?task.date.slice(8,10):'Mês',name:formatTaskTitle(task),shared:task.shared,done:task.done}))
   .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
  const accountEvents=accounts.filter(account=>account.month===monthKey)
   .map(account=>({sortDate:`${monthKey}-${String(account.due).padStart(2,'0')}`,dateLabel:String(account.due).padStart(2,'0'),name:account.name,done:account.status==='Pago'}))
@@ -2396,13 +2620,13 @@ function renderCalendar(){
  $('calendarAccountEvents').innerHTML=renderCalendarEvents(accountEvents,'Nenhuma conta cadastrada para este mês.');
 }
 function renderCalendarEvents(items,emptyMessage){
- return items.length?items.map(item=>`<div class="task-row"><span class="date-pill">${escapeHTML(item.dateLabel)}</span><span class="task-name">${escapeHTML(item.name)}</span><span class="status ${item.done?'paid':'pending'}">${item.done?'Concluído':'Pendente'}</span></div>`).join(''):`<div class="empty">${emptyMessage}</div>`;
+ return items.length?items.map(item=>`<div class="task-row"><span class="date-pill">${escapeHTML(item.dateLabel)}</span><span class="task-name">${item.shared?`<span class="shared-task-title"><span class="shared-task-title-icon" aria-hidden="true">👥</span><span class="shared-task-title-label">${escapeHTML(item.name)}</span></span>`:escapeHTML(item.name)}</span><span class="status ${item.done?'paid':'pending'}">${item.done?'Concluído':'Pendente'}</span></div>`).join(''):`<div class="empty">${emptyMessage}</div>`;
 }
 function openCalendarMonthModal(selectedDate){
  const monthKey=selectedDate.slice(0,7),taskItems=getTaskItems();
  const selectedDay=Number(selectedDate.slice(8,10));
  const taskEvents=taskItems.filter(task=>task.date===selectedDate)
-  .map(task=>({sortDate:task.date,dateLabel:task.date.slice(8,10),name:formatTaskTitle(task),done:task.done}))
+  .map(task=>({sortDate:task.date,dateLabel:task.date.slice(8,10),name:formatTaskTitle(task),shared:task.shared,done:task.done}))
   .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
  const accountEvents=accounts.filter(account=>account.month===monthKey&&Number(account.due)===selectedDay)
   .map(account=>({sortDate:`${monthKey}-${String(account.due).padStart(2,'0')}`,dateLabel:String(account.due).padStart(2,'0'),name:account.name,done:account.status==='Pago'}))
