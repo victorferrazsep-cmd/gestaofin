@@ -223,8 +223,7 @@ tbody tr:last-child td{border-bottom:0}
 .task-card.done .task-title-row{background:var(--green-soft);border-radius:10px;padding:2px}
 .task-card.done .task-title-button{background:transparent;color:#7d8794;text-decoration:line-through}
 .task-card.shared{background:#eceef0}
-.task-card.shared .task-title-row,.task-card.shared .task-title-button{background:#e0e2e5}
-.task-card.shared .task-title-button:hover,.task-card.shared .task-title-button:focus-visible{background:#d4d7dc}
+.task-card.done.shared .task-title-row{background:var(--green-soft)}
 .task-info small{display:block;color:var(--muted);font-size:10px;margin:6px 0 0 12px;line-height:1.45}
 .task-shared-with{color:var(--green-dark)!important;font-weight:700}
 .task-card.done strong{text-decoration:line-through;color:#9aa3af}
@@ -2619,6 +2618,9 @@ function renderTaskTitle(task){
  const title=escapeHTML(formatTaskTitle(task));
  return task.shared?`<span class="shared-task-title"><span class="shared-task-title-icon" aria-hidden="true">👥</span><span class="shared-task-title-label">${title}</span></span>`:title;
 }
+function compareTaskStatusAndDate(a,b){
+ return Number(a.done)-Number(b.done)||(a.date||'9999').localeCompare(b.date||'9999');
+}
 function renderTasks(){
  const allTasks=getTaskItems();
  let list=allTasks.filter(task=>taskFilter==='Todas'||(taskFilter==='Pendentes'?!task.done:task.done));
@@ -2645,8 +2647,7 @@ function renderTasks(){
  const orderedMonths=displayedMonths.sort((a,b)=>a&&b?a.localeCompare(b):a?-1:b?1:0);
  $('tasksList').innerHTML=orderedMonths.length?orderedMonths.map(month=>{
   const title=formatTaskMonthLabel(month),monthItems=allTasks.filter(task=>task.month===month),completedCount=monthItems.filter(task=>task.done).length,totalCount=monthItems.length;
-  const priorityOrder={'URGENTE':0,'OBRIGATÓRIO':1,'NEUTRO':2};
-  const monthTasks=groups.get(month).sort((a,b)=>Number(a.done)-Number(b.done)||priorityOrder[a.priority]-priorityOrder[b.priority]||a.name.localeCompare(b.name,'pt-BR'));
+  const monthTasks=groups.get(month).sort((a,b)=>compareTaskStatusAndDate(a,b)||a.name.localeCompare(b.name,'pt-BR'));
   const isExpanded=expandedTaskMonths.has(month);
   return `<section class="task-month-panel"><button class="task-month-header" type="button" data-task-month="${escapeHTML(month)}" aria-expanded="${isExpanded}"><span>${escapeHTML(title)} - ${completedCount}/${totalCount} Tarefas</span><span aria-hidden="true">${isExpanded?'▾':'▸'}</span></button><div class="task-month-items"${isExpanded?'':' hidden'}>${monthTasks.map(task=>{
    const taskTitle=formatTaskTitle(task),details=task.subtasks.length?`${task.subtasks.filter(subtask=>subtask.done).length}/${task.subtasks.length} Subtarefas Concluídas`:'';
@@ -2684,7 +2685,7 @@ function renderDashboard(){
  $('dash-paid-count').textContent=`${paid.length} ${paid.length===1?'conta Paga':'Contas Pagas'}`;$('dash-open-count').textContent=`${open.length} ${open.length===1?'Conta Pendente':'Contas Pendentes'}`;$('dash-due').textContent=due.length;
  const priorityOrder={'URGENTE':0,'OBRIGATÓRIO':1};
  const upcoming=getTaskItems().filter(task=>task.month===month&&!task.done&&priorityOrder[task.priority]!==undefined)
-  .sort((a,b)=>priorityOrder[a.priority]-priorityOrder[b.priority]||(a.date||'9999').localeCompare(b.date||'9999'));
+  .sort((a,b)=>compareTaskStatusAndDate(a,b)||a.name.localeCompare(b.name,'pt-BR'));
  $('dashboardTasks').innerHTML=upcoming.length?upcoming.map(task=>`<div class="task-row"><span class="task-name">${renderTaskTitle(task)}</span><span class="task-priority-indicator">${renderTaskPriorityLabel(task.priority)}</span><span class="date-pill">${task.date?fmtDate(task.date):'Sem prazo'}</span></div>`).join(''):'<div class="empty">Tudo em dia! Nenhuma tarefa urgente ou essencial pendente.</div>';
  const cats=['Fixa','Variável','Sazonal','Assinatura'];$('categorySummary').innerHTML=cats.map(c=>{const v=current.filter(a=>a.category===c).reduce((s,a)=>s+a.value,0),p=total?v/total*100:0;return `<div class="category-row"><span class="category-name">${c==='Fixa'?'Contas fixas':c==='Variável'?'Variáveis':c==='Sazonal'?'Sazonais':'Assinaturas'}</span><div class="bar"><span style="width:${p}%"></span></div><span class="category-value">${money(v)}</span></div>`}).join('');
 }
@@ -2734,7 +2735,7 @@ function renderCalendar(){
  $('calendarGrid').innerHTML=cells.join('');
  const taskEvents=taskItems.filter(task=>task.month===monthKey)
   .map(task=>({sortDate:task.date||`${monthKey}-01`,dateLabel:task.date?task.date.slice(8,10):'Mês',name:formatTaskTitle(task),shared:task.shared,done:task.done}))
-  .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
+  .sort((a,b)=>Number(a.done)-Number(b.done)||a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
  const accountEvents=accounts.filter(account=>account.month===monthKey)
   .map(account=>({sortDate:`${monthKey}-${String(account.due).padStart(2,'0')}`,dateLabel:String(account.due).padStart(2,'0'),name:account.name,done:account.status==='Pago'}))
   .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
@@ -2749,7 +2750,7 @@ function openCalendarMonthModal(selectedDate){
  const selectedDay=Number(selectedDate.slice(8,10));
  const taskEvents=taskItems.filter(task=>task.date===selectedDate)
   .map(task=>({sortDate:task.date,dateLabel:task.date.slice(8,10),name:formatTaskTitle(task),shared:task.shared,done:task.done}))
-  .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
+  .sort((a,b)=>Number(a.done)-Number(b.done)||a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
  const accountEvents=accounts.filter(account=>account.month===monthKey&&Number(account.due)===selectedDay)
   .map(account=>({sortDate:`${monthKey}-${String(account.due).padStart(2,'0')}`,dateLabel:String(account.due).padStart(2,'0'),name:account.name,done:account.status==='Pago'}))
   .sort((a,b)=>a.sortDate.localeCompare(b.sortDate)||a.name.localeCompare(b.name,'pt-BR'));
