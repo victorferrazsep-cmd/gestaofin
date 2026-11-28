@@ -691,7 +691,7 @@ tbody tr:last-child td{border-bottom:0}
     <label class="field checkbox-label switch-field full"><span>Mostrar data no título</span><input id="taskShowDateInTitle" type="checkbox"><span class="switch-track" aria-hidden="true"></span></label>
     <div class="field full"><label for="taskDescription">Descrição (opcional)</label><textarea id="taskDescription" rows="3" placeholder="Detalhes para orientar a tarefa..."></textarea></div>
    </div>
-   <div class="modal-actions"><button class="btn danger task-modal-delete" id="deleteTaskButton" type="button" hidden>Excluir tarefa</button><button type="button" class="btn outline" onclick="closeModal('taskModal')">Cancelar</button><button class="btn" type="submit">Salvar Tarefa</button></div>
+   <div class="modal-actions"><button class="btn danger task-modal-delete" id="deleteTaskButton" type="button" hidden>Excluir tarefa</button><button type="button" class="btn outline" onclick="closeModal('taskModal')">Cancelar</button><button class="btn" id="saveTaskButton" type="submit">Salvar Tarefa</button></div>
   </form>
  </section>
 </div>
@@ -1563,7 +1563,7 @@ async function applyTaskParticipant(){
  }finally{button.disabled=false}
 }
 function openTaskModal(id=null){
- $('taskForm').reset();$('taskId').value='';$('taskDate').value=todayISO();$('taskEndMonth').value=monthISO();$('taskEndDate').value=todayISO();$('taskWeekday').value=String(parseDate(todayISO()).getDay());$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';setTaskReminderEnabled(true);
+ $('taskForm').reset();$('saveTaskButton').disabled=false;$('taskId').value='';$('taskDate').value=todayISO();$('taskEndMonth').value=monthISO();$('taskEndDate').value=todayISO();$('taskWeekday').value=String(parseDate(todayISO()).getDay());$('taskModalTitle').textContent=id?'Editar Tarefa':'Nova Tarefa';setTaskReminderEnabled(true);
  selectedTaskParticipant=null;$('taskParticipantEmail').value='';$('taskParticipantButton').setAttribute('aria-pressed','false');$('taskParticipantButton').title='Incluir participante nesta tarefa';renderSelectedTaskParticipant();setTaskParticipantStatus('');setTaskParticipantPopover(false);
  $('deleteTaskButton').hidden=!id;
  $('taskRecurringField').hidden=Boolean(id);$('taskRecurring').checked=false;$('taskRecurrenceType').value='monthly';$('taskRecurringFields').hidden=true;$('taskRecurringHint').hidden=true;$('taskEndMonth').required=false;$('taskEndDate').required=false;updateTaskRecurringFields();
@@ -1667,6 +1667,7 @@ function closeModal(id,force=false){
    $('taskDiscardModal').classList.add('show');
    return;
   }
+  if(id==='taskModal')$('saveTaskButton').disabled=false;
   $(id).classList.remove('show');
  }
  const protectedModalForms={
