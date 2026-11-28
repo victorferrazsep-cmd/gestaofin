@@ -200,7 +200,8 @@ tbody tr:last-child td{border-bottom:0}
 .task-month-header span:first-child{min-width:0}
 .task-month-header span:last-child{font-size:11px;color:#758292}
 .task-month-items[hidden]{display:none}
-.task-card{margin-top:8px;padding:10px;border:0;border-radius:10px;background:#f8fafb}
+.task-card{position:relative;margin-top:8px;padding:10px;border:0;border-radius:10px;background:#f8fafb}
+.task-share-icon{position:absolute;right:15px;bottom:9px;display:grid;place-items:center;color:var(--green-dark)!important;font-size:13px;line-height:1}
 .task-card-switch{margin-top:5px}
 .task-title-row{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:2px;border-radius:10px;background:#f2f3f5}
 .task-title-row .task-title-button{flex:1;min-width:0}
@@ -209,9 +210,6 @@ tbody tr:last-child td{border-bottom:0}
 .task-title-button:hover,.task-title-button:focus-visible{background:#e9ebee;outline:none}
 .task-title-content{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
 .task-title-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.shared-task-title{display:inline-flex;align-items:center;gap:5px;max-width:100%;vertical-align:middle}
-.shared-task-title-icon{flex:none;display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:12px;transform:translateY(-1px)}
-.shared-task-title-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .task-priority-control{display:flex;align-items:center;gap:9px}
 .task-priority-control select{width:auto;min-width:0;flex:1}
 .task-priority-preview{display:flex;align-items:center;justify-content:center;flex:none}
@@ -225,7 +223,7 @@ tbody tr:last-child td{border-bottom:0}
 .task-card.shared{background:#eceef0}
 .task-card.done.shared .task-title-row{background:var(--green-soft)}
 .task-info small{display:block;color:var(--muted);font-size:10px;margin:6px 0 0 12px;line-height:1.45}
-.task-shared-with{color:var(--green-dark)!important;font-weight:700}
+.task-shared-with{color:var(--green-dark)!important;font-weight:400}
 .task-card.done strong{text-decoration:line-through;color:#9aa3af}
 .task-description{margin:7px 0 0;color:#586579;font-size:11px;line-height:1.5;white-space:pre-wrap}
 .task-subtasks{display:grid;gap:5px;margin-top:9px}
@@ -309,7 +307,7 @@ tbody tr:last-child td{border-bottom:0}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 .task-edit-scope-actions{display:grid;grid-template-columns:1fr}
 .task-edit-scope-actions button{width:100%}
-#taskModal .modal-actions{position:sticky;bottom:-1px;padding-top:12px;background:#fff;z-index:1}
+#taskModal .modal-actions{position:sticky;bottom:0;padding:12px 0 0;margin-top:18px;background:#fff;z-index:5;pointer-events:auto}
 .delete-account-actions{flex-wrap:wrap}
 .btn.danger:hover{background:#ffe1e6}
 .account-row{cursor:pointer}
@@ -1656,6 +1654,7 @@ function addTaskSubtaskInput(name=''){
  const wrapper=document.createElement('div');wrapper.className='task-subtask-input';
  wrapper.innerHTML=`<button type="button" class="task-subtask-drag" data-drag-task-subtask aria-label="Mover subtarefa" title="Segure para arrastar">⋮⋮</button><input type="text" maxlength="160" data-task-subtask-name placeholder="Nome da subtarefa"><button type="button" data-remove-task-subtask aria-label="Remover subtarefa">×</button>`;
  const input=wrapper.querySelector('input');input.value=name;$('taskSubtasksEditor').append(wrapper);input.focus();
+ $('saveTaskButton').disabled=false;
 }
 function closeModal(id,force=false){
   if(!force&&shouldConfirmModalDiscard(id)){
@@ -1722,9 +1721,13 @@ document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('clic
   if(event.currentTarget.checked&&!$('taskSubtasksEditor').children.length)addTaskSubtaskInput();
  });
  $('addTaskSubtask').addEventListener('click',()=>addTaskSubtaskInput());
+ $('taskSubtasksEditor').addEventListener('input',()=>{$('saveTaskButton').disabled=false});
  $('taskSubtasksEditor').addEventListener('click',event=>{
   const button=event.target.closest('[data-remove-task-subtask]');
-  if(button)button.closest('.task-subtask-input').remove();
+  if(button){
+   button.closest('.task-subtask-input').remove();
+   $('saveTaskButton').disabled=false;
+  }
  });
 let taskSubtaskDrag=null;
 $('taskSubtasksEditor').addEventListener('pointerdown',event=>{
@@ -2616,8 +2619,7 @@ function updateTaskPriorityPreview(){
  $('taskPriorityPreview').innerHTML=renderTaskPriorityLabel($('taskPriority').value);
 }
 function renderTaskTitle(task){
- const title=escapeHTML(formatTaskTitle(task));
- return task.shared?`<span class="shared-task-title"><span class="shared-task-title-icon" aria-hidden="true">👥</span><span class="shared-task-title-label">${title}</span></span>`:title;
+ return escapeHTML(formatTaskTitle(task));
 }
 function compareTaskStatusAndDate(a,b){
  return Number(a.done)-Number(b.done)||(a.date||'9999').localeCompare(b.date||'9999');
@@ -2656,8 +2658,10 @@ function renderTasks(){
    const priorityLabel=renderTaskPriorityLabel(task.priority);
    const titleClick=task.loanInstallmentId?`openLoanInstallmentModal('${task.loanInstallmentId}')`:`openTaskModal('${task.id}')`;
    const participants=Array.isArray(task.participants)?task.participants:[];
-   const sharedWith=participants.length?`<small class="task-shared-with">${task.userId===currentUser?.id?`Tarefa compartilhada com ${participants.map(participant=>escapeHTML(participant.display_name)).join(', ')}`:`Essa tarefa foi compartilhada por ${escapeHTML(participants[0].owner_display_name||'Responsável')}`}</small>`:'';
-   return `<article class="task-card ${task.done?'done':''} ${task.shared?'shared':''}"><div class="task-title-row"><label class="switch-control task-card-switch"><input type="checkbox" aria-label="Concluir ${task.shared?'tarefa compartilhada: ':''}${escapeHTML(taskTitle)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><span class="switch-track" aria-hidden="true"></span></label><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${renderTaskTitle(task)}</span><span class="task-priority-indicator">${priorityLabel}</span></span></button></div><div class="task-info">${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}${sharedWith}</div></article>`;
+   const sharedDescription=participants.length?(task.userId===currentUser?.id?`Tarefa compartilhada com ${participants.map(participant=>participant.display_name).join(', ')}`:`Essa tarefa foi compartilhada por ${participants[0].owner_display_name||'Responsável'}`):'Tarefa compartilhada';
+   const sharedWith=participants.length?`<small class="task-shared-with">${escapeHTML(sharedDescription)}</small>`:'';
+   const sharedIcon=task.shared?`<span class="task-share-icon" role="img" aria-label="${escapeHTML(sharedDescription)}" title="${escapeHTML(sharedDescription)}">👥</span>`:'';
+   return `<article class="task-card ${task.done?'done':''} ${task.shared?'shared':''}"><div class="task-title-row"><label class="switch-control task-card-switch"><input type="checkbox" aria-label="Concluir ${task.shared?'tarefa compartilhada: ':''}${escapeHTML(taskTitle)}" ${task.done?'checked':''} onchange="toggleTask('${task.id}')"><span class="switch-track" aria-hidden="true"></span></label><button class="task-title-button" type="button" onclick="${titleClick}"><span class="task-title-content"><span class="task-title-text">${renderTaskTitle(task)}</span><span class="task-priority-indicator">${priorityLabel}</span></span></button></div><div class="task-info">${details?`<small>${details}</small>`:''}${task.description?`<p class="task-description">${escapeHTML(task.description)}</p>`:''}${subtasks}${sharedWith}</div>${sharedIcon}</article>`;
   }).join('')}</div></section>`;
  }).join(''):'<div class="empty">Nenhuma tarefa por aqui. Adicione seu primeiro planejamento!</div>';
  renderTaskLegacyFilter();
@@ -2744,7 +2748,7 @@ function renderCalendar(){
  $('calendarAccountEvents').innerHTML=renderCalendarEvents(accountEvents,'Nenhuma conta cadastrada para este mês.');
 }
 function renderCalendarEvents(items,emptyMessage){
- return items.length?items.map(item=>`<div class="task-row"><span class="date-pill">${escapeHTML(item.dateLabel)}</span><span class="task-name">${item.shared?`<span class="shared-task-title"><span class="shared-task-title-icon" aria-hidden="true">👥</span><span class="shared-task-title-label">${escapeHTML(item.name)}</span></span>`:escapeHTML(item.name)}</span><span class="status ${item.done?'paid':'pending'}">${item.done?'Concluído':'Pendente'}</span></div>`).join(''):`<div class="empty">${emptyMessage}</div>`;
+ return items.length?items.map(item=>`<div class="task-row"><span class="date-pill">${escapeHTML(item.dateLabel)}</span><span class="task-name">${escapeHTML(item.name)}</span><span class="status ${item.done?'paid':'pending'}">${item.done?'Concluído':'Pendente'}</span></div>`).join(''):`<div class="empty">${emptyMessage}</div>`;
 }
 function openCalendarMonthModal(selectedDate){
  const monthKey=selectedDate.slice(0,7),taskItems=getTaskItems();
